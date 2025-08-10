@@ -63,7 +63,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative px-[50px]">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-2 p-4 bg-gradient-board rounded-2xl shadow-game w-full mx-auto max-h-[80vh] overflow-y-auto"
+        className="grid grid-cols-4 gap-1 p-0 bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {board.map((row, rowIndex) =>
