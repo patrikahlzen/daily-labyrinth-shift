@@ -8,35 +8,60 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Daily Labyrinth - Mystical Forest Theme */
+    --background: 140 20% 8%;
+    --foreground: 48 100% 88%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 140 25% 12%;
+    --card-foreground: 48 100% 88%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 140 25% 12%;
+    --popover-foreground: 48 100% 88%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 160 80% 35%;
+    --primary-foreground: 48 100% 88%;
+    --primary-glow: 160 100% 45%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 48 85% 60%;
+    --secondary-foreground: 140 25% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 140 20% 15%;
+    --muted-foreground: 140 10% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 100% 70%;
+    --accent-foreground: 140 25% 12%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 48 100% 88%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 140 20% 20%;
+    --input: 140 20% 15%;
+    --ring: 160 80% 35%;
 
-    --radius: 0.5rem;
+    /* Game-specific colors */
+    --game-board: 140 30% 10%;
+    --tile-path: 140 15% 25%;
+    --tile-empty: 140 10% 15%;
+    --tile-special: 45 100% 65%;
+    --player: 200 100% 60%;
+    --goal: 45 100% 70%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(140 35% 8%));
+    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(140 20% 30%));
+    --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50 100% 75%));
+    
+    /* Shadows */
+    --shadow-game: 0 20px 40px -10px hsl(140 50% 5% / 0.8);
+    --shadow-tile: 0 4px 12px -2px hsl(140 50% 5% / 0.6);
+    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.5);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,41 +81,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Same theme in dark mode - already optimized for dark */
+    --background: 140 20% 8%;
+    --foreground: 48 100% 88%;
+    --card: 140 25% 12%;
+    --card-foreground: 48 100% 88%;
+    --popover: 140 25% 12%;
+    --popover-foreground: 48 100% 88%;
+    --primary: 160 80% 35%;
+    --primary-foreground: 48 100% 88%;
+    --primary-glow: 160 100% 45%;
+    --secondary: 48 85% 60%;
+    --secondary-foreground: 140 25% 12%;
+    --muted: 140 20% 15%;
+    --muted-foreground: 140 10% 70%;
+    --accent: 45 100% 70%;
+    --accent-foreground: 140 25% 12%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 48 100% 88%;
+    --border: 140 20% 20%;
+    --input: 140 20% 15%;
+    --ring: 160 80% 35%;
+    --game-board: 140 30% 10%;
+    --tile-path: 140 15% 25%;
+    --tile-empty: 140 10% 15%;
+    --tile-special: 45 100% 65%;
+    --player: 200 100% 60%;
+    --goal: 45 100% 70%;
   }
 }
 
@@ -100,6 +117,33 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-hidden;
+    font-family: 'Inter', system-ui, sans-serif;
   }
+
+  /* Game-specific animations */
+  @keyframes tile-slide {
+    0% { transform: translateX(-100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes tile-glow {
+    0%, 100% { box-shadow: 0 0 10px hsl(var(--primary-glow) / 0.3); }
+    50% { box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.6); }
+  }
+
+  @keyframes player-bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-4px) scale(1.05); }
+  }
+
+  @keyframes goal-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px hsl(var(--goal) / 0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px hsl(var(--goal) / 0.8); }
+  }
+
+  .tile-slide { animation: tile-slide 0.3s ease-out; }
+  .tile-glow { animation: tile-glow 2s infinite; }
+  .player-bounce { animation: player-bounce 1.5s infinite; }
+  .goal-pulse { animation: goal-pulse 2s infinite; }
 }
