@@ -168,6 +168,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     </div>
                   </div>
                 )}
+
+                {/* Close tile wrapper */}
+              </div>
             );
           })
         )}
