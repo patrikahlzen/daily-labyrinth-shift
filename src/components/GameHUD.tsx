@@ -30,8 +30,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({
       {/* Top HUD */}
       <div className="flex justify-between items-center p-4 bg-card/50 backdrop-blur-sm rounded-2xl mx-4 mt-4 shadow-tile">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-goal" />
-          <span className="text-sm font-medium text-goal">Daily Quest</span>
+          <Target className="w-5 h-5 text-game-goal" />
+          <span className="text-sm font-medium text-game-goal">Daily Quest</span>
         </div>
         
         <div className="flex items-center gap-4">

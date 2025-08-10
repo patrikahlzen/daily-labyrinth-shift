@@ -63,8 +63,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-1 p-4 bg-gradient-board rounded-2xl shadow-game"
-        style={{ gridTemplateRows: 'repeat(12, 1fr)' }}
+        className="grid grid-cols-4 gap-1 p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-[420px] mx-auto max-h-[70vh] overflow-y-auto"
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
