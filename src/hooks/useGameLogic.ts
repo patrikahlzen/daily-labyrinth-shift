@@ -216,6 +216,36 @@ export const useGameLogic = () => {
     setGameState(prev => {
       if (!prev.branchChoice) return prev;
       const sim = simulateAutoWalk(prev.board, prev.playerPosition, prev.goalPosition, dir);
+
+      const steps = sim.path && sim.path.length > 1 ? sim.path.slice(1) : [];
+      let index = 0;
+
+      const runStep = () => {
+        setGameState(curr => {
+          if (index >= steps.length) {
+            return {
+              ...curr,
+              previewPath: [],
+              branchChoice: sim.stopReason === 'branch' ? sim.branch! : null,
+              canRewind: curr.walkTimeline.length > 0,
+              gameCompleted: curr.playerPosition.x === curr.goalPosition.x && curr.playerPosition.y === curr.goalPosition.y ? true : curr.gameCompleted
+            };
+          }
+          const nextPos = steps[index++];
+          const newTimeline = [...curr.walkTimeline, nextPos];
+          const atGoal = nextPos.x === curr.goalPosition.x && nextPos.y === curr.goalPosition.y;
+          setTimeout(runStep, 200);
+          return {
+            ...curr,
+            playerPosition: nextPos,
+            walkTimeline: newTimeline,
+            gameCompleted: atGoal || curr.gameCompleted
+          };
+        });
+      };
+
+      setTimeout(runStep, 0);
+
       return {
         ...prev,
         previewPath: sim.path,
@@ -224,11 +254,19 @@ export const useGameLogic = () => {
     });
   }, [simulateAutoWalk]);
 
-  // Tap two tiles to preview a swap
   const tapTile = useCallback((row: number, col: number) => {
     setGameState(prev => {
       const base = { ...prev };
       if (!base.gameStarted) base.gameStarted = true;
+
+      const isGoal = base.goalPosition.x === col && base.goalPosition.y === row;
+      const tile = base.board[row][col];
+      const isEmpty = tile.type === TileType.EMPTY;
+
+      // Disallow interacting with goal or empty tiles entirely
+      if (isGoal || isEmpty) {
+        return base;
+      }
 
       if (!base.selectedTile) {
         return { ...base, selectedTile: { row, col }, pendingSwap: null, previewPath: [], branchChoice: null };
@@ -238,18 +276,67 @@ export const useGameLogic = () => {
         return { ...base, selectedTile: null, pendingSwap: null, previewPath: [], branchChoice: null };
       }
 
-      // Build preview board with swap
+      // Validate target again
+      if (isGoal || isEmpty) {
+        return { ...base, selectedTile: null, pendingSwap: null, previewPath: [], branchChoice: null };
+      }
+
+      // Snapshot for undo
+      const snapshot = {
+        board: base.board.map(r => r.map(t => ({ ...t }))),
+        playerPosition: { ...base.playerPosition },
+        heldTile: base.heldTile,
+        moves: base.moves
+      };
+
+      // Commit swap immediately
       const newBoard = base.board.map(r => r.slice());
       const s = base.selectedTile;
       const temp = newBoard[s.row][s.col];
       newBoard[s.row][s.col] = newBoard[row][col];
       newBoard[row][col] = temp;
 
+      // Simulate walk
       const sim = simulateAutoWalk(newBoard, base.playerPosition, base.goalPosition);
+
+      // Animate along the preview path
+      const steps = sim.path && sim.path.length > 1 ? sim.path.slice(1) : [];
+      let index = 0;
+
+      const runStep = () => {
+        setGameState(curr => {
+          if (index >= steps.length) {
+            return {
+              ...curr,
+              previewPath: [],
+              branchChoice: sim.stopReason === 'branch' ? sim.branch! : null,
+              canRewind: curr.walkTimeline.length > 0,
+              gameCompleted: curr.playerPosition.x === curr.goalPosition.x && curr.playerPosition.y === curr.goalPosition.y ? true : curr.gameCompleted
+            };
+          }
+          const nextPos = steps[index++];
+          const newTimeline = [...curr.walkTimeline, nextPos];
+          const atGoal = nextPos.x === curr.goalPosition.x && nextPos.y === curr.goalPosition.y;
+          setTimeout(runStep, 200);
+          return {
+            ...curr,
+            playerPosition: nextPos,
+            walkTimeline: newTimeline,
+            gameCompleted: atGoal || curr.gameCompleted
+          };
+        });
+      };
+
+      setTimeout(runStep, 0);
 
       return {
         ...base,
-        pendingSwap: { from: s, to: { row, col } },
+        board: newBoard,
+        moves: base.moves + 1,
+        pushHistory: [...base.pushHistory, snapshot],
+        canUndo: true,
+        selectedTile: null,
+        pendingSwap: null,
         previewPath: sim.path,
         branchChoice: sim.stopReason === 'branch' ? sim.branch! : null
       };

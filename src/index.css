@@ -8,48 +8,48 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Daily Labyrinth - Mystical Forest Theme */
-    --background: 140 20% 8%;
-    --foreground: 48 100% 88%;
+    /* Daily Labyrinth - Dark Citrus Theme */
+    --background: 220 12% 10%;
+    --foreground: 60 25% 92%;
 
-    --card: 140 25% 12%;
-    --card-foreground: 48 100% 88%;
+    --card: 220 12% 12%;
+    --card-foreground: 60 25% 92%;
 
-    --popover: 140 25% 12%;
-    --popover-foreground: 48 100% 88%;
+    --popover: 220 12% 12%;
+    --popover-foreground: 60 25% 92%;
 
-    --primary: 160 80% 35%;
-    --primary-foreground: 48 100% 88%;
-    --primary-glow: 160 100% 45%;
+    --primary: 55 95% 60%;
+    --primary-foreground: 240 10% 10%;
+    --primary-glow: 55 95% 70%;
 
-    --secondary: 48 85% 60%;
-    --secondary-foreground: 140 25% 12%;
+    --secondary: 155 45% 28%;
+    --secondary-foreground: 60 25% 92%;
 
-    --muted: 140 20% 15%;
-    --muted-foreground: 140 10% 70%;
+    --muted: 220 12% 16%;
+    --muted-foreground: 220 8% 70%;
 
-    --accent: 45 100% 70%;
-    --accent-foreground: 140 25% 12%;
+    --accent: 155 50% 38%;
+    --accent-foreground: 60 25% 92%;
 
     --destructive: 0 70% 50%;
-    --destructive-foreground: 48 100% 88%;
+    --destructive-foreground: 60 25% 92%;
 
-    --border: 140 20% 20%;
-    --input: 140 20% 15%;
-    --ring: 160 80% 35%;
+    --border: 220 12% 22%;
+    --input: 220 12% 16%;
+    --ring: 55 95% 60%;
 
     /* Game-specific colors */
-    --game-board: 140 30% 10%;
-    --tile-path: 140 15% 25%;
-    --tile-empty: 140 10% 15%;
-    --tile-special: 45 100% 65%;
+    --game-board: 220 15% 12%;
+    --tile-path: 220 10% 28%;
+    --tile-empty: 220 12% 14%;
+    --tile-special: 55 95% 60%;
     --player: 200 100% 60%;
-    --goal: 45 100% 70%;
+    --goal: 55 95% 60%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(140 35% 8%));
-    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(140 20% 30%));
+    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(220 15% 9%));
+    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(220 10% 32%));
     --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50 100% 75%));
     
     /* Shadows */
@@ -81,33 +81,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Same theme in dark mode - already optimized for dark */
-    --background: 140 20% 8%;
-    --foreground: 48 100% 88%;
-    --card: 140 25% 12%;
-    --card-foreground: 48 100% 88%;
-    --popover: 140 25% 12%;
-    --popover-foreground: 48 100% 88%;
-    --primary: 160 80% 35%;
-    --primary-foreground: 48 100% 88%;
-    --primary-glow: 160 100% 45%;
-    --secondary: 48 85% 60%;
-    --secondary-foreground: 140 25% 12%;
-    --muted: 140 20% 15%;
-    --muted-foreground: 140 10% 70%;
-    --accent: 45 100% 70%;
-    --accent-foreground: 140 25% 12%;
+    /* Same theme in dark mode - optimized for dark */
+    --background: 220 12% 10%;
+    --foreground: 60 25% 92%;
+    --card: 220 12% 12%;
+    --card-foreground: 60 25% 92%;
+    --popover: 220 12% 12%;
+    --popover-foreground: 60 25% 92%;
+    --primary: 55 95% 60%;
+    --primary-foreground: 240 10% 10%;
+    --primary-glow: 55 95% 70%;
+    --secondary: 155 45% 28%;
+    --secondary-foreground: 60 25% 92%;
+    --muted: 220 12% 16%;
+    --muted-foreground: 220 8% 70%;
+    --accent: 155 50% 38%;
+    --accent-foreground: 60 25% 92%;
     --destructive: 0 70% 50%;
-    --destructive-foreground: 48 100% 88%;
-    --border: 140 20% 20%;
-    --input: 140 20% 15%;
-    --ring: 160 80% 35%;
-    --game-board: 140 30% 10%;
-    --tile-path: 140 15% 25%;
-    --tile-empty: 140 10% 15%;
-    --tile-special: 45 100% 65%;
+    --destructive-foreground: 60 25% 92%;
+    --border: 220 12% 22%;
+    --input: 220 12% 16%;
+    --ring: 55 95% 60%;
+    --game-board: 220 15% 12%;
+    --tile-path: 220 10% 28%;
+    --tile-empty: 220 12% 14%;
+    --tile-special: 55 95% 60%;
     --player: 200 100% 60%;
-    --goal: 45 100% 70%;
+    --goal: 55 95% 60%;
   }
 }
 
@@ -146,4 +146,8 @@ All colors MUST be HSL.
   .tile-glow { animation: tile-glow 2s infinite; }
   .player-bounce { animation: player-bounce 1.5s infinite; }
   .goal-pulse { animation: goal-pulse 2s infinite; }
+}
+
+@layer utilities {
+  .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
 }

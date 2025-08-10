@@ -37,8 +37,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative px-[50px]">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
+        style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
@@ -49,8 +49,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className="relative aspect-square"
-                onClick={() => handleTileClick(rowIndex, colIndex)}
+                className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isGoal) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }`}
+                onClick={() => {
+                  const isDisabled = tile.type === TileType.EMPTY || isGoal;
+                  if (isDisabled) return;
+                  handleTileClick(rowIndex, colIndex);
+                }}
               >
                 <div className="absolute inset-0">
                   <Tile
