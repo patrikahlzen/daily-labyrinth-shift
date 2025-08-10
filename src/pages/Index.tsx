@@ -23,18 +23,19 @@ const Index = () => {
 
       {/* Main Game Area */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <GameBoard
-          board={gameState.board}
-          playerPosition={gameState.playerPosition}
-          goalPosition={gameState.goalPosition}
-          onTilePush={pushTile}
-          previewMove={gameState.previewMove}
-          previewPath={gameState.previewPath}
-          branchChoice={gameState.branchChoice}
-          onChooseDirection={chooseDirection}
-          onTileTap={onTileTap}
-          selectedTile={gameState.selectedTile}
-        />
+      <GameBoard
+        board={gameState.board}
+        playerPosition={gameState.playerPosition}
+        goalPosition={gameState.goalPosition}
+        startPosition={gameState.startPosition}
+        onTilePush={pushTile}
+        previewMove={gameState.previewMove}
+        previewPath={gameState.previewPath}
+        branchChoice={gameState.branchChoice}
+        onChooseDirection={chooseDirection}
+        onTileTap={onTileTap}
+        selectedTile={gameState.selectedTile}
+      />
       </div>
 
       {/* Bottom Area */}

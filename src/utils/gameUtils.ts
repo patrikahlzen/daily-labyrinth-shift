@@ -50,7 +50,7 @@ export const generateEmptyTile = (): GameTile => ({
 export const createInitialBoard = (): GameTile[][] => {
   const board: GameTile[][] = [];
   
-  for (let row = 0; row < 12; row++) {
+  for (let row = 0; row < 3; row++) {
     const boardRow: GameTile[] = [];
     for (let col = 0; col < 4; col++) {
       // Create a mix of path tiles and some empty tiles for variety
@@ -64,7 +64,7 @@ export const createInitialBoard = (): GameTile[][] => {
   }
 
   // Ensure start position (bottom) has a path tile
-  board[11][1] = {
+  board[2][1] = {
     type: TileType.PATH,
     connections: { north: true, south: false, east: false, west: false },
     special: null,
@@ -89,8 +89,10 @@ export const canMoveTo = (
   toX: number,
   toY: number
 ): boolean => {
-  // Check bounds
-  if (toX < 0 || toX >= 4 || toY < 0 || toY >= 12) return false;
+  // Check bounds dynamically based on board size
+  const rows = board.length;
+  const cols = board[0]?.length || 0;
+  if (toX < 0 || toX >= cols || toY < 0 || toY >= rows) return false;
   
   const fromTile = board[fromY][fromX];
   const toTile = board[toY][toX];

@@ -21,8 +21,9 @@ export interface GameTile {
 
 export interface GameState {
   board: GameTile[][];
-  playerPosition: { x: number; y: number };
+  startPosition: { x: number; y: number };
   goalPosition: { x: number; y: number };
+  playerPosition: { x: number; y: number };
   heldTile: GameTile | null;
   moves: number;
   timer: number;
@@ -34,7 +35,7 @@ export interface GameState {
   previewPath: { x: number; y: number }[];
   branchChoice: { x: number; y: number; options: Direction[] } | null;
   walkTimeline: { x: number; y: number }[];
-  pushHistory: { board: GameTile[][]; playerPosition: { x: number; y: number }; heldTile: GameTile | null; moves: number }[];
+  pushHistory: { board: GameTile[][]; startPosition: { x: number; y: number }; goalPosition: { x: number; y: number }; playerPosition: { x: number; y: number }; heldTile: GameTile | null; moves: number }[];
   canRewind: boolean;
   // Swap-only mode state
   selectedTile?: { row: number; col: number } | null;

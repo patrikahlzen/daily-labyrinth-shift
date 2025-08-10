@@ -5,8 +5,10 @@ import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/game
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(() => ({
     board: createInitialBoard(),
-    playerPosition: { x: 1, y: 11 }, // Bottom center
-    goalPosition: { x: 2, y: 0 }, // Top center
+    // Energy source (start) and goal for a 3x4 grid
+    startPosition: { x: 1, y: 2 },
+    goalPosition: { x: 2, y: 0 },
+    playerPosition: { x: 1, y: 2 },
     heldTile: generateRandomTile(),
     moves: 0,
     timer: 0,
@@ -127,6 +129,8 @@ export const useGameLogic = () => {
       const snapshot = {
         board: base.board.map(r => r.map(t => ({ ...t }))),
         playerPosition: { ...base.playerPosition },
+        startPosition: { ...base.startPosition },
+        goalPosition: { ...base.goalPosition },
         heldTile: base.heldTile,
         moves: base.moves
       };
@@ -157,8 +161,8 @@ export const useGameLogic = () => {
         newHeldTile = pushedTile;
       }
 
-      // Prepare preview auto-walk from current player position
-      const sim = simulateAutoWalk(newBoard, base.playerPosition, base.goalPosition);
+      // Prepare preview auto-walk from current start position
+      const sim = simulateAutoWalk(newBoard, base.startPosition, base.goalPosition);
 
       return {
         ...base,
@@ -185,6 +189,8 @@ export const useGameLogic = () => {
         board: last.board,
         heldTile: last.heldTile,
         playerPosition: last.playerPosition,
+        startPosition: last.startPosition,
+        goalPosition: last.goalPosition,
         moves: last.moves,
         pushHistory: history,
         canUndo: history.length > 0,
@@ -215,7 +221,7 @@ export const useGameLogic = () => {
   const chooseDirection = useCallback((dir: Direction) => {
     setGameState(prev => {
       if (!prev.branchChoice) return prev;
-      const sim = simulateAutoWalk(prev.board, prev.playerPosition, prev.goalPosition, dir);
+      const sim = simulateAutoWalk(prev.board, prev.startPosition, prev.goalPosition, dir);
 
       const steps = sim.path && sim.path.length > 1 ? sim.path.slice(1) : [];
       let index = 0;
@@ -263,8 +269,8 @@ export const useGameLogic = () => {
       const tile = base.board[row][col];
       const isEmpty = tile.type === TileType.EMPTY;
 
-      // Disallow interacting with goal or empty tiles entirely
-      if (isGoal || isEmpty) {
+      // Disallow interacting with empty tiles entirely
+      if (isEmpty) {
         return base;
       }
 
@@ -277,7 +283,7 @@ export const useGameLogic = () => {
       }
 
       // Validate target again
-      if (isGoal || isEmpty) {
+      if (isEmpty) {
         return { ...base, selectedTile: null, pendingSwap: null, previewPath: [], branchChoice: null };
       }
 
@@ -285,6 +291,8 @@ export const useGameLogic = () => {
       const snapshot = {
         board: base.board.map(r => r.map(t => ({ ...t }))),
         playerPosition: { ...base.playerPosition },
+        startPosition: { ...base.startPosition },
+        goalPosition: { ...base.goalPosition },
         heldTile: base.heldTile,
         moves: base.moves
       };
@@ -296,8 +304,23 @@ export const useGameLogic = () => {
       newBoard[s.row][s.col] = newBoard[row][col];
       newBoard[row][col] = temp;
 
-      // Simulate walk
-      const sim = simulateAutoWalk(newBoard, base.playerPosition, base.goalPosition);
+      // Update start/goal positions if they were on swapped tiles
+      let newStart = { ...base.startPosition };
+      if (s.row === base.startPosition.y && s.col === base.startPosition.x) {
+        newStart = { x: col, y: row };
+      } else if (row === base.startPosition.y && col === base.startPosition.x) {
+        newStart = { x: s.col, y: s.row };
+      }
+
+      let newGoal = { ...base.goalPosition };
+      if (s.row === base.goalPosition.y && s.col === base.goalPosition.x) {
+        newGoal = { x: col, y: row };
+      } else if (row === base.goalPosition.y && col === base.goalPosition.x) {
+        newGoal = { x: s.col, y: s.row };
+      }
+
+      // Simulate walk from the start to the goal on the new board
+      const sim = simulateAutoWalk(newBoard, newStart, newGoal);
 
       // Animate along the preview path
       const steps = sim.path && sim.path.length > 1 ? sim.path.slice(1) : [];
@@ -338,7 +361,11 @@ export const useGameLogic = () => {
         selectedTile: null,
         pendingSwap: null,
         previewPath: sim.path,
-        branchChoice: sim.stopReason === 'branch' ? sim.branch! : null
+        branchChoice: sim.stopReason === 'branch' ? sim.branch! : null,
+        startPosition: newStart,
+        goalPosition: newGoal,
+        // Reset energy front to start of the path
+        playerPosition: newStart
       };
     });
   }, [simulateAutoWalk]);
@@ -350,6 +377,8 @@ export const useGameLogic = () => {
       const snapshot = {
         board: prev.board.map(r => r.map(t => ({ ...t }))),
         playerPosition: { ...prev.playerPosition },
+        startPosition: { ...prev.startPosition },
+        goalPosition: { ...prev.goalPosition },
         heldTile: prev.heldTile,
         moves: prev.moves
       };
@@ -360,6 +389,21 @@ export const useGameLogic = () => {
       const temp = newBoard[from.row][from.col];
       newBoard[from.row][from.col] = newBoard[to.row][to.col];
       newBoard[to.row][to.col] = temp;
+
+      // Update start/goal positions if relevant
+      let newStart = { ...prev.startPosition };
+      if (from.row === prev.startPosition.y && from.col === prev.startPosition.x) {
+        newStart = { x: to.col, y: to.row };
+      } else if (to.row === prev.startPosition.y && to.col === prev.startPosition.x) {
+        newStart = { x: from.col, y: from.row };
+      }
+
+      let newGoal = { ...prev.goalPosition };
+      if (from.row === prev.goalPosition.y && from.col === prev.goalPosition.x) {
+        newGoal = { x: to.col, y: to.row };
+      } else if (to.row === prev.goalPosition.y && to.col === prev.goalPosition.x) {
+        newGoal = { x: from.col, y: from.row };
+      }
 
       const steps = prev.previewPath && prev.previewPath.length > 1 ? prev.previewPath.slice(1) : [];
       let index = 0;
@@ -397,7 +441,10 @@ export const useGameLogic = () => {
         pushHistory: [...prev.pushHistory, snapshot],
         canUndo: true,
         selectedTile: null,
-        pendingSwap: null
+        pendingSwap: null,
+        startPosition: newStart,
+        goalPosition: newGoal,
+        playerPosition: newStart
       };
     });
   }, []);

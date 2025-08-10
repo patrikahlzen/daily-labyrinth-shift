@@ -6,6 +6,7 @@ interface GameBoardProps {
   board: GameTile[][];
   playerPosition: { x: number; y: number };
   goalPosition: { x: number; y: number };
+  startPosition: { x: number; y: number };
   onTilePush: (row: number, col: number, direction: Direction) => void;
   previewMove?: { row: number; col: number; direction: Direction } | null;
   previewPath?: { x: number; y: number }[];
@@ -20,6 +21,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   board,
   playerPosition,
   goalPosition,
+  startPosition,
   onTilePush,
   previewMove,
   previewPath,
@@ -45,13 +47,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             const isPlayer = playerPosition.x === colIndex && playerPosition.y === rowIndex;
             const isGoal = goalPosition.x === colIndex && goalPosition.y === rowIndex;
             const isPreview = previewMove?.row === rowIndex && previewMove?.col === colIndex;
+            const isStart = startPosition.x === colIndex && startPosition.y === rowIndex;
 
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isGoal) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }`}
+                className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }`}
                 onClick={() => {
-                  const isDisabled = tile.type === TileType.EMPTY || isGoal;
+                  const isDisabled = tile.type === TileType.EMPTY;
                   if (isDisabled) return;
                   handleTileClick(rowIndex, colIndex);
                 }}
@@ -59,9 +62,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 <div className="absolute inset-0">
                   <Tile
                     tile={tile}
-                    isPlayer={isPlayer}
                     isGoal={isGoal}
                     isPreview={isPreview}
+                    isStart={isStart}
                   />
                   {/* Preview path highlight */}
                   {previewPath?.some(p => p.x === colIndex && p.y === rowIndex) && (

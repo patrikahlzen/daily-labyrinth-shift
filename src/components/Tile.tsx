@@ -1,15 +1,16 @@
 import React from 'react';
 import { GameTile, TileType } from '../types/game';
-import { Key, Clock, Square, Gem } from 'lucide-react';
+import { Key, Clock, Square, Gem, Zap } from 'lucide-react';
 
 interface TileProps {
   tile: GameTile;
   isPlayer?: boolean;
   isGoal?: boolean;
   isPreview?: boolean;
+  isStart?: boolean;
 }
 
-export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview }) => {
+export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart }) => {
   const getPathElements = () => {
     const paths: React.ReactNode[] = [];
     
@@ -104,6 +105,15 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview })
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 bg-game-goal rounded-lg shadow-glow goal-pulse border-2 border-accent/40 flex items-center justify-center">
             <Gem className="w-4 h-4 text-accent-foreground" />
+          </div>
+        </div>
+      )}
+
+      {/* Energy Source (Start) */}
+      {isStart && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 shadow-glow flex items-center justify-center">
+            <Zap className="w-3 h-3 text-primary" />
           </div>
         </div>
       )}
