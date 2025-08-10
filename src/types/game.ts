@@ -36,6 +36,9 @@ export interface GameState {
   walkTimeline: { x: number; y: number }[];
   pushHistory: { board: GameTile[][]; playerPosition: { x: number; y: number }; heldTile: GameTile | null; moves: number }[];
   canRewind: boolean;
+  // Swap-only mode state
+  selectedTile?: { row: number; col: number } | null;
+  pendingSwap?: { from: { row: number; col: number }; to: { row: number; col: number } } | null;
 }
 
 export interface GameResult {

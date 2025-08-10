@@ -5,7 +5,7 @@ import { HeldTile } from '../components/HeldTile';
 import { useGameLogic } from '../hooks/useGameLogic';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection, onTileTap } = useGameLogic();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -18,7 +18,7 @@ const Index = () => {
         onUndo={undoMove}
         onRewind={rewindStep}
         onConfirmMove={confirmMove}
-        hasUnconfirmedMove={(gameState.previewPath?.length ?? 0) > 1}
+        hasUnconfirmedMove={Boolean(gameState.pendingSwap)}
       />
 
       {/* Main Game Area */}
@@ -32,6 +32,8 @@ const Index = () => {
           previewPath={gameState.previewPath}
           branchChoice={gameState.branchChoice}
           onChooseDirection={chooseDirection}
+          onTileTap={onTileTap}
+          selectedTile={gameState.selectedTile}
         />
       </div>
 
@@ -46,7 +48,7 @@ const Index = () => {
           <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
             <h1 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h1>
             <p className="text-muted-foreground mb-6">
-              Drag tiles to create a path from start to goal. Everyone gets the same puzzle today!
+              Tap two tiles to swap and create a path. Everyone gets the same puzzle today!
             </p>
             <button
               onClick={startGame}

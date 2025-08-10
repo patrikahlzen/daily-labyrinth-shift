@@ -18,7 +18,9 @@ export const useGameLogic = () => {
     previewPath: [],
     branchChoice: null,
     walkTimeline: [],
-    pushHistory: []
+    pushHistory: [],
+    selectedTile: null,
+    pendingSwap: null
   }));
 
   // Timer effect
@@ -188,7 +190,9 @@ export const useGameLogic = () => {
         canUndo: history.length > 0,
         previewPath: [],
         branchChoice: null,
-        previewMove: null
+        previewMove: null,
+        selectedTile: null,
+        pendingSwap: null
       };
     });
   }, []);
@@ -220,17 +224,62 @@ export const useGameLogic = () => {
     });
   }, [simulateAutoWalk]);
 
+  // Tap two tiles to preview a swap
+  const tapTile = useCallback((row: number, col: number) => {
+    setGameState(prev => {
+      const base = { ...prev };
+      if (!base.gameStarted) base.gameStarted = true;
+
+      if (!base.selectedTile) {
+        return { ...base, selectedTile: { row, col }, pendingSwap: null, previewPath: [], branchChoice: null };
+      }
+
+      if (base.selectedTile.row === row && base.selectedTile.col === col) {
+        return { ...base, selectedTile: null, pendingSwap: null, previewPath: [], branchChoice: null };
+      }
+
+      // Build preview board with swap
+      const newBoard = base.board.map(r => r.slice());
+      const s = base.selectedTile;
+      const temp = newBoard[s.row][s.col];
+      newBoard[s.row][s.col] = newBoard[row][col];
+      newBoard[row][col] = temp;
+
+      const sim = simulateAutoWalk(newBoard, base.playerPosition, base.goalPosition);
+
+      return {
+        ...base,
+        pendingSwap: { from: s, to: { row, col } },
+        previewPath: sim.path,
+        branchChoice: sim.stopReason === 'branch' ? sim.branch! : null
+      };
+    });
+  }, [simulateAutoWalk]);
+
   const confirmMove = useCallback(() => {
     setGameState(prev => {
-      if (!prev.previewPath || prev.previewPath.length <= 1) return { ...prev, previewPath: [] };
-      // Animate by stepping via interval
-      const steps = prev.previewPath.slice(1); // exclude current
+      if (!prev.pendingSwap) return prev;
+
+      const snapshot = {
+        board: prev.board.map(r => r.map(t => ({ ...t }))),
+        playerPosition: { ...prev.playerPosition },
+        heldTile: prev.heldTile,
+        moves: prev.moves
+      };
+
+      // Commit the swap
+      const newBoard = prev.board.map(r => r.slice());
+      const { from, to } = prev.pendingSwap;
+      const temp = newBoard[from.row][from.col];
+      newBoard[from.row][from.col] = newBoard[to.row][to.col];
+      newBoard[to.row][to.col] = temp;
+
+      const steps = prev.previewPath && prev.previewPath.length > 1 ? prev.previewPath.slice(1) : [];
       let index = 0;
 
       const runStep = () => {
         setGameState(curr => {
           if (index >= steps.length) {
-            // Finished
             return {
               ...curr,
               previewPath: [],
@@ -253,7 +302,16 @@ export const useGameLogic = () => {
       };
 
       setTimeout(runStep, 0);
-      return prev; // actual updates happen in nested setState
+
+      return {
+        ...prev,
+        board: newBoard,
+        moves: prev.moves + 1,
+        pushHistory: [...prev.pushHistory, snapshot],
+        canUndo: true,
+        selectedTile: null,
+        pendingSwap: null
+      };
     });
   }, []);
 
@@ -264,6 +322,7 @@ export const useGameLogic = () => {
     undoMove,
     confirmMove,
     rewindStep,
-    chooseDirection
+    chooseDirection,
+    onTileTap: tapTile
   };
 };
