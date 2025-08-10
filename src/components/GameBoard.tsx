@@ -60,11 +60,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative px-[50px]">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-1 p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-[420px] mx-auto aspect-[4/12]"
-        style={{ gridTemplateRows: 'repeat(12, minmax(0, 1fr))' }}
+        className="grid grid-cols-4 gap-2 p-4 bg-gradient-board rounded-2xl shadow-game w-full mx-auto max-h-[80vh] overflow-y-auto"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
