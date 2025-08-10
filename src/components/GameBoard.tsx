@@ -63,7 +63,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-1 p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-[420px] mx-auto max-h-[70vh] overflow-y-auto"
+        className="grid grid-cols-4 gap-1 p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-[420px] mx-auto aspect-[4/12]"
+        style={{ gridTemplateRows: 'repeat(12, minmax(0, 1fr))' }}
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
@@ -79,12 +80,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 onTouchMove={handleTouchMove}
                 onTouchEnd={(e) => handleTouchEnd(e, rowIndex, colIndex)}
               >
-                <Tile
-                  tile={tile}
-                  isPlayer={isPlayer}
-                  isGoal={isGoal}
-                  isPreview={isPreview}
-                />
+                <div className="absolute inset-0">
+                  <Tile
+                    tile={tile}
+                    isPlayer={isPlayer}
+                    isGoal={isGoal}
+                    isPreview={isPreview}
+                  />
+                </div>
                 
                 {/* Row/Column indicators for pushing */}
                 {(rowIndex === 0 || rowIndex === 11) && (
