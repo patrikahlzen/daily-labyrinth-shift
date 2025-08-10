@@ -58,7 +58,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         direction = deltaY > 0 ? 'down' : 'up';
       }
 
-      onTilePush(row, col, direction);
+      // Allow swiping from any tile: map to nearest valid push edge
+      let pushRow = row;
+      let pushCol = col;
+      if (direction === 'right') {
+        pushCol = 0;
+      } else if (direction === 'left') {
+        pushCol = 3;
+      } else if (direction === 'down') {
+        pushRow = 0;
+      } else if (direction === 'up') {
+        pushRow = 11;
+      }
+
+      onTilePush(pushRow, pushCol, direction);
     }
 
     setDragStart(null);
@@ -69,7 +82,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="relative px-[50px]">
       {/* Game Board */}
       <div 
-        className="grid grid-cols-4 gap-1 p-0 bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain"
+        className="grid grid-cols-4 gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {board.map((row, rowIndex) =>
