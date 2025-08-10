@@ -5,7 +5,7 @@ import { HeldTile } from '../components/HeldTile';
 import { useGameLogic } from '../hooks/useGameLogic';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, confirmMove } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection } = useGameLogic();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -14,9 +14,11 @@ const Index = () => {
         timer={gameState.timer}
         moves={gameState.moves}
         canUndo={gameState.canUndo}
+        canRewind={gameState.canRewind}
         onUndo={undoMove}
+        onRewind={rewindStep}
         onConfirmMove={confirmMove}
-        hasUnconfirmedMove={gameState.previewMove !== null}
+        hasUnconfirmedMove={(gameState.previewPath?.length ?? 0) > 1}
       />
 
       {/* Main Game Area */}
@@ -27,6 +29,9 @@ const Index = () => {
           goalPosition={gameState.goalPosition}
           onTilePush={pushTile}
           previewMove={gameState.previewMove}
+          previewPath={gameState.previewPath}
+          branchChoice={gameState.branchChoice}
+          onChooseDirection={chooseDirection}
         />
       </div>
 

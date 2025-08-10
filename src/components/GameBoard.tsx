@@ -8,6 +8,9 @@ interface GameBoardProps {
   goalPosition: { x: number; y: number };
   onTilePush: (row: number, col: number, direction: Direction) => void;
   previewMove?: { row: number; col: number; direction: Direction } | null;
+  previewPath?: { x: number; y: number }[];
+  branchChoice?: { x: number; y: number; options: Direction[] } | null;
+  onChooseDirection?: (dir: Direction) => void;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -15,7 +18,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   playerPosition,
   goalPosition,
   onTilePush,
-  previewMove
+  previewMove,
+  previewPath,
+  branchChoice,
+  onChooseDirection
 }) => {
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -87,6 +93,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     isGoal={isGoal}
                     isPreview={isPreview}
                   />
+                  {/* Preview path highlight */}
+                  {previewPath?.some(p => p.x === colIndex && p.y === rowIndex) && (
+                    <div className="absolute inset-0 ring-2 ring-primary/50 rounded-lg pointer-events-none" />
+                  )}
                 </div>
                 
                 {/* Row/Column indicators for pushing */}
@@ -110,7 +120,54 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     <div className="w-2 h-2 bg-primary rounded-full" />
                   </div>
                 )}
-              </div>
+
+                {/* Direction picker at branch */}
+                {branchChoice && branchChoice.x === colIndex && branchChoice.y === rowIndex && onChooseDirection && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative w-full h-full">
+                      {/* Up */}
+                      {branchChoice.options.includes('up') && (
+                        <button
+                          aria-label="Choose up"
+                          onClick={() => onChooseDirection('up')}
+                          className="absolute top-1.5 left-1/2 -translate-x-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
+                        >
+                          ↑
+                        </button>
+                      )}
+                      {/* Down */}
+                      {branchChoice.options.includes('down') && (
+                        <button
+                          aria-label="Choose down"
+                          onClick={() => onChooseDirection('down')}
+                          className="absolute bottom-1.5 left-1/2 -translate-x-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
+                        >
+                          ↓
+                        </button>
+                      )}
+                      {/* Left */}
+                      {branchChoice.options.includes('left') && (
+                        <button
+                          aria-label="Choose left"
+                          onClick={() => onChooseDirection('left')}
+                          className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
+                        >
+                          ←
+                        </button>
+                      )}
+                      {/* Right */}
+                      {branchChoice.options.includes('right') && (
+                        <button
+                          aria-label="Choose right"
+                          onClick={() => onChooseDirection('right')}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
+                        >
+                          →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
             );
           })
         )}

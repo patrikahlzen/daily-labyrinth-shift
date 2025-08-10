@@ -1,12 +1,14 @@
 import React from 'react';
-import { Timer, Move, Target, Undo, Check } from 'lucide-react';
+import { Timer, Move, Target, Undo, Check, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface GameHUDProps {
   timer: number;
   moves: number;
   canUndo: boolean;
+  canRewind: boolean;
   onUndo: () => void;
+  onRewind: () => void;
   onConfirmMove: () => void;
   hasUnconfirmedMove: boolean;
 }
@@ -15,7 +17,9 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   timer,
   moves,
   canUndo,
+  canRewind,
   onUndo,
+  onRewind,
   onConfirmMove,
   hasUnconfirmedMove
 }) => {
@@ -49,16 +53,29 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
       {/* Bottom HUD */}
       <div className="flex justify-between items-center p-4 mx-4 mb-4">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onUndo}
-          disabled={!canUndo}
-          className="flex items-center gap-2"
-        >
-          <Undo className="w-4 h-4" />
-          Undo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onRewind}
+            disabled={!canRewind}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Rewind
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onUndo}
+            disabled={!canUndo}
+            className="flex items-center gap-2"
+          >
+            <Undo className="w-4 h-4" />
+            Undo
+          </Button>
+        </div>
 
         <Button
           variant="default"

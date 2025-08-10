@@ -30,6 +30,12 @@ export interface GameState {
   gameCompleted: boolean;
   canUndo: boolean;
   previewMove: { row: number; col: number; direction: Direction } | null;
+  // New fields for auto-walk, rewind, and branch selection
+  previewPath: { x: number; y: number }[];
+  branchChoice: { x: number; y: number; options: Direction[] } | null;
+  walkTimeline: { x: number; y: number }[];
+  pushHistory: { board: GameTile[][]; playerPosition: { x: number; y: number }; heldTile: GameTile | null; moves: number }[];
+  canRewind: boolean;
 }
 
 export interface GameResult {
