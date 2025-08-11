@@ -43,6 +43,7 @@ const [dragFrom, setDragFrom] = useState<{ row: number; col: number } | null>(nu
 const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(null);
 const [isDragging, setIsDragging] = useState(false);
 const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+const [dragTileSize, setDragTileSize] = useState<{ w: number; h: number } | null>(null);
 const [shakeCell, setShakeCell] = useState<{ row: number; col: number } | null>(null);
 const boardRef = useRef<HTMLDivElement>(null);
 const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
@@ -54,15 +55,48 @@ const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile
   setDragFrom({ row, col });
   setDragOver(null);
   setIsDragging(true);
-  setPointer({ x: e.clientX, y: e.clientY });
+  const x = e.clientX; const y = e.clientY;
+  setPointer({ x, y });
   setContainerRect(boardRef.current?.getBoundingClientRect() || null);
-  try { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); } catch {}
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  setDragTileSize({ w: rect.width, h: rect.height });
+  // Disable scrolling during drag on iOS Safari
+  try { boardRef.current?.style.setProperty('touch-action', 'none'); } catch {}
+  // Pointer capture only for mouse to allow pointerenter on other tiles for touch
+  if ((e as React.PointerEvent).pointerType === 'mouse') {
+    try { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); } catch {}
+  }
 };
 
 const handlePointerMove = (e: React.PointerEvent) => {
   if (!isDragging) return;
   e.preventDefault();
-  setPointer({ x: e.clientX, y: e.clientY });
+  const x = e.clientX; const y = e.clientY;
+  setPointer({ x, y });
+  // Update hover target using hit-testing to support touch where pointerenter is unreliable
+  const el = document.elementFromPoint(x, y) as HTMLElement | null;
+  if (el) {
+    let node: HTMLElement | null = el;
+    let r: number | null = null;
+    let c: number | null = null;
+    while (node) {
+      const ds = (node as HTMLElement).dataset as { row?: string; col?: string };
+      if (ds && ds.row !== undefined && ds.col !== undefined) {
+        r = parseInt(ds.row, 10);
+        c = parseInt(ds.col, 10);
+        break;
+      }
+      node = node.parentElement;
+    }
+    if (r !== null && c !== null) {
+      const t = board[r]?.[c];
+      if (t && t.type !== TileType.EMPTY) {
+        if (!dragOver || dragOver.row !== r || dragOver.col !== c) {
+          setDragOver({ row: r, col: c });
+        }
+      }
+    }
+  }
 };
 
 const handlePointerEnter = (row: number, col: number, tile: GameTile) => {
@@ -76,6 +110,8 @@ const cancelDrag = () => {
   setDragOver(null);
   setDragFrom(null);
   setPointer(null);
+  setDragTileSize(null);
+  try { boardRef.current?.style.removeProperty('touch-action'); } catch {}
 };
 
 const handlePointerUp = (e: React.PointerEvent) => {
@@ -109,6 +145,8 @@ const handlePointerUp = (e: React.PointerEvent) => {
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
+                data-row={rowIndex}
+                data-col={colIndex}
                 className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
                 draggable={false}
                 onPointerDown={(e) => handlePointerDown(e, rowIndex, colIndex, tile)}
@@ -207,7 +245,7 @@ const handlePointerUp = (e: React.PointerEvent) => {
             top: containerRect ? pointer.y - containerRect.top : pointer.y,
           }}
         >
-          <div className="w-16 h-16 opacity-80 scale-95">
+          <div className="opacity-80 scale-95" style={{ width: dragTileSize?.w ?? 48, height: dragTileSize?.h ?? 48 }}>
             <Tile tile={board[dragFrom.row][dragFrom.col]} />
           </div>
         </div>
