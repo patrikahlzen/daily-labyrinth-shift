@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameTile, Direction, TileType } from '../types/game';
 import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/gameUtils';
+import { getDailyKeySE } from './useDaily';
 
 export const useGameLogic = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
-    const board = createInitialBoard();
+    const dailySeed = `SEED_${getDailyKeySE()}`;
+    const board = createInitialBoard(dailySeed);
 
     const findPos = (id: string): { x: number; y: number } => {
       for (let y = 0; y < board.length; y++) {

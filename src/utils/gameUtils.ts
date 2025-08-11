@@ -1,5 +1,34 @@
 import { GameTile, TileType, TileConnections } from '../types/game';
 
+// Simple seeded PRNG (xmur3 + mulberry32)
+const xmur3 = (str: string) => {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return h >>> 0;
+  };
+};
+const mulberry32 = (a: number) => {
+  return () => {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const createRng = (seed?: string) => {
+  if (!seed) return Math.random;
+  const seedFn = xmur3(seed);
+  return mulberry32(seedFn());
+};
+
 // Predefined tile patterns for the labyrinth
 const TILE_PATTERNS: TileConnections[] = [
   // Straight lines
@@ -38,7 +67,11 @@ export const generateEmptyTile = (): GameTile => ({
   id: Math.random().toString(36).substr(2, 9)
 });
 
-export const createInitialBoard = (): GameTile[][] => {
+export const createInitialBoard = (seed?: string): GameTile[][] => {
+  const rng = createRng(seed);
+  let idCounter = 0;
+  const newId = () => `t-${(++idCounter).toString(36)}`;
+
   const rows = 4;
   const cols = 5;
   const start = { x: 1, y: 3 };
@@ -49,7 +82,7 @@ export const createInitialBoard = (): GameTile[][] => {
     type: TileType.EMPTY,
     connections: { north: false, south: false, east: false, west: false },
     special: null,
-    id: Math.random().toString(36).substr(2, 9)
+    id: newId()
   });
   const board: GameTile[][] = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => emptyTile())
@@ -75,7 +108,12 @@ export const createInitialBoard = (): GameTile[][] => {
     if (x === goal.x && y === goal.y) return true;
     visited[y][x] = true;
 
-    const order = [...dirs].sort(() => Math.random() - 0.5);
+    // Shuffle order deterministically
+    const order = [...dirs];
+    for (let i = order.length - 1; i > 0; i--) {
+      const r = Math.floor(rng() * (i + 1));
+      [order[i], order[r]] = [order[r], order[i]];
+    }
     for (const { dx, dy } of order) {
       const nx = x + dx;
       const ny = y + dy;
@@ -122,18 +160,18 @@ export const createInitialBoard = (): GameTile[][] => {
       type: TileType.PATH,
       connections,
       special: null,
-      id: Math.random().toString(36).substr(2, 9)
+      id: newId()
     };
   }
 
   // Optionally add specials along the path (not on start/goal)
   for (let i = 1; i < path.length - 1; i++) {
-    if (Math.random() < 0.15) {
+    if (rng() < 0.15) {
       const { x, y } = path[i];
       const specials = ['key', 'time', 'gem'] as const;
       board[y][x] = {
         ...board[y][x],
-        special: specials[Math.floor(Math.random() * specials.length)]
+        special: specials[Math.floor(rng() * specials.length)]
       };
     }
   }
@@ -147,8 +185,8 @@ export const createInitialBoard = (): GameTile[][] => {
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       if (isOnPath(x, y)) continue;
-      if (Math.random() < 0.45) {
-        const pattern = { ...TILE_PATTERNS[Math.floor(Math.random() * TILE_PATTERNS.length)] };
+      if (rng() < 0.45) {
+        const pattern = { ...TILE_PATTERNS[Math.floor(rng() * TILE_PATTERNS.length)] };
         // Block any connection that faces a path cell
         const nIsPath = y - 1 >= 0 && isOnPath(x, y - 1);
         const sIsPath = y + 1 < rows && isOnPath(x, y + 1);
@@ -162,7 +200,7 @@ export const createInitialBoard = (): GameTile[][] => {
           type: TileType.PATH,
           connections: pattern,
           special: null,
-          id: Math.random().toString(36).substr(2, 9)
+          id: newId()
         };
       }
     }
@@ -212,9 +250,9 @@ export const createInitialBoard = (): GameTile[][] => {
     // Build a random long cycle covering k elements
     const k = Math.min(movable.length, MIN_SWAP_DISTANCE + 1);
     const idxs = Array.from({ length: movable.length }, (_, i) => i);
-    // pick k distinct indices
+    // pick k distinct indices (Fisher–Yates)
     for (let i = idxs.length - 1; i > 0; i--) {
-      const r = Math.floor(Math.random() * (i + 1));
+      const r = Math.floor(rng() * (i + 1));
       [idxs[i], idxs[r]] = [idxs[r], idxs[i]];
     }
     const cycle = idxs.slice(0, k);
