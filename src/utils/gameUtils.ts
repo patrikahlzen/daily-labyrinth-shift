@@ -39,10 +39,10 @@ export const generateEmptyTile = (): GameTile => ({
 });
 
 export const createInitialBoard = (): GameTile[][] => {
-  const rows = 3;
-  const cols = 4;
-  const start = { x: 1, y: 2 };
-  const goal = { x: 2, y: 0 };
+  const rows = 4;
+  const cols = 5;
+  const start = { x: 1, y: 3 };
+  const goal = { x: 3, y: 0 };
 
   // Initialize empty board
   const emptyTile = (): GameTile => ({
@@ -142,55 +142,127 @@ export const createInitialBoard = (): GameTile[][] => {
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
 
-  // Ensure the initial board is NOT already solved: try to break the path with one safe swap
-  const isLocked = (x: number, y: number) => (x === start.x && y === start.y) || (x === goal.x && y === goal.y);
-  const pathCells = path.filter(({ x, y }) => !isLocked(x, y));
-
-  const tryBreak = () => {
-    // Shuffle candidates
-    const shuffled = [...pathCells].sort(() => Math.random() - 0.5);
-    for (const { x, y } of shuffled) {
-      const neighbors = [
-        { nx: x, ny: y - 1 },
-        { nx: x, ny: y + 1 },
-        { nx: x + 1, ny: y },
-        { nx: x - 1, ny: y },
-      ].filter(({ nx, ny }) => inBounds(nx, ny) && !isLocked(nx, ny) && board[ny][nx].type === TileType.PATH);
-
-      // Prefer swapping different-shaped tiles to increase chance of breaking
-      neighbors.sort((a, b) => {
-        const deg = (t: GameTile) => Number(t.connections.north) + Number(t.connections.south) + Number(t.connections.east) + Number(t.connections.west);
-        const dA = Math.abs(
-          (deg(board[y][x]) - deg(board[a.ny][a.nx]))
-        );
-        const dB = Math.abs(
-          (deg(board[y][x]) - deg(board[b.ny][b.nx]))
-        );
-        return dB - dA;
-      });
-
-      for (const { nx, ny } of neighbors) {
-        const a = { x, y };
-        const b = { x: nx, y: ny };
-        const tmp = board[y][x];
-        board[y][x] = board[ny][nx];
-        board[ny][nx] = tmp;
-
-        const stillSolved = !!findPath(board, start.x, start.y, goal.x, goal.y);
-        if (!stillSolved) return true; // successfully broke the path
-
-        // revert and try another pair
-        board[ny][nx] = board[y][x];
-        board[y][x] = tmp;
+  // Add decoy tiles (straights/bends only) that never connect into the main path
+  const isOnPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (isOnPath(x, y)) continue;
+      if (Math.random() < 0.45) {
+        const pattern = { ...TILE_PATTERNS[Math.floor(Math.random() * TILE_PATTERNS.length)] };
+        // Block any connection that faces a path cell
+        const nIsPath = y - 1 >= 0 && isOnPath(x, y - 1);
+        const sIsPath = y + 1 < rows && isOnPath(x, y + 1);
+        const eIsPath = x + 1 < cols && isOnPath(x + 1, y);
+        const wIsPath = x - 1 >= 0 && isOnPath(x - 1, y);
+        if (nIsPath) pattern.north = false;
+        if (sIsPath) pattern.south = false;
+        if (eIsPath) pattern.east = false;
+        if (wIsPath) pattern.west = false;
+        board[y][x] = {
+          type: TileType.PATH,
+          connections: pattern,
+          special: null,
+          id: Math.random().toString(36).substr(2, 9)
+        };
       }
     }
-    return false;
+  }
+
+  // Scramble the path tiles to ensure the puzzle starts unsolved with a minimum swap distance
+  const MIN_SWAP_DISTANCE = 7; // target difficulty
+  const movable = path.slice(1, -1); // exclude start and goal positions
+
+  // Snapshot solved state for movable positions
+  const solvedTiles = movable.map(({ x, y }) => board[y][x]);
+  const solvedIds = solvedTiles.map(t => t.id);
+
+  const applyPermutation = (order: number[]) => {
+    // order is a permutation of indices [0..movable.length-1]
+    const tiles = order.map(i => solvedTiles[i]);
+    for (let i = 0; i < movable.length; i++) {
+      const { x, y } = movable[i];
+      board[y][x] = { ...tiles[i] };
+    }
   };
 
-  // Only attempt to break if currently solved
-  if (findPath(board, start.x, start.y, goal.x, goal.y)) {
-    let attempts = 0;
-    while (attempts < 20 && !tryBreak()) attempts++;
+  const minimalSwaps = (currentIds: string[]) => {
+    const indexOfId: Record<string, number> = {};
+    solvedIds.forEach((id, idx) => (indexOfId[id] = idx));
+    const n = currentIds.length;
+    const visited = new Array(n).fill(false);
+    let swaps = 0;
+    for (let i = 0; i < n; i++) {
+      if (visited[i]) continue;
+      let cycleLen = 0;
+      let j = i;
+      while (!visited[j]) {
+        visited[j] = true;
+        const id = currentIds[j];
+        j = indexOfId[id];
+        cycleLen++;
+      }
+      if (cycleLen > 1) swaps += cycleLen - 1;
+    }
+    return swaps;
+  };
+
+  // Try multiple shuffles until criteria met
+  let best: { ids: string[]; swaps: number } | null = null;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    // Build a random long cycle covering k elements
+    const k = Math.min(movable.length, MIN_SWAP_DISTANCE + 1);
+    const idxs = Array.from({ length: movable.length }, (_, i) => i);
+    // pick k distinct indices
+    for (let i = idxs.length - 1; i > 0; i--) {
+      const r = Math.floor(Math.random() * (i + 1));
+      [idxs[i], idxs[r]] = [idxs[r], idxs[i]];
+    }
+    const cycle = idxs.slice(0, k);
+    // create permutation from a rotation of the cycle
+    const order = Array.from({ length: movable.length }, (_, i) => i);
+    for (let i = 0; i < cycle.length; i++) {
+      const from = cycle[i];
+      const to = cycle[(i + 1) % cycle.length];
+      order[to] = from;
+    }
+
+    applyPermutation(order);
+
+    // Verify not solved and measure distance
+    const hasPath = !!findPath(board, start.x, start.y, goal.x, goal.y);
+    const curIds = movable.map(({ x, y }) => board[y][x].id);
+    const dist = minimalSwaps(curIds);
+    if (best === null || dist > best.swaps) best = { ids: curIds.slice(), swaps: dist };
+    if (!hasPath && dist >= MIN_SWAP_DISTANCE) break;
+
+    // Revert to solved and try again
+    for (let i = 0; i < movable.length; i++) {
+      const { x, y } = movable[i];
+      board[y][x] = { ...solvedTiles[i] };
+    }
+  }
+
+  // If still not meeting criteria, apply the best found unsolved shuffle or force-break
+  if (!!findPath(board, start.x, start.y, goal.x, goal.y)) {
+    if (best) {
+      // Map best ids back to tiles in that order and apply
+      const idToTile: Record<string, GameTile> = Object.fromEntries(solvedTiles.map(t => [t.id, t]));
+      for (let i = 0; i < movable.length; i++) {
+        const { x, y } = movable[i];
+        board[y][x] = { ...idToTile[best.ids[i]] };
+      }
+    } else {
+      // Fallback: swap two middle tiles
+      if (movable.length >= 2) {
+        const a = Math.floor(movable.length / 2) - 1;
+        const b = a + 1;
+        const A = movable[a];
+        const B = movable[b];
+        const tmp = board[A.y][A.x];
+        board[A.y][A.x] = board[B.y][B.x];
+        board[B.y][B.x] = tmp;
+      }
+    }
   }
 
   return board;
