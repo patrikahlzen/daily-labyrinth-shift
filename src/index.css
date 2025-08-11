@@ -146,8 +146,18 @@ All colors MUST be HSL.
   .tile-glow { animation: tile-glow 2s infinite; }
   .player-bounce { animation: player-bounce 1.5s infinite; }
   .goal-pulse { animation: goal-pulse 2s infinite; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+  }
 }
+
 
 @layer utilities {
   .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
+  .animate-shake { animation: shake 0.35s ease-in-out; }
 }

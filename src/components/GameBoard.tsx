@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Tile } from './Tile';
 import { GameTile, TileType, Direction } from '../types/game';
 
@@ -38,11 +38,58 @@ const handleTileClick = (row: number, col: number) => {
   onTileTap?.(row, col);
 };
 
-// Drag & Drop state
+// Drag & Drop state (pointer-based)
 const [dragFrom, setDragFrom] = useState<{ row: number; col: number } | null>(null);
 const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(null);
+const [isDragging, setIsDragging] = useState(false);
+const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+const [shakeCell, setShakeCell] = useState<{ row: number; col: number } | null>(null);
+const boardRef = useRef<HTMLDivElement>(null);
+const dragThreshold = 6;
+
+const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile: GameTile) => {
+  if (tile.type === TileType.EMPTY) return;
+  setDragFrom({ row, col });
+  setDragOver(null);
+  setIsDragging(true);
+  setPointer({ x: e.clientX, y: e.clientY });
+  try { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); } catch {}
+};
+
+const handlePointerMove = (e: React.PointerEvent) => {
+  if (!isDragging) return;
+  setPointer({ x: e.clientX, y: e.clientY });
+};
+
+const handlePointerEnter = (row: number, col: number, tile: GameTile) => {
+  if (!isDragging) return;
+  if (tile.type === TileType.EMPTY) return;
+  setDragOver({ row, col });
+};
+
+const cancelDrag = () => {
+  setIsDragging(false);
+  setDragOver(null);
+  setDragFrom(null);
+  setPointer(null);
+};
+
+const handlePointerUp = (e: React.PointerEvent) => {
+  if (!isDragging) return;
+  const src = dragFrom;
+  const dst = dragOver;
+  if (src && dst && (src.row !== dst.row || src.col !== dst.col)) {
+    onSwapTiles?.(src.row, src.col, dst.row, dst.col);
+  } else if (src && (!dst || (src.row === dst.row && src.col === dst.col))) {
+    // invalid drop -> shake
+    setShakeCell(src);
+    setTimeout(() => setShakeCell(null), 400);
+  }
+  cancelDrag();
+};
+
   return (
-    <div className="relative px-[50px]">
+    <div ref={boardRef} className="relative px-[50px]" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
       {/* Game Board */}
       <div 
         className="grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
@@ -58,33 +105,12 @@ const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(nu
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }`}
-                draggable={tile.type !== TileType.EMPTY}
-                onDragStart={(e) => {
-                  if (tile.type === TileType.EMPTY) return;
-                  setDragFrom({ row: rowIndex, col: colIndex });
-                  try { e.dataTransfer.setData('text/plain', JSON.stringify({ row: rowIndex, col: colIndex })); } catch {}
-                }}
-                onDragOver={(e) => {
-                  if (!dragFrom) return;
-                  if (tile.type === TileType.EMPTY) return;
-                  e.preventDefault();
-                  setDragOver({ row: rowIndex, col: colIndex });
-                }}
-                onDragLeave={() => {
-                  setDragOver(prev => (prev && prev.row === rowIndex && prev.col === colIndex) ? null : prev);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const src = dragFrom;
-                  setDragOver(null);
-                  setDragFrom(null);
-                  if (!src) return;
-                  if (src.row === rowIndex && src.col === colIndex) return;
-                  if (tile.type === TileType.EMPTY) return;
-                  onSwapTiles?.(src.row, src.col, rowIndex, colIndex);
-                }}
+                className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
+                draggable={false}
+                onPointerDown={(e) => handlePointerDown(e, rowIndex, colIndex, tile)}
+                onPointerEnter={() => handlePointerEnter(rowIndex, colIndex, tile)}
                 onClick={() => {
+                  if (isDragging) return;
                   const isDisabled = tile.type === TileType.EMPTY;
                   if (isDisabled) return;
                   handleTileClick(rowIndex, colIndex);
@@ -93,13 +119,14 @@ const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(nu
                 <div className="absolute inset-0">
                   <Tile
                     tile={tile}
+                    isPlayer={isPlayer}
                     isGoal={isGoal}
                     isPreview={isPreview}
                     isStart={isStart}
                   />
                   {/* Preview path highlight */}
                   {previewPath?.some(p => p.x === colIndex && p.y === rowIndex) && (
-                    <div className="absolute inset-0 ring-2 ring-primary/50 rounded-lg pointer-events-none" />
+                    <div className="absolute inset-0 ring-2 ring-primary/60 rounded-lg pointer-events-none tile-glow" />
                   )}
                   {/* Selected tile highlight */}
                   {selectedTile && selectedTile.row === rowIndex && selectedTile.col === colIndex && (
@@ -166,6 +193,15 @@ const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(nu
           })
         )}
       </div>
+
+      {/* Drag ghost */}
+      {isDragging && dragFrom && pointer && (
+        <div className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2" style={{ left: pointer.x, top: pointer.y }}>
+          <div className="w-16 h-16 opacity-80 scale-95">
+            <Tile tile={board[dragFrom.row][dragFrom.col]} />
+          </div>
+        </div>
+      )}
 
     </div>
   );
