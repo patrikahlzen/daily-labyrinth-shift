@@ -35,6 +35,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 }) => {
 // Swap/tap interaction
 const handleTileClick = (row: number, col: number) => {
+  const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
+  if (isLockedCell) { setShakeCell({ row, col }); setTimeout(() => setShakeCell(null), 400); return; }
   onTileTap?.(row, col);
 };
 
@@ -50,7 +52,10 @@ const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
 const dragThreshold = 6;
 
 const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile: GameTile) => {
+  // Disallow dragging empty or locked (start/goal) tiles
   if (tile.type === TileType.EMPTY) return;
+  const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
+  if (isLockedCell) { setShakeCell({ row, col }); setTimeout(() => setShakeCell(null), 400); return; }
   e.preventDefault();
   setDragFrom({ row, col });
   setDragOver(null);
@@ -90,7 +95,8 @@ const handlePointerMove = (e: React.PointerEvent) => {
     }
     if (r !== null && c !== null) {
       const t = board[r]?.[c];
-      if (t && t.type !== TileType.EMPTY) {
+      const isLockedCell = (startPosition.x === c && startPosition.y === r) || (goalPosition.x === c && goalPosition.y === r);
+      if (t && t.type !== TileType.EMPTY && !isLockedCell) {
         if (!dragOver || dragOver.row !== r || dragOver.col !== c) {
           setDragOver({ row: r, col: c });
         }
@@ -102,6 +108,8 @@ const handlePointerMove = (e: React.PointerEvent) => {
 const handlePointerEnter = (row: number, col: number, tile: GameTile) => {
   if (!isDragging) return;
   if (tile.type === TileType.EMPTY) return;
+  const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
+  if (isLockedCell) return;
   setDragOver({ row, col });
 };
 
@@ -119,7 +127,14 @@ const handlePointerUp = (e: React.PointerEvent) => {
   const src = dragFrom;
   const dst = dragOver;
   if (src && dst && (src.row !== dst.row || src.col !== dst.col)) {
-    onSwapTiles?.(src.row, src.col, dst.row, dst.col);
+    const lockedSrc = (startPosition.x === src.col && startPosition.y === src.row) || (goalPosition.x === src.col && goalPosition.y === src.row);
+    const lockedDst = (startPosition.x === dst.col && startPosition.y === dst.row) || (goalPosition.x === dst.col && goalPosition.y === dst.row);
+    if (lockedSrc || lockedDst) {
+      setShakeCell(lockedDst ? dst : src);
+      setTimeout(() => setShakeCell(null), 400);
+    } else {
+      onSwapTiles?.(src.row, src.col, dst.row, dst.col);
+    }
   } else if (src && (!dst || (src.row === dst.row && src.col === dst.col))) {
     // invalid drop -> shake
     setShakeCell(src);
@@ -141,19 +156,20 @@ const handlePointerUp = (e: React.PointerEvent) => {
             const isGoal = goalPosition.x === colIndex && goalPosition.y === rowIndex;
             const isPreview = previewMove?.row === rowIndex && previewMove?.col === colIndex;
             const isStart = startPosition.x === colIndex && startPosition.y === rowIndex;
+            const isLockedCell = isStart || isGoal;
 
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
                 data-row={rowIndex}
                 data-col={colIndex}
-                className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
+                className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isLockedCell) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
                 draggable={false}
                 onPointerDown={(e) => handlePointerDown(e, rowIndex, colIndex, tile)}
                 onPointerEnter={() => handlePointerEnter(rowIndex, colIndex, tile)}
                 onClick={() => {
                   if (isDragging) return;
-                  const isDisabled = tile.type === TileType.EMPTY;
+                  const isDisabled = tile.type === TileType.EMPTY || isLockedCell;
                   if (isDisabled) return;
                   handleTileClick(rowIndex, colIndex);
                 }}
