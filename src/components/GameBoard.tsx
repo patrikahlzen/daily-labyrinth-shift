@@ -45,19 +45,23 @@ const [isDragging, setIsDragging] = useState(false);
 const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
 const [shakeCell, setShakeCell] = useState<{ row: number; col: number } | null>(null);
 const boardRef = useRef<HTMLDivElement>(null);
+const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
 const dragThreshold = 6;
 
 const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile: GameTile) => {
   if (tile.type === TileType.EMPTY) return;
+  e.preventDefault();
   setDragFrom({ row, col });
   setDragOver(null);
   setIsDragging(true);
   setPointer({ x: e.clientX, y: e.clientY });
+  setContainerRect(boardRef.current?.getBoundingClientRect() || null);
   try { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); } catch {}
 };
 
 const handlePointerMove = (e: React.PointerEvent) => {
   if (!isDragging) return;
+  e.preventDefault();
   setPointer({ x: e.clientX, y: e.clientY });
 };
 
@@ -89,10 +93,10 @@ const handlePointerUp = (e: React.PointerEvent) => {
 };
 
   return (
-    <div ref={boardRef} className="relative px-[50px]" onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+    <div ref={boardRef} className={`relative px-[50px] ${isDragging ? 'touch-none' : 'touch-pan-y'}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
       {/* Game Board */}
       <div 
-        className="grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
+        className={`grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] ${isDragging ? 'overflow-hidden touch-none' : 'overflow-y-auto touch-pan-y'} overscroll-contain select-none`}
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
       >
         {board.map((row, rowIndex) =>
@@ -196,7 +200,13 @@ const handlePointerUp = (e: React.PointerEvent) => {
 
       {/* Drag ghost */}
       {isDragging && dragFrom && pointer && (
-        <div className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2" style={{ left: pointer.x, top: pointer.y }}>
+        <div
+          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: containerRect ? pointer.x - containerRect.left : pointer.x,
+            top: containerRect ? pointer.y - containerRect.top : pointer.y,
+          }}
+        >
           <div className="w-16 h-16 opacity-80 scale-95">
             <Tile tile={board[dragFrom.row][dragFrom.col]} />
           </div>
