@@ -3,27 +3,42 @@ import { GameState, GameTile, Direction, TileType } from '../types/game';
 import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/gameUtils';
 
 export const useGameLogic = () => {
-  const [gameState, setGameState] = useState<GameState>(() => ({
-    board: createInitialBoard(),
-    // Energy source (start) and goal for a 3x4 grid
-    startPosition: { x: 1, y: 2 },
-    goalPosition: { x: 2, y: 0 },
-    playerPosition: { x: 1, y: 2 },
-    heldTile: generateRandomTile(),
-    moves: 0,
-    timer: 0,
-    gameStarted: false,
-    gameCompleted: false,
-    canUndo: false,
-    canRewind: false,
-    previewMove: null,
-    previewPath: [],
-    branchChoice: null,
-    walkTimeline: [],
-    pushHistory: [],
-    selectedTile: null,
-    pendingSwap: null
-  }));
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const board = createInitialBoard();
+
+    const findPos = (id: string): { x: number; y: number } => {
+      for (let y = 0; y < board.length; y++) {
+        for (let x = 0; x < (board[0]?.length ?? 0); x++) {
+          if (board[y][x]?.id === id) return { x, y };
+        }
+      }
+      return { x: 0, y: 0 };
+    };
+
+    const start = findPos('start-tile');
+    const goal = findPos('goal-tile');
+
+    return {
+      board,
+      startPosition: start,
+      goalPosition: goal,
+      playerPosition: start,
+      heldTile: generateRandomTile(),
+      moves: 0,
+      timer: 0,
+      gameStarted: false,
+      gameCompleted: false,
+      canUndo: false,
+      canRewind: false,
+      previewMove: null,
+      previewPath: [],
+      branchChoice: null,
+      walkTimeline: [],
+      pushHistory: [],
+      selectedTile: null,
+      pendingSwap: null
+    };
+  });
 
   // Timer effect
   useEffect(() => {
