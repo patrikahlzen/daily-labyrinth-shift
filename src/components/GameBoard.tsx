@@ -15,6 +15,8 @@ interface GameBoardProps {
   // Swap-only controls
   onTileTap?: (row: number, col: number) => void;
   selectedTile?: { row: number; col: number } | null;
+  // Drag & Drop swap
+  onSwapTiles?: (fromRow: number, fromCol: number, toRow: number, toCol: number) => void;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -28,13 +30,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   branchChoice,
   onChooseDirection,
   onTileTap,
-  selectedTile
+  selectedTile,
+  onSwapTiles
 }) => {
-  // Swap/tap interaction
-  const handleTileClick = (row: number, col: number) => {
-    onTileTap?.(row, col);
-  };
+// Swap/tap interaction
+const handleTileClick = (row: number, col: number) => {
+  onTileTap?.(row, col);
+};
 
+// Drag & Drop state
+const [dragFrom, setDragFrom] = useState<{ row: number; col: number } | null>(null);
+const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(null);
   return (
     <div className="relative px-[50px]">
       {/* Game Board */}
@@ -53,6 +59,31 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               <div
                 key={`${rowIndex}-${colIndex}`}
                 className={`relative aspect-square ${ (tile.type === TileType.EMPTY) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' }`}
+                draggable={tile.type !== TileType.EMPTY}
+                onDragStart={(e) => {
+                  if (tile.type === TileType.EMPTY) return;
+                  setDragFrom({ row: rowIndex, col: colIndex });
+                  try { e.dataTransfer.setData('text/plain', JSON.stringify({ row: rowIndex, col: colIndex })); } catch {}
+                }}
+                onDragOver={(e) => {
+                  if (!dragFrom) return;
+                  if (tile.type === TileType.EMPTY) return;
+                  e.preventDefault();
+                  setDragOver({ row: rowIndex, col: colIndex });
+                }}
+                onDragLeave={() => {
+                  setDragOver(prev => (prev && prev.row === rowIndex && prev.col === colIndex) ? null : prev);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const src = dragFrom;
+                  setDragOver(null);
+                  setDragFrom(null);
+                  if (!src) return;
+                  if (src.row === rowIndex && src.col === colIndex) return;
+                  if (tile.type === TileType.EMPTY) return;
+                  onSwapTiles?.(src.row, src.col, rowIndex, colIndex);
+                }}
                 onClick={() => {
                   const isDisabled = tile.type === TileType.EMPTY;
                   if (isDisabled) return;
@@ -73,6 +104,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   {/* Selected tile highlight */}
                   {selectedTile && selectedTile.row === rowIndex && selectedTile.col === colIndex && (
                     <div className="absolute inset-0 ring-2 ring-accent/60 rounded-lg pointer-events-none" />
+                  )}
+                  {/* Drag over highlight */}
+                  {dragOver && dragOver.row === rowIndex && dragOver.col === colIndex && (
+                    <div className="absolute inset-0 ring-2 ring-accent/70 rounded-lg pointer-events-none" />
                   )}
                 </div>
                 

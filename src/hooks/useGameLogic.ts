@@ -449,6 +449,93 @@ export const useGameLogic = () => {
     });
   }, []);
 
+  const swapTiles = useCallback((fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+    setGameState(prev => {
+      const base = { ...prev };
+      if (!base.gameStarted) base.gameStarted = true;
+
+      const fromTile = base.board[fromRow][fromCol];
+      const toTile = base.board[toRow][toCol];
+      if (fromTile.type === TileType.EMPTY || toTile.type === TileType.EMPTY) {
+        return base;
+      }
+
+      const snapshot = {
+        board: base.board.map(r => r.map(t => ({ ...t }))),
+        playerPosition: { ...base.playerPosition },
+        startPosition: { ...base.startPosition },
+        goalPosition: { ...base.goalPosition },
+        heldTile: base.heldTile,
+        moves: base.moves
+      };
+
+      const newBoard = base.board.map(r => r.slice());
+      const temp = newBoard[fromRow][fromCol];
+      newBoard[fromRow][fromCol] = newBoard[toRow][toCol];
+      newBoard[toRow][toCol] = temp;
+
+      let newStart = { ...base.startPosition };
+      if (fromRow === base.startPosition.y && fromCol === base.startPosition.x) {
+        newStart = { x: toCol, y: toRow };
+      } else if (toRow === base.startPosition.y && toCol === base.startPosition.x) {
+        newStart = { x: fromCol, y: fromRow };
+      }
+
+      let newGoal = { ...base.goalPosition };
+      if (fromRow === base.goalPosition.y && fromCol === base.goalPosition.x) {
+        newGoal = { x: toCol, y: toRow };
+      } else if (toRow === base.goalPosition.y && toCol === base.goalPosition.x) {
+        newGoal = { x: fromCol, y: fromRow };
+      }
+
+      const sim = simulateAutoWalk(newBoard, newStart, newGoal);
+
+      const steps = sim.path && sim.path.length > 1 ? sim.path.slice(1) : [];
+      let index = 0;
+
+      const runStep = () => {
+        setGameState(curr => {
+          if (index >= steps.length) {
+            return {
+              ...curr,
+              previewPath: [],
+              branchChoice: sim.stopReason === 'branch' ? sim.branch! : null,
+              canRewind: curr.walkTimeline.length > 0,
+              gameCompleted: curr.playerPosition.x === curr.goalPosition.x && curr.playerPosition.y === curr.goalPosition.y ? true : curr.gameCompleted
+            };
+          }
+          const nextPos = steps[index++];
+          const newTimeline = [...curr.walkTimeline, nextPos];
+          const atGoal = nextPos.x === curr.goalPosition.x && nextPos.y === curr.goalPosition.y;
+          setTimeout(runStep, 200);
+          return {
+            ...curr,
+            playerPosition: nextPos,
+            walkTimeline: newTimeline,
+            gameCompleted: atGoal || curr.gameCompleted
+          };
+        });
+      };
+
+      setTimeout(runStep, 0);
+
+      return {
+        ...base,
+        board: newBoard,
+        moves: base.moves + 1,
+        pushHistory: [...base.pushHistory, snapshot],
+        canUndo: true,
+        selectedTile: null,
+        pendingSwap: null,
+        previewPath: sim.path,
+        branchChoice: sim.stopReason === 'branch' ? sim.branch! : null,
+        startPosition: newStart,
+        goalPosition: newGoal,
+        playerPosition: newStart
+      };
+    });
+  }, [simulateAutoWalk]);
+
   return {
     gameState,
     startGame,
@@ -457,6 +544,7 @@ export const useGameLogic = () => {
     confirmMove,
     rewindStep,
     chooseDirection,
-    onTileTap: tapTile
+    onTileTap: tapTile,
+    onSwapTiles: swapTiles
   };
 };

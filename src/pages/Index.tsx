@@ -1,11 +1,11 @@
 import React from 'react';
 import { GameBoard } from '../components/GameBoard';
 import { GameHUD } from '../components/GameHUD';
-import { HeldTile } from '../components/HeldTile';
+
 import { useGameLogic } from '../hooks/useGameLogic';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection, onTileTap } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection, onTileTap, onSwapTiles } = useGameLogic();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -35,13 +35,10 @@ const Index = () => {
         onChooseDirection={chooseDirection}
         onTileTap={onTileTap}
         selectedTile={gameState.selectedTile}
+        onSwapTiles={onSwapTiles}
       />
       </div>
 
-      {/* Bottom Area */}
-      <div className="flex justify-center">
-        <HeldTile tile={gameState.heldTile} />
-      </div>
 
       {/* Welcome overlay for new players */}
       {!gameState.gameStarted && (
@@ -49,7 +46,7 @@ const Index = () => {
           <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
             <h1 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h1>
             <p className="text-muted-foreground mb-6">
-              Tap two tiles to swap and create a path. Everyone gets the same puzzle today!
+              Dra & släpp eller tryck två tiles för att byta platser och skapa flödet. Alla får dagens samma pussel!
             </p>
             <button
               onClick={startGame}
