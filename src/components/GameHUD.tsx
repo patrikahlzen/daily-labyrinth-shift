@@ -59,7 +59,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             size="sm"
             onClick={onRewind}
             disabled={!canRewind}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 justify-center px-4 min-w-[110px]"
           >
             <RotateCcw className="w-4 h-4" />
             Rewind
@@ -70,7 +70,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             size="sm"
             onClick={onUndo}
             disabled={!canUndo}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 justify-center px-4 min-w-[110px]"
           >
             <Undo className="w-4 h-4" />
             Undo
@@ -82,7 +82,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           size="sm"
           onClick={onConfirmMove}
           disabled={!hasUnconfirmedMove}
-          className="flex items-center gap-2 bg-gradient-primary hover:opacity-90"
+          className="flex items-center gap-2 justify-center px-4 min-w-[110px] bg-gradient-primary hover:opacity-90"
         >
           <Check className="w-4 h-4" />
           Confirm Move

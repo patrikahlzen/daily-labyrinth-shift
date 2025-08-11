@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameTile, TileType } from '../types/game';
-import { Key, Clock, Square, Gem, Zap } from 'lucide-react';
+import { Clock, Square, Gem, Zap } from 'lucide-react';
 
 interface TileProps {
   tile: GameTile;
@@ -41,7 +41,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
   const getSpecialIcon = () => {
     switch (tile.special) {
       case 'key':
-        return <Key className="w-4 h-4 text-accent animate-pulse" />;
+        return null; // Hide key tile visuals for now
       case 'time':
         return <Clock className="w-4 h-4 text-accent animate-pulse" />;
       case 'block':
@@ -60,7 +60,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
       baseClass += "bg-game-tile-empty ";
     } else {
       baseClass += "bg-gradient-tile shadow-tile ";
-      if (tile.special) {
+      if (tile.special && tile.special !== 'key') {
         baseClass += "bg-gradient-special ";
       }
     }
