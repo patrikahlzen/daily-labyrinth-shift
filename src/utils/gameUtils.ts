@@ -142,6 +142,57 @@ export const createInitialBoard = (): GameTile[][] => {
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
 
+  // Ensure the initial board is NOT already solved: try to break the path with one safe swap
+  const isLocked = (x: number, y: number) => (x === start.x && y === start.y) || (x === goal.x && y === goal.y);
+  const pathCells = path.filter(({ x, y }) => !isLocked(x, y));
+
+  const tryBreak = () => {
+    // Shuffle candidates
+    const shuffled = [...pathCells].sort(() => Math.random() - 0.5);
+    for (const { x, y } of shuffled) {
+      const neighbors = [
+        { nx: x, ny: y - 1 },
+        { nx: x, ny: y + 1 },
+        { nx: x + 1, ny: y },
+        { nx: x - 1, ny: y },
+      ].filter(({ nx, ny }) => inBounds(nx, ny) && !isLocked(nx, ny) && board[ny][nx].type === TileType.PATH);
+
+      // Prefer swapping different-shaped tiles to increase chance of breaking
+      neighbors.sort((a, b) => {
+        const deg = (t: GameTile) => Number(t.connections.north) + Number(t.connections.south) + Number(t.connections.east) + Number(t.connections.west);
+        const dA = Math.abs(
+          (deg(board[y][x]) - deg(board[a.ny][a.nx]))
+        );
+        const dB = Math.abs(
+          (deg(board[y][x]) - deg(board[b.ny][b.nx]))
+        );
+        return dB - dA;
+      });
+
+      for (const { nx, ny } of neighbors) {
+        const a = { x, y };
+        const b = { x: nx, y: ny };
+        const tmp = board[y][x];
+        board[y][x] = board[ny][nx];
+        board[ny][nx] = tmp;
+
+        const stillSolved = !!findPath(board, start.x, start.y, goal.x, goal.y);
+        if (!stillSolved) return true; // successfully broke the path
+
+        // revert and try another pair
+        board[ny][nx] = board[y][x];
+        board[y][x] = tmp;
+      }
+    }
+    return false;
+  };
+
+  // Only attempt to break if currently solved
+  if (findPath(board, start.x, start.y, goal.x, goal.y)) {
+    let attempts = 0;
+    while (attempts < 20 && !tryBreak()) attempts++;
+  }
+
   return board;
 };
 
