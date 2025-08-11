@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Tile } from './Tile';
 import { GameTile, TileType, Direction } from '../types/game';
 
@@ -50,6 +50,25 @@ const [shakeCell, setShakeCell] = useState<{ row: number; col: number } | null>(
 const boardRef = useRef<HTMLDivElement>(null);
 const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
 const dragThreshold = 6;
+
+useEffect(() => {
+  if (isDragging) {
+    const prevOverflow = document.body.style.overflow;
+    const prevTouchAction = (document.body.style as CSSStyleDeclaration & { touchAction?: string }).touchAction ?? '';
+    const docStyle = document.documentElement.style;
+    const prevHtmlOverscroll = docStyle.getPropertyValue('overscroll-behavior');
+
+    document.body.style.overflow = 'hidden';
+    try { (document.body.style as any).touchAction = 'none'; } catch {}
+    try { docStyle.setProperty('overscroll-behavior', 'none'); } catch {}
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      try { (document.body.style as any).touchAction = prevTouchAction; } catch {}
+      try { docStyle.setProperty('overscroll-behavior', prevHtmlOverscroll); } catch {}
+    };
+  }
+}, [isDragging]);
 
 const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile: GameTile) => {
   // Disallow dragging empty or locked (start/goal) tiles
@@ -144,11 +163,12 @@ const handlePointerUp = (e: React.PointerEvent) => {
 };
 
   return (
-    <div ref={boardRef} className={`relative px-[50px] ${isDragging ? 'touch-none' : 'touch-pan-y'}`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+    <div ref={boardRef} className={`relative px-[50px] ${isDragging ? 'touch-none' : 'touch-pan-y'} overscroll-none select-none`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onTouchMove={(e) => { if (isDragging) e.preventDefault(); }}>
       {/* Game Board */}
       <div 
-        className={`grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] ${isDragging ? 'overflow-hidden touch-none' : 'overflow-y-auto touch-pan-y'} overscroll-contain select-none`}
+        className={`grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] ${isDragging ? 'overflow-hidden touch-none overscroll-none' : 'overflow-y-auto touch-pan-y overscroll-contain'} select-none`}
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
+        onTouchMove={(e) => { if (isDragging) e.preventDefault(); }}
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
