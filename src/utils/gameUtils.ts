@@ -6,20 +6,11 @@ const TILE_PATTERNS: TileConnections[] = [
   { north: true, south: true, east: false, west: false }, // Vertical
   { north: false, south: false, east: true, west: true }, // Horizontal
   
-  // L-shapes
+  // L-shapes (bends only)
   { north: true, south: false, east: true, west: false }, // NE corner
   { north: true, south: false, east: false, west: true }, // NW corner
   { north: false, south: true, east: true, west: false }, // SE corner
   { north: false, south: true, east: false, west: true }, // SW corner
-  
-  // T-shapes
-  { north: true, south: true, east: true, west: false }, // T pointing west
-  { north: true, south: true, east: false, west: true }, // T pointing east
-  { north: true, south: false, east: true, west: true }, // T pointing south
-  { north: false, south: true, east: true, west: true }, // T pointing north
-  
-  // Cross
-  { north: true, south: true, east: true, west: true }, // Full cross
 ];
 
 export const generateRandomTile = (): GameTile => {
@@ -48,36 +39,108 @@ export const generateEmptyTile = (): GameTile => ({
 });
 
 export const createInitialBoard = (): GameTile[][] => {
-  const board: GameTile[][] = [];
-  
-  for (let row = 0; row < 3; row++) {
-    const boardRow: GameTile[] = [];
-    for (let col = 0; col < 4; col++) {
-      // Create a mix of path tiles and some empty tiles for variety
-      if (Math.random() < 0.85) { // 85% chance for path tiles
-        boardRow.push(generateRandomTile());
-      } else {
-        boardRow.push(generateEmptyTile());
-      }
+  const rows = 3;
+  const cols = 4;
+  const start = { x: 1, y: 2 };
+  const goal = { x: 2, y: 0 };
+
+  // Initialize empty board
+  const emptyTile = (): GameTile => ({
+    type: TileType.EMPTY,
+    connections: { north: false, south: false, east: false, west: false },
+    special: null,
+    id: Math.random().toString(36).substr(2, 9)
+  });
+  const board: GameTile[][] = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => emptyTile())
+  );
+
+  // DFS to generate a single simple path from start to goal
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => false)
+  );
+  const path: { x: number; y: number }[] = [];
+
+  const dirs = [
+    { dx: 0, dy: -1 }, // North
+    { dx: 0, dy: 1 },  // South
+    { dx: 1, dy: 0 },  // East
+    { dx: -1, dy: 0 }  // West
+  ];
+
+  const inBounds = (x: number, y: number) => x >= 0 && x < cols && y >= 0 && y < rows;
+
+  const dfs = (x: number, y: number): boolean => {
+    path.push({ x, y });
+    if (x === goal.x && y === goal.y) return true;
+    visited[y][x] = true;
+
+    const order = [...dirs].sort(() => Math.random() - 0.5);
+    for (const { dx, dy } of order) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (!inBounds(nx, ny) || visited[ny][nx]) continue;
+      if (dfs(nx, ny)) return true;
     }
-    board.push(boardRow);
+
+    visited[y][x] = false;
+    path.pop();
+    return false;
+  };
+
+  if (!dfs(start.x, start.y)) {
+    // Fallback: simple deterministic path (vertical then horizontal)
+    path.length = 0;
+    let x = start.x;
+    let y = start.y;
+    path.push({ x, y });
+    while (y > goal.y) { y -= 1; path.push({ x, y }); }
+    while (x < goal.x) { x += 1; path.push({ x, y }); }
   }
 
-  // Ensure start position (bottom) has a path tile
-  board[2][1] = {
-    type: TileType.PATH,
-    connections: { north: true, south: false, east: false, west: false },
-    special: null,
-    id: 'start-tile'
-  };
+  // Convert the path into tiles with only straight/L connections
+  for (let i = 0; i < path.length; i++) {
+    const { x, y } = path[i];
+    const prev = i > 0 ? path[i - 1] : null;
+    const next = i < path.length - 1 ? path[i + 1] : null;
 
-  // Ensure goal position (top) has a path tile
-  board[0][2] = {
-    type: TileType.PATH,
-    connections: { north: false, south: true, east: false, west: false },
-    special: null,
-    id: 'goal-tile'
-  };
+    const connections = { north: false, south: false, east: false, west: false };
+    if (prev) {
+      if (prev.x === x && prev.y === y - 1) connections.north = true;
+      if (prev.x === x && prev.y === y + 1) connections.south = true;
+      if (prev.y === y && prev.x === x - 1) connections.west = true;
+      if (prev.y === y && prev.x === x + 1) connections.east = true;
+    }
+    if (next) {
+      if (next.x === x && next.y === y - 1) connections.north = true;
+      if (next.x === x && next.y === y + 1) connections.south = true;
+      if (next.y === y && next.x === x - 1) connections.west = true;
+      if (next.y === y && next.x === x + 1) connections.east = true;
+    }
+
+    board[y][x] = {
+      type: TileType.PATH,
+      connections,
+      special: null,
+      id: Math.random().toString(36).substr(2, 9)
+    };
+  }
+
+  // Optionally add specials along the path (not on start/goal)
+  for (let i = 1; i < path.length - 1; i++) {
+    if (Math.random() < 0.15) {
+      const { x, y } = path[i];
+      const specials = ['key', 'time', 'gem'] as const;
+      board[y][x] = {
+        ...board[y][x],
+        special: specials[Math.floor(Math.random() * specials.length)]
+      };
+    }
+  }
+
+  // Keep explicit IDs to mark start/goal for the UI
+  board[start.y][start.x].id = 'start-tile';
+  board[goal.y][goal.x].id = 'goal-tile';
 
   return board;
 };
