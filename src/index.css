@@ -28,8 +28,8 @@ All colors MUST be HSL.
     --muted: 220 12% 16%;
     --muted-foreground: 220 8% 70%;
 
-    --accent: 155 50% 38%;
-    --accent-foreground: 60 25% 92%;
+    --accent: 55 95% 60%;
+    --accent-foreground: 240 10% 10%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 60 25% 92%;
@@ -95,8 +95,8 @@ All colors MUST be HSL.
     --secondary-foreground: 60 25% 92%;
     --muted: 220 12% 16%;
     --muted-foreground: 220 8% 70%;
-    --accent: 155 50% 38%;
-    --accent-foreground: 60 25% 92%;
+    --accent: 55 95% 60%;
+    --accent-foreground: 240 10% 10%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 60 25% 92%;
     --border: 220 12% 22%;
@@ -118,7 +118,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, ui-sans-serif, system-ui, sans-serif;
   }
 
   /* Game-specific animations */

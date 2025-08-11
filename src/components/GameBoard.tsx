@@ -40,135 +40,62 @@ const handleTileClick = (row: number, col: number) => {
   onTileTap?.(row, col);
 };
 
-// Drag & Drop state (pointer-based)
+// Drag & Drop (HTML5) state + shake feedback
 const [dragFrom, setDragFrom] = useState<{ row: number; col: number } | null>(null);
 const [dragOver, setDragOver] = useState<{ row: number; col: number } | null>(null);
-const [isDragging, setIsDragging] = useState(false);
-const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
-const [dragTileSize, setDragTileSize] = useState<{ w: number; h: number } | null>(null);
 const [shakeCell, setShakeCell] = useState<{ row: number; col: number } | null>(null);
-const boardRef = useRef<HTMLDivElement>(null);
-const [containerRect, setContainerRect] = useState<DOMRect | null>(null);
-const dragThreshold = 6;
 
-useEffect(() => {
-  if (isDragging) {
-    const prevOverflow = document.body.style.overflow;
-    const prevTouchAction = (document.body.style as CSSStyleDeclaration & { touchAction?: string }).touchAction ?? '';
-    const docStyle = document.documentElement.style;
-    const prevHtmlOverscroll = docStyle.getPropertyValue('overscroll-behavior');
-
-    document.body.style.overflow = 'hidden';
-    try { (document.body.style as any).touchAction = 'none'; } catch {}
-    try { docStyle.setProperty('overscroll-behavior', 'none'); } catch {}
-
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      try { (document.body.style as any).touchAction = prevTouchAction; } catch {}
-      try { docStyle.setProperty('overscroll-behavior', prevHtmlOverscroll); } catch {}
-    };
-  }
-}, [isDragging]);
-
-const handlePointerDown = (e: React.PointerEvent, row: number, col: number, tile: GameTile) => {
-  // Disallow dragging empty or locked (start/goal) tiles
-  if (tile.type === TileType.EMPTY) return;
+// HTML5 Drag & Drop handlers
+const handleDragStart = (e: React.DragEvent, row: number, col: number, tile: GameTile) => {
+  if (tile.type === TileType.EMPTY) { e.preventDefault(); return; }
   const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
-  if (isLockedCell) { setShakeCell({ row, col }); setTimeout(() => setShakeCell(null), 400); return; }
-  e.preventDefault();
+  if (isLockedCell) { setShakeCell({ row, col }); setTimeout(() => setShakeCell(null), 400); e.preventDefault(); return; }
   setDragFrom({ row, col });
-  setDragOver(null);
-  setIsDragging(true);
-  const x = e.clientX; const y = e.clientY;
-  setPointer({ x, y });
-  setContainerRect(boardRef.current?.getBoundingClientRect() || null);
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  setDragTileSize({ w: rect.width, h: rect.height });
-  // Disable scrolling during drag on iOS Safari
-  try { boardRef.current?.style.setProperty('touch-action', 'none'); } catch {}
-  // Pointer capture only for mouse to allow pointerenter on other tiles for touch
-  if ((e as React.PointerEvent).pointerType === 'mouse') {
-    try { (e.target as HTMLElement).setPointerCapture?.(e.pointerId); } catch {}
-  }
+  try { e.dataTransfer.setData('text/plain', JSON.stringify({ row, col })); } catch {}
+  try { e.dataTransfer.effectAllowed = 'move'; } catch {}
 };
 
-const handlePointerMove = (e: React.PointerEvent) => {
-  if (!isDragging) return;
-  e.preventDefault();
-  const x = e.clientX; const y = e.clientY;
-  setPointer({ x, y });
-  // Update hover target using hit-testing to support touch where pointerenter is unreliable
-  const el = document.elementFromPoint(x, y) as HTMLElement | null;
-  if (el) {
-    let node: HTMLElement | null = el;
-    let r: number | null = null;
-    let c: number | null = null;
-    while (node) {
-      const ds = (node as HTMLElement).dataset as { row?: string; col?: string };
-      if (ds && ds.row !== undefined && ds.col !== undefined) {
-        r = parseInt(ds.row, 10);
-        c = parseInt(ds.col, 10);
-        break;
-      }
-      node = node.parentElement;
-    }
-    if (r !== null && c !== null) {
-      const t = board[r]?.[c];
-      const isLockedCell = (startPosition.x === c && startPosition.y === r) || (goalPosition.x === c && goalPosition.y === r);
-      if (t && t.type !== TileType.EMPTY && !isLockedCell) {
-        if (!dragOver || dragOver.row !== r || dragOver.col !== c) {
-          setDragOver({ row: r, col: c });
-        }
-      }
-    }
-  }
-};
-
-const handlePointerEnter = (row: number, col: number, tile: GameTile) => {
-  if (!isDragging) return;
-  if (tile.type === TileType.EMPTY) return;
+const handleDragOver = (e: React.DragEvent, row: number, col: number, tile: GameTile) => {
   const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
-  if (isLockedCell) return;
-  setDragOver({ row, col });
+  if (tile.type === TileType.EMPTY || isLockedCell) return;
+  e.preventDefault();
+  setDragOver(prev => (!prev || prev.row !== row || prev.col !== col) ? { row, col } : prev);
+  try { e.dataTransfer.dropEffect = 'move'; } catch {}
 };
 
-const cancelDrag = () => {
-  setIsDragging(false);
-  setDragOver(null);
-  setDragFrom(null);
-  setPointer(null);
-  setDragTileSize(null);
-  try { boardRef.current?.style.removeProperty('touch-action'); } catch {}
-};
-
-const handlePointerUp = (e: React.PointerEvent) => {
-  if (!isDragging) return;
-  const src = dragFrom;
-  const dst = dragOver;
-  if (src && dst && (src.row !== dst.row || src.col !== dst.col)) {
-    const lockedSrc = (startPosition.x === src.col && startPosition.y === src.row) || (goalPosition.x === src.col && goalPosition.y === src.row);
-    const lockedDst = (startPosition.x === dst.col && startPosition.y === dst.row) || (goalPosition.x === dst.col && goalPosition.y === dst.row);
-    if (lockedSrc || lockedDst) {
-      setShakeCell(lockedDst ? dst : src);
-      setTimeout(() => setShakeCell(null), 400);
-    } else {
-      onSwapTiles?.(src.row, src.col, dst.row, dst.col);
-    }
-  } else if (src && (!dst || (src.row === dst.row && src.col === dst.col))) {
-    // invalid drop -> shake
-    setShakeCell(src);
-    setTimeout(() => setShakeCell(null), 400);
+const handleDrop = (e: React.DragEvent, row: number, col: number, tile: GameTile) => {
+  e.preventDefault();
+  const isLockedCell = (startPosition.x === col && startPosition.y === row) || (goalPosition.x === col && goalPosition.y === row);
+  if (tile.type === TileType.EMPTY || isLockedCell) { setDragOver(null); return; }
+  let src = dragFrom as { row: number; col: number } | null;
+  if (!src) {
+    try { const parsed = JSON.parse(e.dataTransfer.getData('text/plain')); if (parsed && typeof parsed.row === 'number' && typeof parsed.col === 'number') src = parsed; } catch {}
   }
-  cancelDrag();
+  if (src && (src.row !== row || src.col !== col)) {
+    const lockedSrc = (startPosition.x === src.col && startPosition.y === src.row) || (goalPosition.x === src.col && goalPosition.y === src.row);
+    if (lockedSrc) {
+      setShakeCell(src); setTimeout(() => setShakeCell(null), 400);
+    } else {
+      onSwapTiles?.(src.row, src.col, row, col);
+    }
+  } else if (src) {
+    setShakeCell(src); setTimeout(() => setShakeCell(null), 400);
+  }
+  setDragFrom(null);
+  setDragOver(null);
+};
+
+const handleDragEnd = () => {
+  setDragFrom(null);
+  setDragOver(null);
 };
 
   return (
-    <div ref={boardRef} className={`relative px-[50px] ${isDragging ? 'touch-none' : 'touch-pan-y'} overscroll-none select-none`} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onTouchMove={(e) => { if (isDragging) e.preventDefault(); }}>
+<div className="relative px-[50px] overscroll-none select-none">
       {/* Game Board */}
-      <div 
-        className={`grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] ${isDragging ? 'overflow-hidden touch-none overscroll-none' : 'overflow-y-auto touch-pan-y overscroll-contain'} select-none`}
+<div 
+        className="grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
-        onTouchMove={(e) => { if (isDragging) e.preventDefault(); }}
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
@@ -179,16 +106,17 @@ const handlePointerUp = (e: React.PointerEvent) => {
             const isLockedCell = isStart || isGoal;
 
             return (
-              <div
+<div
                 key={`${rowIndex}-${colIndex}`}
                 data-row={rowIndex}
                 data-col={colIndex}
                 className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isLockedCell) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
-                draggable={false}
-                onPointerDown={(e) => handlePointerDown(e, rowIndex, colIndex, tile)}
-                onPointerEnter={() => handlePointerEnter(rowIndex, colIndex, tile)}
+                draggable={!(tile.type === TileType.EMPTY || isLockedCell)}
+                onDragStart={(e) => handleDragStart(e, rowIndex, colIndex, tile)}
+                onDragOver={(e) => handleDragOver(e, rowIndex, colIndex, tile)}
+                onDrop={(e) => handleDrop(e, rowIndex, colIndex, tile)}
+                onDragEnd={handleDragEnd}
                 onClick={() => {
-                  if (isDragging) return;
                   const isDisabled = tile.type === TileType.EMPTY || isLockedCell;
                   if (isDisabled) return;
                   handleTileClick(rowIndex, colIndex);
@@ -272,20 +200,6 @@ const handlePointerUp = (e: React.PointerEvent) => {
         )}
       </div>
 
-      {/* Drag ghost */}
-      {isDragging && dragFrom && pointer && (
-        <div
-          className="pointer-events-none absolute z-50 -translate-x-1/2 -translate-y-1/2"
-          style={{
-            left: containerRect ? pointer.x - containerRect.left : pointer.x,
-            top: containerRect ? pointer.y - containerRect.top : pointer.y,
-          }}
-        >
-          <div className="opacity-80 scale-95" style={{ width: dragTileSize?.w ?? 48, height: dragTileSize?.h ?? 48 }}>
-            <Tile tile={board[dragFrom.row][dragFrom.col]} />
-          </div>
-        </div>
-      )}
 
     </div>
   );
