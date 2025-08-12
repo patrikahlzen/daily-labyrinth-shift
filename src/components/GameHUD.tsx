@@ -52,25 +52,23 @@ export const GameHUD: React.FC<GameHUDProps> = ({
         <div className="flex items-center gap-3">
           <Button
             variant="secondary"
-            size="sm"
+            size="lg"
             onClick={onRewind}
             disabled={!canRewind}
-            className="px-5"
             aria-label="Spola tillbaka"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-5 h-5" />
             Rewind
           </Button>
 
           <Button
             variant="secondary"
-            size="sm"
+            size="lg"
             onClick={onUndo}
             disabled={!canUndo}
-            className="px-5"
             aria-label="Ångra drag"
           >
-            <Undo className="w-4 h-4" />
+            <Undo className="w-5 h-5" />
             Undo
           </Button>
         </div>
