@@ -12,14 +12,14 @@ interface TileProps {
 }
 
 export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart, isEnergized }) => {
-  const getPathLineElements = (strokeColor: string) => {
+  const getPathLineElements = (strokeOpacity: number = 1) => {
     if (tile.type !== TileType.PATH) return null;
 
     const thickness = 30; // ~30% av tiles storlek
     const half = 50;
 
     return (
-      <g stroke={strokeColor} strokeWidth={thickness} strokeLinecap="round" fill="none">
+      <g stroke="currentColor" strokeOpacity={strokeOpacity} strokeWidth={thickness} strokeLinecap="round" fill="none">
         {tile.connections.north && (
           <line x1={half} y1={half} x2={half} y2={0} />
         )}
@@ -33,7 +33,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
           <line x1={half} y1={half} x2={0} y2={half} />
         )}
         {/* Centernod (valfritt) */}
-        {/* <circle cx={half} cy={half} r={thickness/4} fill={strokeColor} /> */}
+        {/* <circle cx={half} cy={half} r={thickness/4} fill="currentColor" /> */}
       </g>
     );
   };
@@ -82,19 +82,20 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
 
       {/* Neutral path symbol (always visible) */}
       {tile.type === TileType.PATH && (
-        <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {getPathLineElements('hsl(var(--tile-path))')}
+        <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--foreground))' }}>
+          {getPathLineElements(0.5)}
         </svg>
       )}
 
       {/* Energy fill along the path (when energized) */}
       {tile.type === TileType.PATH && (
         <svg
-          className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 pointer-events-none mix-blend-screen transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
+          style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 8px hsl(var(--energy) / 0.9))' }}
         >
-          {getPathLineElements('hsl(var(--energy))')}
+          {getPathLineElements(1)}
         </svg>
       )}
 
