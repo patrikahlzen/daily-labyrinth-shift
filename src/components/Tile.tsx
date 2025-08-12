@@ -20,24 +20,24 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
     const lines: string[] = [];
 
     if (tile.connections.north) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="0" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
+      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="0" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.south) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="100" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
+      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="100" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.east) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="100" y2="${half}" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
+      lines.push(`<line x1="${half}" y1="${half}" x2="100" y2="${half}" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.west) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="0" y2="${half}" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
+      lines.push(`<line x1="${half}" y1="${half}" x2="0" y2="${half}" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
 
-    // Optional center dot cutout for intersections
-    // lines.push(`<circle cx="${half}" cy="${half}" r="${thickness/4}" fill="black" />`);
+    // Optional center node
+    // lines.push(`<circle cx="${half}" cy="${half}" r="${thickness/4}" fill="white" />`);
 
     const svg = `<?xml version='1.0' encoding='UTF-8'?>\n` +
       `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>` +
-      `<rect x='0' y='0' width='100' height='100' rx='12' ry='12' fill='white'/>` +
+      `<rect x='0' y='0' width='100' height='100' rx='12' ry='12' fill='black'/>` +
       `${lines.join('')}` +
       `</svg>`;
 
@@ -50,7 +50,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
       case 'key':
         return null; // Hide key tile visuals for now
       case 'time':
-        return <Clock className="w-4 h-4 text-accent animate-pulse" />;
+        return null; // Hide time icon per request
       case 'block':
         return <Square className="w-4 h-4 text-muted-foreground" />;
       case 'gem':
@@ -82,17 +82,30 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
 
   return (
     <div className={getTileClassName()}>
-      {/* Energy layer (shows through cutout) */}
+      {/* Base background for PATH tiles */}
+      {tile.type === TileType.PATH && (
+        <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
+      )}
+
+      {/* Neutral path symbol (always visible) */}
       {tile.type === TileType.PATH && (
         <div
-          className={`absolute inset-0 rounded-lg bg-energy ${isEnergized ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          className="absolute inset-0 rounded-lg bg-game-tile-path/90"
+          style={{
+            WebkitMaskImage: buildMaskDataUrl(),
+            maskImage: buildMaskDataUrl(),
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskSize: '100% 100%',
+            maskSize: '100% 100%'
+          }}
         />
       )}
 
-      {/* Tile body with SVG mask cutout for the path symbol */}
+      {/* Energy fill along the path (when energized) */}
       {tile.type === TileType.PATH && (
         <div
-          className="absolute inset-0 rounded-lg bg-gradient-tile"
+          className={`absolute inset-0 rounded-lg bg-energy shadow-glow ${isEnergized ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
           style={{
             WebkitMaskImage: buildMaskDataUrl(),
             maskImage: buildMaskDataUrl(),
