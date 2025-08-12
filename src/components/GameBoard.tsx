@@ -91,7 +91,7 @@ const handleDragEnd = () => {
 };
 
   return (
-<div className="relative px-4 md:px-8 overscroll-none select-none">
+<div className="relative w-full px-4 md:px-8 overscroll-none select-none">
       {/* Game Board */}
 <div 
         className="grid gap-1 p-5 md:p-6 bg-gradient-board rounded-2xl shadow-game w-full max-w-5xl md:max-w-6xl xl:max-w-7xl mx-auto"
