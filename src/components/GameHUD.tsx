@@ -55,7 +55,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             size="lg"
             onClick={onRewind}
             disabled={!canRewind}
-            aria-label="Spola tillbaka"
+            aria-label="Rewind"
           >
             <RotateCcw className="w-5 h-5" />
             Rewind
@@ -66,7 +66,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             size="lg"
             onClick={onUndo}
             disabled={!canUndo}
-            aria-label="Ångra drag"
+            aria-label="Undo move"
           >
             <Undo className="w-5 h-5" />
             Undo

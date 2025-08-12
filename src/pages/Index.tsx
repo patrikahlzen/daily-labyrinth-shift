@@ -20,9 +20,9 @@ const Index = () => {
       {/* Header with daily info */}
       <header className="w-full py-6">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Pussel #{String(puzzleNumber).padStart(2,'0')}</h1>
-          <div className="text-sm md:text-base text-muted-foreground" aria-live="polite" title="Tid kvar till nytt pussel">
-            Byts om {countdown}
+          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Puzzle #{String(puzzleNumber).padStart(2,'0')}</h1>
+          <div className="text-sm md:text-base text-muted-foreground" aria-live="polite" title="Time until new puzzle">
+            New puzzle in {countdown}
           </div>
         </div>
       </header>
@@ -65,14 +65,16 @@ const Index = () => {
           <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
             <h2 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h2>
             <p className="text-muted-foreground mb-2">
-              Skapa en obruten väg från Start till Mål genom att byta plats på brickor. Dra & släpp eller tryck två rutor. Alla får samma dagliga pussel.
+              Create an unbroken path from Start to Goal by swapping tiles. Drag & drop or tap any two cells. Everyone plays the same daily puzzle.
             </p>
-            <p className="text-sm text-muted-foreground mb-6">Nollställs vid midnatt (svensk tid). Tid och drag räknas. Pussel #{String(puzzleNumber).padStart(2,'0')} · nytt om {countdown}</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Resets at midnight (local time). Time and moves are tracked. Puzzle #{String(puzzleNumber).padStart(2,'0')} · new in {countdown}
+            </p>
             <button
               onClick={startGame}
               className="w-full bg-gradient-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg shadow-glow hover:opacity-90 transition-opacity"
             >
-              Starta dagens pussel
+              Start the daily puzzle
             </button>
           </div>
         </div>

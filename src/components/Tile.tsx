@@ -15,25 +15,24 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
   const getPathLineElements = (strokeOpacity: number = 1) => {
     if (tile.type !== TileType.PATH) return null;
 
-    const thickness = 30; // ~30% av tiles storlek
+    const thickness = 30; // ~30% of tile size
     const half = 50;
+    const hubRadius = 18; // leave a clean gap at center; covered by hub circle
 
     return (
       <g stroke="currentColor" strokeOpacity={strokeOpacity} strokeWidth={thickness} strokeLinecap="round" fill="none">
         {tile.connections.north && (
-          <line x1={half} y1={half} x2={half} y2={0} />
+          <line x1={half} y1={half - hubRadius} x2={half} y2={0} />
         )}
         {tile.connections.south && (
-          <line x1={half} y1={half} x2={half} y2={100} />
+          <line x1={half} y1={half + hubRadius} x2={half} y2={100} />
         )}
         {tile.connections.east && (
-          <line x1={half} y1={half} x2={100} y2={half} />
+          <line x1={half + hubRadius} y1={half} x2={100} y2={half} />
         )}
         {tile.connections.west && (
-          <line x1={half} y1={half} x2={0} y2={half} />
+          <line x1={half - hubRadius} y1={half} x2={0} y2={half} />
         )}
-        {/* Centernod (valfritt) */}
-        {/* <circle cx={half} cy={half} r={thickness/4} fill="currentColor" /> */}
       </g>
     );
   };
@@ -62,6 +61,9 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
       baseClass += "shadow-tile ";
     }
 
+    // subtle border/ring for a more polished look
+    baseClass += "ring-1 ring-foreground/10 ";
+
     if (isPreview) {
       baseClass += "ring-2 ring-primary ring-opacity-60 ";
     }
@@ -77,13 +79,19 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
     <div className={getTileClassName()}>
       {/* Base background for PATH tiles */}
       {tile.type === TileType.PATH && (
-        <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
+        <>
+          <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
+          {/* Gloss and glass overlays */}
+          <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-br from-foreground/10 via-transparent to-transparent opacity-[0.12]" />
+          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[1.2px] bg-background/5" />
+        </>
       )}
 
       {/* Neutral path symbol (always visible) */}
       {tile.type === TileType.PATH && (
         <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--foreground))' }}>
-          {getPathLineElements(0.5)}
+          {getPathLineElements(0.7)}
+          <circle cx={50} cy={50} r={18} fill="currentColor" fillOpacity={0.7} />
         </svg>
       )}
 
@@ -93,9 +101,10 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
           className={`absolute inset-0 pointer-events-none mix-blend-screen transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
-          style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 8px hsl(var(--energy) / 0.9))' }}
+          style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 10px hsl(var(--energy) / 0.95))' }}
         >
           {getPathLineElements(1)}
+          <circle cx={50} cy={50} r={18} fill="currentColor" />
         </svg>
       )}
 
