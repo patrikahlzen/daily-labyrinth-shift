@@ -39,23 +39,23 @@ All colors MUST be HSL.
     --ring: 55 95% 60%;
 
     /* Game-specific colors */
-    --game-board: 220 15% 12%;
-    --tile-path: 220 10% 28%;
-    --tile-empty: 220 12% 14%;
-    --tile-special: 55 95% 60%;
-    --player: 200 100% 60%;
-    --goal: 55 95% 60%;
+    --game-board: 220, 15%, 12%;
+    --tile-path: 220, 10%, 28%;
+    --tile-empty: 220, 12%, 14%;
+    --tile-special: 55, 95%, 60%;
+    --player: 200, 100%, 60%;
+    --goal: 55, 95%, 60%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(220 15% 9%));
-    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(220 10% 32%));
-    --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50 100% 75%));
+    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(220, 15%, 9%));
+    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(220, 10%, 32%));
+    --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50, 100%, 75%));
     
     /* Shadows */
-    --shadow-game: 0 20px 40px -10px hsl(140 50% 5% / 0.8);
-    --shadow-tile: 0 4px 12px -2px hsl(140 50% 5% / 0.6);
-    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.5);
+    --shadow-game: 0 20px 40px -10px hsla(140, 50%, 5%, 0.8);
+    --shadow-tile: 0 4px 12px -2px hsla(140, 50%, 5%, 0.6);
+    --shadow-glow: 0 0 30px hsla(var(--primary-glow), 0.5);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -63,51 +63,51 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0, 0%, 98%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 240, 5.3%, 26.1%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 240, 5.9%, 10%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 0, 0%, 98%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 240, 4.8%, 95.9%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 240, 5.9%, 10%;
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 220, 13%, 91%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 217.2, 91.2%, 59.8%;
   }
 
   .dark {
     /* Same theme in dark mode - optimized for dark */
-    --background: 220 12% 10%;
-    --foreground: 60 25% 92%;
-    --card: 220 12% 12%;
-    --card-foreground: 60 25% 92%;
-    --popover: 220 12% 12%;
-    --popover-foreground: 60 25% 92%;
-    --primary: 55 95% 60%;
-    --primary-foreground: 240 10% 10%;
-    --primary-glow: 55 95% 70%;
-    --secondary: 155 45% 28%;
-    --secondary-foreground: 60 25% 92%;
-    --muted: 220 12% 16%;
-    --muted-foreground: 220 8% 70%;
-    --accent: 55 95% 60%;
-    --accent-foreground: 240 10% 10%;
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 60 25% 92%;
-    --border: 220 12% 22%;
-    --input: 220 12% 16%;
-    --ring: 55 95% 60%;
-    --game-board: 220 15% 12%;
-    --tile-path: 220 10% 28%;
-    --tile-empty: 220 12% 14%;
-    --tile-special: 55 95% 60%;
-    --player: 200 100% 60%;
-    --goal: 55 95% 60%;
+    --background: 220, 12%, 10%;
+    --foreground: 60, 25%, 92%;
+    --card: 220, 12%, 12%;
+    --card-foreground: 60, 25%, 92%;
+    --popover: 220, 12%, 12%;
+    --popover-foreground: 60, 25%, 92%;
+    --primary: 55, 95%, 60%;
+    --primary-foreground: 240, 10%, 10%;
+    --primary-glow: 55, 95%, 70%;
+    --secondary: 155, 45%, 28%;
+    --secondary-foreground: 60, 25%, 92%;
+    --muted: 220, 12%, 16%;
+    --muted-foreground: 220, 8%, 70%;
+    --accent: 55, 95%, 60%;
+    --accent-foreground: 240, 10%, 10%;
+    --destructive: 0, 70%, 50%;
+    --destructive-foreground: 60, 25%, 92%;
+    --border: 220, 12%, 22%;
+    --input: 220, 12%, 16%;
+    --ring: 55, 95%, 60%;
+    --game-board: 220, 15%, 12%;
+    --tile-path: 220, 10%, 28%;
+    --tile-empty: 220, 12%, 14%;
+    --tile-special: 55, 95%, 60%;
+    --player: 200, 100%, 60%;
+    --goal: 55, 95%, 60%;
   }
 }
 
@@ -128,8 +128,8 @@ All colors MUST be HSL.
   }
 
   @keyframes tile-glow {
-    0%, 100% { box-shadow: 0 0 10px hsl(var(--primary-glow) / 0.3); }
-    50% { box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.6); }
+    0%, 100% { box-shadow: 0 0 10px hsla(var(--primary-glow), 0.3); }
+    50% { box-shadow: 0 0 20px hsla(var(--primary-glow), 0.6); }
   }
 
   @keyframes player-bounce {
@@ -138,8 +138,8 @@ All colors MUST be HSL.
   }
 
   @keyframes goal-pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px hsl(var(--goal) / 0.4); }
-    50% { transform: scale(1.1); box-shadow: 0 0 30px hsl(var(--goal) / 0.8); }
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px hsla(var(--goal), 0.4); }
+    50% { transform: scale(1.1); box-shadow: 0 0 30px hsla(var(--goal), 0.8); }
   }
 
   .tile-slide { animation: tile-slide 0.3s ease-out; }
