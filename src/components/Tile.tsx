@@ -12,37 +12,30 @@ interface TileProps {
 }
 
 export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart, isEnergized }) => {
-  const buildMaskDataUrl = () => {
-    if (tile.type !== TileType.PATH) return undefined;
+  const getPathLineElements = (strokeColor: string) => {
+    if (tile.type !== TileType.PATH) return null;
 
-    const thickness = 30; // ~30% of tile size
+    const thickness = 30; // ~30% av tiles storlek
     const half = 50;
-    const lines: string[] = [];
 
-    if (tile.connections.north) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="0" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
-    }
-    if (tile.connections.south) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="100" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
-    }
-    if (tile.connections.east) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="100" y2="${half}" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
-    }
-    if (tile.connections.west) {
-      lines.push(`<line x1="${half}" y1="${half}" x2="0" y2="${half}" stroke="white" stroke-width="${thickness}" stroke-linecap="round" />`);
-    }
-
-    // Optional center node
-    // lines.push(`<circle cx="${half}" cy="${half}" r="${thickness/4}" fill="white" />`);
-
-    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n` +
-      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>` +
-      `<rect x='0' y='0' width='100' height='100' rx='12' ry='12' fill='black'/>` +
-      `${lines.join('')}` +
-      `</svg>`;
-
-    const encoded = encodeURIComponent(svg);
-    return `url("data:image/svg+xml;utf8,${encoded}")`;
+    return (
+      <g stroke={strokeColor} strokeWidth={thickness} strokeLinecap="round" fill="none">
+        {tile.connections.north && (
+          <line x1={half} y1={half} x2={half} y2={0} />
+        )}
+        {tile.connections.south && (
+          <line x1={half} y1={half} x2={half} y2={100} />
+        )}
+        {tile.connections.east && (
+          <line x1={half} y1={half} x2={100} y2={half} />
+        )}
+        {tile.connections.west && (
+          <line x1={half} y1={half} x2={0} y2={half} />
+        )}
+        {/* Centernod (valfritt) */}
+        {/* <circle cx={half} cy={half} r={thickness/4} fill={strokeColor} /> */}
+      </g>
+    );
   };
 
   const getSpecialIcon = () => {
@@ -89,32 +82,20 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
 
       {/* Neutral path symbol (always visible) */}
       {tile.type === TileType.PATH && (
-        <div
-          className="absolute inset-0 rounded-lg bg-game-tile-path/90"
-          style={{
-            WebkitMaskImage: buildMaskDataUrl(),
-            maskImage: buildMaskDataUrl(),
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%'
-          }}
-        />
+        <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {getPathLineElements('hsl(var(--tile-path))')}
+        </svg>
       )}
 
       {/* Energy fill along the path (when energized) */}
       {tile.type === TileType.PATH && (
-        <div
-          className={`absolute inset-0 rounded-lg bg-energy shadow-glow ${isEnergized ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-          style={{
-            WebkitMaskImage: buildMaskDataUrl(),
-            maskImage: buildMaskDataUrl(),
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%'
-          }}
-        />
+        <svg
+          className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          {getPathLineElements('hsl(var(--energy))')}
+        </svg>
       )}
 
       {/* Empty tiles keep their background */}
