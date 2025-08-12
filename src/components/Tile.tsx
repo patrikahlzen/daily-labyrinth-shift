@@ -8,34 +8,41 @@ interface TileProps {
   isGoal?: boolean;
   isPreview?: boolean;
   isStart?: boolean;
+  isEnergized?: boolean;
 }
 
-export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart }) => {
-  const getPathElements = () => {
-    const paths: React.ReactNode[] = [];
-    
+export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart, isEnergized }) => {
+  const buildMaskDataUrl = () => {
+    if (tile.type !== TileType.PATH) return undefined;
+
+    const thickness = 30; // ~30% of tile size
+    const half = 50;
+    const lines: string[] = [];
+
     if (tile.connections.north) {
-      paths.push(
-        <div key="north" className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-1/2 bg-foreground/80" />
-      );
+      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="0" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.south) {
-      paths.push(
-        <div key="south" className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-1/2 bg-foreground/80" />
-      );
+      lines.push(`<line x1="${half}" y1="${half}" x2="${half}" y2="100" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.east) {
-      paths.push(
-        <div key="east" className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1/2 h-2 bg-foreground/80" />
-      );
+      lines.push(`<line x1="${half}" y1="${half}" x2="100" y2="${half}" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
     if (tile.connections.west) {
-      paths.push(
-        <div key="west" className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1/2 h-2 bg-foreground/80" />
-      );
+      lines.push(`<line x1="${half}" y1="${half}" x2="0" y2="${half}" stroke="black" stroke-width="${thickness}" stroke-linecap="round" />`);
     }
 
-    return paths;
+    // Optional center dot cutout for intersections
+    // lines.push(`<circle cx="${half}" cy="${half}" r="${thickness/4}" fill="black" />`);
+
+    const svg = `<?xml version='1.0' encoding='UTF-8'?>\n` +
+      `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>` +
+      `<rect x='0' y='0' width='100' height='100' rx='12' ry='12' fill='white'/>` +
+      `${lines.join('')}` +
+      `</svg>`;
+
+    const encoded = encodeURIComponent(svg);
+    return `url("data:image/svg+xml;utf8,${encoded}")`;
   };
 
   const getSpecialIcon = () => {
@@ -59,10 +66,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
     if (tile.type === TileType.EMPTY) {
       baseClass += "bg-game-tile-empty ";
     } else {
-      baseClass += "bg-gradient-tile shadow-tile ";
-      if (tile.special && tile.special !== 'key') {
-        baseClass += "bg-gradient-special ";
-      }
+      baseClass += "shadow-tile ";
     }
 
     if (isPreview) {
@@ -78,12 +82,31 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
 
   return (
     <div className={getTileClassName()}>
-      {/* Path connections */}
-      {tile.type === TileType.PATH && getPathElements()}
-      
-      {/* Center dot for intersections */}
+      {/* Energy layer (shows through cutout) */}
       {tile.type === TileType.PATH && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-foreground/80 rounded-full" />
+        <div
+          className={`absolute inset-0 rounded-lg bg-energy ${isEnergized ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+        />
+      )}
+
+      {/* Tile body with SVG mask cutout for the path symbol */}
+      {tile.type === TileType.PATH && (
+        <div
+          className="absolute inset-0 rounded-lg bg-gradient-tile"
+          style={{
+            WebkitMaskImage: buildMaskDataUrl(),
+            maskImage: buildMaskDataUrl(),
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskSize: '100% 100%',
+            maskSize: '100% 100%'
+          }}
+        />
+      )}
+
+      {/* Empty tiles keep their background */}
+      {tile.type === TileType.EMPTY && (
+        <div className="absolute inset-0 rounded-lg" />
       )}
 
       {/* Special items */}

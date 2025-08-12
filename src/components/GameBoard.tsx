@@ -129,6 +129,7 @@ const handleDragEnd = () => {
                     isGoal={isGoal}
                     isPreview={isPreview}
                     isStart={isStart}
+                    isEnergized={Boolean(previewPath?.some(p => p.x === colIndex && p.y === rowIndex) || isStart)}
                   />
                   {/* Preview path highlight */}
                   {previewPath?.some(p => p.x === colIndex && p.y === rowIndex) && (
