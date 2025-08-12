@@ -42,6 +42,39 @@ export const useGameLogic = () => {
     };
   });
 
+  // Persistence: save/restore daily state
+  const STORAGE_KEY = `dlab_state_${getDailyKeySE()}`;
+
+  // Restore on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        setGameState(prev => ({ ...prev, ...saved }));
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save on relevant changes
+  useEffect(() => {
+    try {
+      const toSave = {
+        board: gameState.board,
+        startPosition: gameState.startPosition,
+        goalPosition: gameState.goalPosition,
+        playerPosition: gameState.playerPosition,
+        heldTile: gameState.heldTile,
+        moves: gameState.moves,
+        timer: gameState.timer,
+        gameStarted: gameState.gameStarted,
+        gameCompleted: gameState.gameCompleted,
+      } as const;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch {}
+  }, [gameState.board, gameState.startPosition, gameState.goalPosition, gameState.playerPosition, gameState.heldTile, gameState.moves, gameState.timer, gameState.gameStarted, gameState.gameCompleted]);
+
   // Timer effect
   useEffect(() => {
     if (!gameState.gameStarted || gameState.gameCompleted) return;

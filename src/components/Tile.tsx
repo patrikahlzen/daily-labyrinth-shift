@@ -12,28 +12,32 @@ interface TileProps {
 }
 
 export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart, isEnergized }) => {
-  const getPathLineElements = (strokeOpacity: number = 1) => {
+  const renderPathMask = () => {
     if (tile.type !== TileType.PATH) return null;
 
     const thickness = 30; // ~30% of tile size
     const half = 50;
-    const hubRadius = 18; // leave a clean gap at center; covered by hub circle
+
+    const maskId = `tile-mask-${tile.id}`;
 
     return (
-      <g stroke="currentColor" strokeOpacity={strokeOpacity} strokeWidth={thickness} strokeLinecap="round" fill="none">
-        {tile.connections.north && (
-          <line x1={half} y1={half - hubRadius} x2={half} y2={0} />
-        )}
-        {tile.connections.south && (
-          <line x1={half} y1={half + hubRadius} x2={half} y2={100} />
-        )}
-        {tile.connections.east && (
-          <line x1={half + hubRadius} y1={half} x2={100} y2={half} />
-        )}
-        {tile.connections.west && (
-          <line x1={half - hubRadius} y1={half} x2={0} y2={half} />
-        )}
-      </g>
+      <mask id={maskId} maskUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="100" height="100" fill="black" />
+        <g stroke="white" strokeWidth={thickness} strokeLinecap="round" fill="none">
+          {tile.connections.north && (
+            <line x1={half} y1={half} x2={half} y2={0} />
+          )}
+          {tile.connections.south && (
+            <line x1={half} y1={half} x2={half} y2={100} />
+          )}
+          {tile.connections.east && (
+            <line x1={half} y1={half} x2={100} y2={half} />
+          )}
+          {tile.connections.west && (
+            <line x1={half} y1={half} x2={0} y2={half} />
+          )}
+        </g>
+      </mask>
     );
   };
 
@@ -83,29 +87,29 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
           <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
           {/* Gloss and glass overlays */}
           <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-br from-foreground/10 via-transparent to-transparent opacity-[0.12]" />
-          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[1.2px] bg-background/5" />
+          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[3px] bg-background/5" />
         </>
       )}
 
       {/* Neutral path symbol (always visible) */}
       {tile.type === TileType.PATH && (
         <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--foreground))' }}>
-          {getPathLineElements(0.7)}
-          <circle cx={50} cy={50} r={18} fill="currentColor" fillOpacity={0.7} />
+          {renderPathMask()}
+          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.7} mask={`url(#tile-mask-${tile.id})`} />
         </svg>
       )}
 
       {/* Energy fill along the path (when energized) */}
       {tile.type === TileType.PATH && (
-        <svg
-          className={`absolute inset-0 pointer-events-none mix-blend-screen transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 10px hsl(var(--energy) / 0.95))' }}
-        >
-          {getPathLineElements(1)}
-          <circle cx={50} cy={50} r={18} fill="currentColor" />
-        </svg>
+          <svg
+            className={`absolute inset-0 pointer-events-none mix-blend-screen transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 10px hsl(var(--energy) / 0.95))' }}
+          >
+            {renderPathMask()}
+            <rect x={0} y={0} width={100} height={100} fill="currentColor" mask={`url(#tile-mask-${tile.id})`} />
+          </svg>
       )}
 
       {/* Empty tiles keep their background */}

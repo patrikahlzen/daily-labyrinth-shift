@@ -65,10 +65,10 @@ const Index = () => {
           <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
             <h2 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h2>
             <p className="text-muted-foreground mb-2">
-              Create an unbroken path from Start to Goal by swapping tiles. Drag & drop or tap any two cells. Everyone plays the same daily puzzle.
+              Build a continuous path from Start to Goal by swapping tiles. Drag & drop or tap any two cells. Everyone plays the same daily puzzle.
             </p>
             <p className="text-sm text-muted-foreground mb-6">
-              Resets at midnight (local time). Time and moves are tracked. Puzzle #{String(puzzleNumber).padStart(2,'0')} · new in {countdown}
+              Resets at midnight. Your time and moves are tracked. Puzzle #{String(puzzleNumber).padStart(2,'0')} · new in {countdown}
             </p>
             <button
               onClick={startGame}
