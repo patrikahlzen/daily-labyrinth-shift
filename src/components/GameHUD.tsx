@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer, Move, Target, Undo, Check, RotateCcw } from 'lucide-react';
+import { Timer, Move, Target, Undo, RotateCcw } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface GameHUDProps {
@@ -9,8 +9,6 @@ interface GameHUDProps {
   canRewind: boolean;
   onUndo: () => void;
   onRewind: () => void;
-  onConfirmMove: () => void;
-  hasUnconfirmedMove: boolean;
 }
 
 export const GameHUD: React.FC<GameHUDProps> = ({
@@ -19,9 +17,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
   canUndo,
   canRewind,
   onUndo,
-  onRewind,
-  onConfirmMove,
-  hasUnconfirmedMove
+  onRewind
 }) => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -52,14 +48,15 @@ export const GameHUD: React.FC<GameHUDProps> = ({
       </div>
 
       {/* Bottom HUD */}
-      <div className="flex justify-between items-center p-4 mx-4 mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-center items-center p-4 mx-4 mb-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="secondary"
             size="sm"
             onClick={onRewind}
             disabled={!canRewind}
-            className="flex items-center gap-2 justify-center px-4 min-w-[110px]"
+            className="px-5"
+            aria-label="Spola tillbaka"
           >
             <RotateCcw className="w-4 h-4" />
             Rewind
@@ -70,23 +67,13 @@ export const GameHUD: React.FC<GameHUDProps> = ({
             size="sm"
             onClick={onUndo}
             disabled={!canUndo}
-            className="flex items-center gap-2 justify-center px-4 min-w-[110px]"
+            className="px-5"
+            aria-label="Ångra drag"
           >
             <Undo className="w-4 h-4" />
             Undo
           </Button>
         </div>
-
-        <Button
-          variant="default"
-          size="sm"
-          onClick={onConfirmMove}
-          disabled={!hasUnconfirmedMove}
-          className="flex items-center gap-2 justify-center px-4 min-w-[110px] bg-gradient-primary hover:opacity-90"
-        >
-          <Check className="w-4 h-4" />
-          Confirm Move
-        </Button>
       </div>
     </>
   );

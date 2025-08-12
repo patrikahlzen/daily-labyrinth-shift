@@ -91,10 +91,10 @@ const handleDragEnd = () => {
 };
 
   return (
-<div className="relative px-[50px] overscroll-none select-none">
+<div className="relative px-4 md:px-8 overscroll-none select-none">
       {/* Game Board */}
 <div 
-        className="grid gap-1 p-0 pb-[200px] bg-gradient-board rounded-2xl shadow-game w-[calc(100vw-100px)] mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
+        className="grid gap-1 p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-3xl mx-auto max-h-[85vh] overflow-y-auto touch-pan-y overscroll-contain select-none"
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
       >
         {board.map((row, rowIndex) =>

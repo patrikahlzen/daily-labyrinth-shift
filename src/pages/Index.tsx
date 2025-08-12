@@ -7,7 +7,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, confirmMove, rewindStep, chooseDirection, onTileTap, onSwapTiles } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, rewindStep, chooseDirection, onTileTap, onSwapTiles } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
 
@@ -35,8 +35,6 @@ const Index = () => {
         canRewind={gameState.canRewind}
         onUndo={undoMove}
         onRewind={rewindStep}
-        onConfirmMove={confirmMove}
-        hasUnconfirmedMove={Boolean(gameState.pendingSwap)}
       />
 
       {/* Main Game Area */}
