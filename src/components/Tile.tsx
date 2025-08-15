@@ -61,7 +61,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
     
     if (tile.type === TileType.EMPTY) {
       baseClass += "bg-game-tile-empty ";
-    } else {
+    } else if (tile.type === TileType.PATH) {
       baseClass += "shadow-tile ";
     }
 
@@ -89,6 +89,11 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
           <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-br from-foreground/10 via-transparent to-transparent opacity-[0.12]" />
           <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[3px] bg-background/5" />
         </>
+      )}
+
+      {/* Empty tiles background */}
+      {tile.type === TileType.EMPTY && (
+        <div className="absolute inset-0 rounded-lg bg-game-tile-empty" />
       )}
 
       {/* Neutral path symbol (always visible) */}
