@@ -12,32 +12,35 @@ interface TileProps {
 }
 
 export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, isStart, isEnergized }) => {
+  // Generate unique mask ID using position and random number for Safari compatibility
+  const maskId = React.useMemo(() => `tile-mask-${tile.id}-${Math.random().toString(36).substr(2, 9)}`, [tile.id]);
+
   const renderPathMask = () => {
     if (tile.type !== TileType.PATH) return null;
 
     const thickness = 30; // ~30% of tile size
     const half = 50;
 
-    const maskId = `tile-mask-${tile.id}`;
-
     return (
-      <mask id={maskId} maskUnits="userSpaceOnUse">
-        <rect x="0" y="0" width="100" height="100" fill="black" />
-        <g stroke="white" strokeWidth={thickness} strokeLinecap="round" fill="none">
-          {tile.connections.north && (
-            <line x1={half} y1={half} x2={half} y2={0} />
-          )}
-          {tile.connections.south && (
-            <line x1={half} y1={half} x2={half} y2={100} />
-          )}
-          {tile.connections.east && (
-            <line x1={half} y1={half} x2={100} y2={half} />
-          )}
-          {tile.connections.west && (
-            <line x1={half} y1={half} x2={0} y2={half} />
-          )}
-        </g>
-      </mask>
+      <defs>
+        <mask id={maskId} maskUnits="userSpaceOnUse">
+          <rect x="0" y="0" width="100" height="100" fill="black" />
+          <g stroke="white" strokeWidth={thickness} strokeLinecap="round" fill="none">
+            {tile.connections.north && (
+              <line x1={half} y1={half} x2={half} y2={0} />
+            )}
+            {tile.connections.south && (
+              <line x1={half} y1={half} x2={half} y2={100} />
+            )}
+            {tile.connections.east && (
+              <line x1={half} y1={half} x2={100} y2={half} />
+            )}
+            {tile.connections.west && (
+              <line x1={half} y1={half} x2={0} y2={half} />
+            )}
+          </g>
+        </mask>
+      </defs>
     );
   };
 
@@ -100,7 +103,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
       {tile.type === TileType.PATH && (
         <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--foreground))' }}>
           {renderPathMask()}
-          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.7} mask={`url(#tile-mask-${tile.id})`} />
+          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.7} mask={`url(#${maskId})`} />
         </svg>
       )}
 
@@ -113,7 +116,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
             style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 10px hsl(var(--energy) / 0.95))' }}
           >
             {renderPathMask()}
-            <rect x={0} y={0} width={100} height={100} fill="currentColor" mask={`url(#tile-mask-${tile.id})`} />
+            <rect x={0} y={0} width={100} height={100} fill="currentColor" mask={`url(#${maskId})`} />
           </svg>
       )}
 
