@@ -7,7 +7,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, rewindStep, chooseDirection, onTileTap, onSwapTiles } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
 
@@ -28,31 +28,26 @@ const Index = () => {
       </header>
 
       {/* Top HUD */}
-      <GameHUD
-        timer={gameState.timer}
-        moves={gameState.moves}
-        canUndo={gameState.canUndo}
-        canRewind={gameState.canRewind}
-        onUndo={undoMove}
-        onRewind={rewindStep}
-      />
+        <GameHUD
+          timer={gameState.timer}
+          moves={gameState.moves}
+          canUndo={gameState.canUndo}
+          onUndo={undoMove}
+        />
 
       {/* Main Game Area */}
       <div className="flex-1 flex flex-col items-center justify-center px-4">
-      <GameBoard
-        board={gameState.board}
-        playerPosition={gameState.playerPosition}
-        goalPosition={gameState.goalPosition}
-        startPosition={gameState.startPosition}
-        onTilePush={pushTile}
-        previewMove={gameState.previewMove}
-        previewPath={gameState.previewPath}
-        branchChoice={gameState.branchChoice}
-        onChooseDirection={chooseDirection}
-        onTileTap={onTileTap}
-        selectedTile={gameState.selectedTile}
-        onSwapTiles={onSwapTiles}
-      />
+        <GameBoard
+          board={gameState.board}
+          goalPosition={gameState.goalPosition}
+          startPosition={gameState.startPosition}
+          onTilePush={pushTile}
+          connectedPath={gameState.connectedPath}
+          validConnection={gameState.validConnection}
+          onTileTap={onTileTap}
+          selectedTile={gameState.selectedTile}
+          onSwapTiles={onSwapTiles}
+        />
       </div>
       {/* End screen overlay */}
       {showEnd && (

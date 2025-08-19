@@ -4,14 +4,12 @@ import { GameTile, TileType, Direction } from '../types/game';
 
 interface GameBoardProps {
   board: GameTile[][];
-  playerPosition: { x: number; y: number };
   goalPosition: { x: number; y: number };
   startPosition: { x: number; y: number };
   onTilePush: (row: number, col: number, direction: Direction) => void;
-  previewMove?: { row: number; col: number; direction: Direction } | null;
-  previewPath?: { x: number; y: number }[];
-  branchChoice?: { x: number; y: number; options: Direction[] } | null;
-  onChooseDirection?: (dir: Direction) => void;
+  // Real-time path connection system
+  connectedPath?: { x: number; y: number }[];
+  validConnection?: boolean;
   // Swap-only controls
   onTileTap?: (row: number, col: number) => void;
   selectedTile?: { row: number; col: number } | null;
@@ -21,14 +19,11 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({
   board,
-  playerPosition,
   goalPosition,
   startPosition,
   onTilePush,
-  previewMove,
-  previewPath,
-  branchChoice,
-  onChooseDirection,
+  connectedPath,
+  validConnection,
   onTileTap,
   selectedTile,
   onSwapTiles
@@ -99,10 +94,9 @@ const handleDragEnd = () => {
       >
         {board.map((row, rowIndex) =>
           row.map((tile, colIndex) => {
-            const isPlayer = playerPosition.x === colIndex && playerPosition.y === rowIndex;
             const isGoal = goalPosition.x === colIndex && goalPosition.y === rowIndex;
-            const isPreview = previewMove?.row === rowIndex && previewMove?.col === colIndex;
             const isStart = startPosition.x === colIndex && startPosition.y === rowIndex;
+            const isConnected = connectedPath?.some(p => p.x === colIndex && p.y === rowIndex) || false;
             const isLockedCell = isStart || isGoal;
 
             return (
@@ -125,15 +119,14 @@ const handleDragEnd = () => {
                 <div className="absolute inset-0">
                   <Tile
                     tile={tile}
-                    isPlayer={isPlayer}
                     isGoal={isGoal}
-                    isPreview={isPreview}
                     isStart={isStart}
-                    isEnergized={Boolean(previewPath?.some(p => p.x === colIndex && p.y === rowIndex) || isStart)}
+                    isConnected={isConnected}
+                    isValidPath={validConnection}
                   />
-                  {/* Preview path highlight */}
-                  {previewPath?.some(p => p.x === colIndex && p.y === rowIndex) && (
-                    <div className="absolute inset-0 ring-2 ring-primary/60 rounded-lg pointer-events-none tile-glow" />
+                  {/* Connected path highlight */}
+                  {isConnected && validConnection && (
+                    <div className="absolute inset-0 ring-2 ring-energy/80 rounded-lg pointer-events-none path-glow" />
                   )}
                   {/* Selected tile highlight */}
                   {selectedTile && selectedTile.row === rowIndex && selectedTile.col === colIndex && (
@@ -146,53 +139,6 @@ const handleDragEnd = () => {
                 </div>
                 
 
-                {/* Direction picker at branch */}
-                {branchChoice && branchChoice.x === colIndex && branchChoice.y === rowIndex && onChooseDirection && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="relative w-full h-full">
-                      {/* Up */}
-                      {branchChoice.options.includes('up') && (
-                        <button
-                          aria-label="Choose up"
-                          onClick={() => onChooseDirection('up')}
-                          className="absolute top-1.5 left-1/2 -translate-x-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
-                        >
-                          ↑
-                        </button>
-                      )}
-                      {/* Down */}
-                      {branchChoice.options.includes('down') && (
-                        <button
-                          aria-label="Choose down"
-                          onClick={() => onChooseDirection('down')}
-                          className="absolute bottom-1.5 left-1/2 -translate-x-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
-                        >
-                          ↓
-                        </button>
-                      )}
-                      {/* Left */}
-                      {branchChoice.options.includes('left') && (
-                        <button
-                          aria-label="Choose left"
-                          onClick={() => onChooseDirection('left')}
-                          className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
-                        >
-                          ←
-                        </button>
-                      )}
-                      {/* Right */}
-                      {branchChoice.options.includes('right') && (
-                        <button
-                          aria-label="Choose right"
-                          onClick={() => onChooseDirection('right')}
-                          className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-card/80 rounded-full p-1 shadow-tile hover-scale"
-                        >
-                          →
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* Close tile wrapper */}
               </div>
