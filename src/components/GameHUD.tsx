@@ -1,6 +1,5 @@
 import React from 'react';
-import { Timer, Move, Target, Undo, RotateCcw } from 'lucide-react';
-import { Button } from './ui/button';
+import { Clock, SkipBack, Undo2, Target } from 'lucide-react';
 
 interface GameHUDProps {
   timer: number;
@@ -27,51 +26,42 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
   return (
     <>
-      {/* Top HUD */}
-      <div className="flex justify-between items-center p-4 bg-card/50 backdrop-blur-sm rounded-2xl mx-4 mt-4 shadow-tile">
-        <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-game-goal" />
-          <span className="text-sm font-medium text-game-goal">Daily Quest</span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <Timer className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-mono">{formatTime(timer)}</span>
+      {/* Enhanced Top HUD with liquid glass design */}
+      <div className="text-center mb-4">
+        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-3">
+          Dagens Utmaning
+        </h1>
+        <div className="flex justify-center items-center gap-8 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="font-medium">{formatTime(timer)}</span>
           </div>
-          
-          <div className="flex items-center gap-1">
-            <Move className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-mono">{moves}</span>
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
+            <Target className="w-4 h-4 text-accent" />
+            <span className="font-medium">{moves} drag</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom HUD */}
-      <div className="flex justify-center items-center p-4 mx-4 mb-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            size="lg"
-            onClick={onRewind}
-            disabled={!canRewind}
-            aria-label="Rewind"
-          >
-            <RotateCcw className="w-5 h-5" />
-            Rewind
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="lg"
-            onClick={onUndo}
-            disabled={!canUndo}
-            aria-label="Undo move"
-          >
-            <Undo className="w-5 h-5" />
-            Undo
-          </Button>
-        </div>
+      {/* Enhanced Bottom HUD with glass morphism */}
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={onRewind}
+          disabled={!canRewind}
+          className="group flex items-center gap-2 px-5 py-2.5 bg-card/70 backdrop-blur-sm border border-border/50 text-foreground rounded-xl hover:bg-card/90 hover:border-primary/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-glow"
+        >
+          <SkipBack className="w-4 h-4 group-hover:text-primary transition-colors" />
+          <span className="font-medium">Återställ</span>
+        </button>
+        
+        <button
+          onClick={onUndo}
+          disabled={!canUndo}
+          className="group flex items-center gap-2 px-5 py-2.5 bg-card/70 backdrop-blur-sm border border-border/50 text-foreground rounded-xl hover:bg-card/90 hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-glow"
+        >
+          <Undo2 className="w-4 h-4 group-hover:text-accent transition-colors" />
+          <span className="font-medium">Ångra</span>
+        </button>
       </div>
     </>
   );

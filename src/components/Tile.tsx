@@ -53,30 +53,40 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
       case 'block':
         return <Square className="w-4 h-4 text-muted-foreground" />;
       case 'gem':
-        return <Gem className="w-4 h-4 text-accent animate-pulse" />;
+        return (
+          <div className="relative">
+            <Gem className="w-5 h-5 text-accent drop-shadow-sm" 
+                 style={{ filter: 'drop-shadow(0 0 8px hsl(var(--accent) / 0.6))' }} />
+            <div className="absolute inset-0 w-5 h-5 rounded-full bg-accent/20 animate-ping" />
+          </div>
+        );
       default:
         return null;
     }
   };
 
   const getTileClassName = () => {
-    let baseClass = "w-full h-full rounded-lg relative transition-all duration-300 ";
+    let baseClass = "w-full h-full rounded-lg relative transition-smooth backdrop-blur-sm ";
     
     if (tile.type === TileType.EMPTY) {
       baseClass += "bg-game-tile-empty ";
     } else if (tile.type === TileType.PATH) {
       baseClass += "shadow-tile ";
+      if (isEnergized) {
+        baseClass += "path-discovery ";
+      }
     }
 
-    // subtle border/ring for a more polished look
-    baseClass += "ring-1 ring-foreground/10 ";
-
+    // Liquid glass effect with subtle border
+    baseClass += "ring-1 ring-foreground/15 ";
+    
+    // Enhanced preview effect
     if (isPreview) {
-      baseClass += "ring-2 ring-primary ring-opacity-60 ";
+      baseClass += "ring-2 ring-primary/80 shadow-glow ";
     }
 
     if (isPlayer) {
-      baseClass += "tile-glow ";
+      baseClass += "shadow-glow ";
     }
 
     return baseClass;
@@ -84,13 +94,17 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
 
   return (
     <div className={getTileClassName()}>
-      {/* Base background for PATH tiles */}
+      {/* Enhanced PATH tiles with liquid glass effect */}
       {tile.type === TileType.PATH && (
         <>
           <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
-          {/* Gloss and glass overlays */}
-          <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-br from-foreground/10 via-transparent to-transparent opacity-[0.12]" />
-          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[3px] bg-background/5" />
+          {/* Liquid glass layers */}
+          <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-glass" 
+               style={{ boxShadow: 'var(--shadow-glass)' }} />
+          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[2px] bg-foreground/5" />
+          {isEnergized && (
+            <div className="absolute inset-0 rounded-lg liquid-shimmer pointer-events-none" />
+          )}
         </>
       )}
 
@@ -107,16 +121,29 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
         </svg>
       )}
 
-      {/* Energy fill along the path (when energized) */}
+      {/* Enhanced energy flow with gradient animation */}
       {tile.type === TileType.PATH && (
           <svg
-            className={`absolute inset-0 pointer-events-none mix-blend-screen transition-opacity duration-300 ${isEnergized ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 pointer-events-none transition-all duration-500 ${
+              isEnergized ? 'opacity-100 energy-flow' : 'opacity-0'
+            }`}
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
-            style={{ color: 'hsl(var(--energy))', filter: 'drop-shadow(0 0 10px hsl(var(--energy) / 0.95))' }}
+            style={{ 
+              filter: 'drop-shadow(0 0 15px hsl(var(--energy) / 0.8)) brightness(1.2)'
+            }}
           >
             {renderPathMask()}
-            <rect x={0} y={0} width={100} height={100} fill="currentColor" mask={`url(#${maskId})`} />
+            <defs>
+              <linearGradient id={`energy-gradient-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--energy))" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="hsl(var(--energy-flow))" stopOpacity="1" />
+                <stop offset="100%" stopColor="hsl(var(--energy))" stopOpacity="0.9" />
+              </linearGradient>
+            </defs>
+            <rect x={0} y={0} width={100} height={100} 
+                  fill={`url(#energy-gradient-${tile.id})`} 
+                  mask={`url(#${maskId})`} />
           </svg>
       )}
 
@@ -132,27 +159,44 @@ export const Tile: React.FC<TileProps> = ({ tile, isPlayer, isGoal, isPreview, i
         </div>
       )}
 
-      {/* Player */}
+      {/* Enhanced Player with liquid glass effect */}
       {isPlayer && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 bg-game-player rounded-full shadow-glow player-bounce border-2 border-foreground/20" />
-        </div>
-      )}
-
-      {/* Goal */}
-      {isGoal && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 bg-game-goal rounded-lg shadow-glow goal-pulse border-2 border-accent/40 flex items-center justify-center">
-            <Gem className="w-4 h-4 text-accent-foreground" />
+          <div className="relative">
+            <div className="w-7 h-7 bg-game-player rounded-full player-bounce border-2 border-foreground/30 backdrop-blur-sm"
+                 style={{ 
+                   boxShadow: '0 0 20px hsl(var(--player) / 0.6), inset 0 1px 0 hsl(var(--foreground) / 0.2)'
+                 }} />
+            <div className="absolute inset-0 w-7 h-7 rounded-full bg-gradient-to-br from-foreground/20 to-transparent pointer-events-none" />
           </div>
         </div>
       )}
 
-      {/* Energy Source (Start) */}
+      {/* Enhanced Goal with magnetic attraction effect */}
+      {isGoal && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative">
+            <div className="w-9 h-9 bg-gradient-to-br from-game-goal to-accent rounded-xl goal-magnetic border-2 border-accent/50 backdrop-blur-sm flex items-center justify-center"
+                 style={{ boxShadow: 'var(--shadow-glass)' }}>
+              <Gem className="w-5 h-5 text-accent-foreground drop-shadow-sm" />
+            </div>
+            <div className="absolute inset-0 w-9 h-9 rounded-xl bg-gradient-glass pointer-events-none" />
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Energy Source (Start) with beacon effect */}
       {isStart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-6 h-6 rounded-full bg-primary/20 border border-primary/30 shadow-glow flex items-center justify-center">
-            <Zap className="w-3 h-3 text-primary" />
+          <div className="relative">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-start/30 to-start/20 border-2 border-start/40 start-beacon backdrop-blur-sm flex items-center justify-center"
+                 style={{ 
+                   boxShadow: '0 0 15px hsl(var(--start) / 0.5), var(--shadow-glass)'
+                 }}>
+              <Zap className="w-4 h-4 text-start drop-shadow-sm" />
+            </div>
+            <div className="absolute inset-0 w-7 h-7 rounded-full bg-gradient-glass pointer-events-none" />
+            <div className="absolute inset-0 w-7 h-7 rounded-full bg-start/20 animate-ping" />
           </div>
         </div>
       )}

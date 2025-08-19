@@ -8,60 +8,73 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Daily Labyrinth - Dark Citrus Theme */
-    --background: 220 12% 10%;
-    --foreground: 60 25% 92%;
+    /* Apple-Inspired Liquid Glass Design System */
+    --background: 220 18% 8%;
+    --foreground: 60 30% 96%;
 
-    --card: 220 12% 12%;
-    --card-foreground: 60 25% 92%;
+    --card: 220 15% 11%;
+    --card-foreground: 60 30% 96%;
 
-    --popover: 220 12% 12%;
-    --popover-foreground: 60 25% 92%;
+    --popover: 220 15% 11%;
+    --popover-foreground: 60 30% 96%;
 
-    --primary: 55 95% 60%;
-    --primary-foreground: 240 10% 10%;
-    --primary-glow: 55 95% 70%;
+    --primary: 55 100% 65%;
+    --primary-foreground: 240 15% 8%;
+    --primary-glow: 55 100% 75%;
 
-    --secondary: 155 45% 28%;
-    --secondary-foreground: 60 25% 92%;
+    --secondary: 155 50% 30%;
+    --secondary-foreground: 60 30% 96%;
 
-    --muted: 220 12% 16%;
-    --muted-foreground: 220 8% 70%;
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 12% 75%;
 
-    --accent: 55 95% 60%;
-    --accent-foreground: 240 10% 10%;
+    --accent: 55 100% 65%;
+    --accent-foreground: 240 15% 8%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 60 25% 92%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 60 30% 96%;
 
-    --border: 220 12% 22%;
-    --input: 220 12% 16%;
-    --ring: 55 95% 60%;
+    --border: 220 15% 25%;
+    --input: 220 15% 18%;
+    --ring: 55 100% 65%;
 
-    /* Game-specific colors */
-    --game-board: 220 15% 12%;
-    --tile-path: 220 10% 28%;
-    --tile-empty: 220 12% 14%;
-    --tile-special: 55 95% 60%;
-    --player: 200 100% 60%;
-    --goal: 55 95% 60%;
-    /* Energy color for active paths */
-    --energy: 55 100% 62%;
+    /* Game-specific colors - Enhanced */
+    --game-board: 220 20% 10%;
+    --tile-path: 220 15% 32%;
+    --tile-empty: 220 18% 15%;
+    --tile-special: 55 100% 65%;
+    --player: 200 100% 65%;
+    --goal: 55 100% 65%;
+    --start: 200 100% 65%;
+    --energy: 55 100% 70%;
+    --energy-flow: 55 100% 80%;
+    --gem-collect: 50 100% 75%;
     
-    /* Gradients */
+    /* Liquid Glass Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(220 15% 9%));
-    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(220 10% 32%));
-    --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50 100% 75%));
+    --gradient-board: linear-gradient(180deg, hsl(var(--game-board)), hsl(220 22% 7%));
+    --gradient-tile: linear-gradient(145deg, hsl(var(--tile-path)), hsl(220 15% 36%));
+    --gradient-special: linear-gradient(135deg, hsl(var(--tile-special)), hsl(50 100% 80%));
+    --gradient-glass: linear-gradient(145deg, 
+      hsl(var(--foreground) / 0.1), 
+      hsl(var(--foreground) / 0.05),
+      transparent);
+    --gradient-energy: linear-gradient(90deg, 
+      hsl(var(--energy) / 0.8), 
+      hsl(var(--energy-flow) / 0.9),
+      hsl(var(--energy) / 0.8));
     
-    /* Shadows */
-    --shadow-game: 0 20px 40px -10px hsl(140 50% 5% / 0.8);
-    --shadow-tile: 0 4px 12px -2px hsl(140 50% 5% / 0.6);
-    --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.5);
+    /* Apple-inspired Shadows */
+    --shadow-game: 0 25px 50px -15px hsl(220 20% 5% / 0.9);
+    --shadow-tile: 0 6px 20px -4px hsl(220 20% 5% / 0.7);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.6);
+    --shadow-energy: 0 0 25px hsl(var(--energy) / 0.8);
+    --shadow-glass: inset 0 1px 0 hsl(var(--foreground) / 0.1);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Smooth Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --radius: 0.75rem;
 
@@ -124,31 +137,134 @@ All colors MUST be HSL.
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
   }
 
-  /* Game-specific animations */
+  /* Apple-Inspired Game Animations */
   @keyframes tile-slide {
-    0% { transform: translateX(-100%); opacity: 0; }
-    100% { transform: translateX(0); opacity: 1; }
+    0% { 
+      transform: translateX(-100%) scale(0.9); 
+      opacity: 0; 
+      filter: blur(4px);
+    }
+    100% { 
+      transform: translateX(0) scale(1); 
+      opacity: 1; 
+      filter: blur(0);
+    }
   }
 
-  @keyframes tile-glow {
-    0%, 100% { box-shadow: 0 0 10px hsl(var(--primary-glow) / 0.3); }
-    50% { box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.6); }
+  @keyframes energy-flow {
+    0% { 
+      opacity: 0.4;
+      filter: brightness(1) blur(0px);
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 1;
+      filter: brightness(1.3) blur(1px);
+      transform: scale(1.02);
+    }
+    100% { 
+      opacity: 0.4;
+      filter: brightness(1) blur(0px);
+      transform: scale(1);
+    }
+  }
+
+  @keyframes path-discovery {
+    0% { 
+      opacity: 0;
+      transform: scale(0.8);
+      filter: brightness(0.5);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+      filter: brightness(1.4);
+    }
+    100% { 
+      opacity: 1;
+      transform: scale(1);
+      filter: brightness(1.2);
+    }
   }
 
   @keyframes player-bounce {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-4px) scale(1.05); }
+    0%, 100% { 
+      transform: translateY(0) scale(1);
+      filter: drop-shadow(0 4px 8px hsl(var(--player) / 0.3));
+    }
+    50% { 
+      transform: translateY(-6px) scale(1.08);
+      filter: drop-shadow(0 8px 16px hsl(var(--player) / 0.5));
+    }
   }
 
-  @keyframes goal-pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px hsl(var(--goal) / 0.4); }
-    50% { transform: scale(1.1); box-shadow: 0 0 30px hsl(var(--goal) / 0.8); }
+  @keyframes goal-magnetic {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 
+        0 0 25px hsl(var(--goal) / 0.5),
+        inset 0 1px 0 hsl(var(--foreground) / 0.2);
+    }
+    50% { 
+      transform: scale(1.12);
+      box-shadow: 
+        0 0 40px hsl(var(--goal) / 0.8),
+        0 0 60px hsl(var(--goal) / 0.4),
+        inset 0 1px 0 hsl(var(--foreground) / 0.3);
+    }
   }
 
-  .tile-slide { animation: tile-slide 0.3s ease-out; }
-  .tile-glow { animation: tile-glow 2s infinite; }
-  .player-bounce { animation: player-bounce 1.5s infinite; }
-  .goal-pulse { animation: goal-pulse 2s infinite; }
+  @keyframes start-beacon {
+    0%, 100% { 
+      opacity: 0.7;
+      transform: scale(1);
+      filter: brightness(1);
+    }
+    50% { 
+      opacity: 1;
+      transform: scale(1.1);
+      filter: brightness(1.3);
+    }
+  }
+
+  @keyframes gem-collect {
+    0% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.5) rotate(180deg);
+      opacity: 0.8;
+      filter: brightness(1.5);
+    }
+    100% {
+      transform: scale(0) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes liquid-shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Enhanced Animation Classes */
+  .tile-slide { animation: tile-slide 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+  .energy-flow { animation: energy-flow 2.5s ease-in-out infinite; }
+  .path-discovery { animation: path-discovery 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .player-bounce { animation: player-bounce 1.8s ease-in-out infinite; }
+  .goal-magnetic { animation: goal-magnetic 2.2s ease-in-out infinite; }
+  .start-beacon { animation: start-beacon 2s ease-in-out infinite; }
+  .gem-collect { animation: gem-collect 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .liquid-shimmer { 
+    background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.1), transparent);
+    background-size: 200% 100%;
+    animation: liquid-shimmer 2s linear infinite;
+  }
 
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
