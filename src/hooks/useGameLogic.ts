@@ -38,7 +38,9 @@ export const useGameLogic = () => {
       walkTimeline: [],
       pushHistory: [],
       selectedTile: null,
-      pendingSwap: null
+      pendingSwap: null,
+      gemsCollected: 0,
+      stars: 0
     };
   });
 

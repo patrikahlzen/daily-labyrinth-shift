@@ -40,6 +40,9 @@ export interface GameState {
   // Swap-only mode state
   selectedTile?: { row: number; col: number } | null;
   pendingSwap?: { from: { row: number; col: number }; to: { row: number; col: number } } | null;
+  // Star rating and gem collection
+  gemsCollected: number;
+  stars: number;
 }
 
 export interface GameResult {
@@ -48,4 +51,11 @@ export interface GameResult {
   score: number;
   stars: number;
   perfect: boolean;
+  gemsCollected: number;
+  totalGems: number;
+}
+
+export interface GameStats {
+  gemsCollected: number;
+  totalGems: number;
 }

@@ -29,13 +29,13 @@ const createRng = (seed?: string) => {
   return mulberry32(seedFn());
 };
 
-// Predefined tile patterns for the labyrinth
+// Clean tile patterns - only straights and L-bends for logical, clean gameplay
 const TILE_PATTERNS: TileConnections[] = [
   // Straight lines
   { north: true, south: true, east: false, west: false }, // Vertical
   { north: false, south: false, east: true, west: true }, // Horizontal
   
-  // L-shapes (bends only)
+  // L-shapes (clean bends only)
   { north: true, south: false, east: true, west: false }, // NE corner
   { north: true, south: false, east: false, west: true }, // NW corner
   { north: false, south: true, east: true, west: false }, // SE corner
@@ -72,49 +72,67 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   let idCounter = 0;
   const newId = () => `t-${(++idCounter).toString(36)}`;
 
-  // Variable board sizes based on seed
+  // Varied board sizes for fresh daily gameplay
   const boardSizes = [
-    { rows: 4, cols: 5 }, // Original size
-    { rows: 5, cols: 4 }, // Taller but narrower  
-    { rows: 4, cols: 6 }, // Wider
+    { rows: 4, cols: 5 }, // Compact
+    { rows: 5, cols: 4 }, // Tall  
+    { rows: 4, cols: 6 }, // Wide
     { rows: 5, cols: 5 }, // Square
-    { rows: 3, cols: 6 }, // Short and wide
-    { rows: 6, cols: 4 }, // Tall and narrow
+    { rows: 3, cols: 6 }, // Panoramic
+    { rows: 6, cols: 4 }, // Vertical
+    { rows: 4, cols: 4 }, // Small square
+    { rows: 3, cols: 7 }, // Ultra-wide
   ];
   
   const sizeIndex = Math.floor(rng() * boardSizes.length);
   const { rows, cols } = boardSizes[sizeIndex];
   
-  // Randomized start and goal positions with constraints
-  // Ensure good distance and avoid trivial placements
+  // Smart start/goal placement for optimal challenge
   const getRandomPosition = (excludePositions: {x: number, y: number}[] = []) => {
+    const boardArea = rows * cols;
+    const minDistance = Math.max(3, Math.floor(Math.sqrt(boardArea))); // Scale with board size
+    
     let attempts = 0;
     while (attempts < 50) {
-      const x = Math.floor(rng() * cols);
-      const y = Math.floor(rng() * rows);
+      // Prefer positions away from edges but not exclusively
+      const edgeWeight = 0.3; // 30% chance to be near edge
+      let x, y;
       
-      // Avoid edges for more interesting paths
-      if (x === 0 || x === cols - 1 || y === 0 || y === rows - 1) {
-        attempts++;
-        continue;
+      if (rng() < edgeWeight) {
+        // Edge placement for variety
+        const side = Math.floor(rng() * 4);
+        switch (side) {
+          case 0: x = 0; y = Math.floor(rng() * rows); break;
+          case 1: x = cols - 1; y = Math.floor(rng() * rows); break;
+          case 2: x = Math.floor(rng() * cols); y = 0; break;
+          case 3: x = Math.floor(rng() * cols); y = rows - 1; break;
+          default: x = Math.floor(rng() * cols); y = Math.floor(rng() * rows);
+        }
+      } else {
+        // Interior placement
+        x = Math.floor(rng() * cols);
+        y = Math.floor(rng() * rows);
       }
       
       // Check distance from excluded positions
       const isValid = excludePositions.every(pos => {
         const distance = Math.abs(pos.x - x) + Math.abs(pos.y - y);
-        return distance >= Math.min(rows, cols); // Minimum Manhattan distance
+        return distance >= minDistance;
       });
       
       if (isValid) return { x, y };
       attempts++;
     }
     
-    // Fallback to corners if random fails
-    const corners = [
-      { x: Math.floor(cols * 0.2), y: Math.floor(rows * 0.8) },
-      { x: Math.floor(cols * 0.8), y: Math.floor(rows * 0.2) },
-    ];
-    return corners[excludePositions.length % corners.length];
+    // Guaranteed fallback positions
+    const fallbacks = [
+      { x: 1, y: 1 },
+      { x: cols - 2, y: rows - 2 },
+      { x: 1, y: rows - 2 },
+      { x: cols - 2, y: 1 },
+    ].filter(pos => pos.x >= 0 && pos.x < cols && pos.y >= 0 && pos.y < rows);
+    
+    return fallbacks[excludePositions.length % fallbacks.length] || { x: 0, y: 0 };
   };
   
   const start = getRandomPosition();
@@ -131,37 +149,58 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     Array.from({ length: cols }, () => emptyTile())
   );
 
-  // DFS to generate a single simple path from start to goal
+  // Generate an interesting path with strategic turns and optimal length
+  const boardSize = rows * cols;
+  const targetPathLength = Math.floor(boardSize * (0.4 + rng() * 0.3)); // 40-70% of board
+  const minTurns = Math.max(3, Math.floor(targetPathLength / 6)); // At least 3 turns
+  
   const visited: boolean[][] = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => false)
   );
   const path: { x: number; y: number }[] = [];
-
+  
   const dirs = [
-    { dx: 0, dy: -1 }, // North
-    { dx: 0, dy: 1 },  // South
-    { dx: 1, dy: 0 },  // East
-    { dx: -1, dy: 0 }  // West
+    { dx: 0, dy: -1, name: 'north' }, 
+    { dx: 0, dy: 1, name: 'south' },  
+    { dx: 1, dy: 0, name: 'east' },  
+    { dx: -1, dy: 0, name: 'west' }  
   ];
 
   const inBounds = (x: number, y: number) => x >= 0 && x < cols && y >= 0 && y < rows;
-
-  const dfs = (x: number, y: number): boolean => {
+  
+  // Smart pathfinding that encourages turns
+  const generatePathWithTurns = (x: number, y: number, lastDir?: string, turnCount = 0): boolean => {
     path.push({ x, y });
-    if (x === goal.x && y === goal.y) return true;
+    if (x === goal.x && y === goal.y) {
+      return path.length >= Math.floor(targetPathLength * 0.7) && turnCount >= minTurns;
+    }
+    
+    if (path.length > targetPathLength * 1.5) return false; // Prevent overly long paths
     visited[y][x] = true;
 
-    // Shuffle order deterministically
+    // Bias towards creating turns for interesting gameplay
     const order = [...dirs];
     for (let i = order.length - 1; i > 0; i--) {
       const r = Math.floor(rng() * (i + 1));
       [order[i], order[r]] = [order[r], order[i]];
     }
-    for (const { dx, dy } of order) {
+    
+    // Prefer directions that create turns if we need more
+    if (turnCount < minTurns && lastDir) {
+      order.sort((a, b) => {
+        const aTurn = a.name !== lastDir ? -1 : 1;
+        const bTurn = b.name !== lastDir ? -1 : 1;
+        return aTurn - bTurn;
+      });
+    }
+
+    for (const { dx, dy, name } of order) {
       const nx = x + dx;
       const ny = y + dy;
       if (!inBounds(nx, ny) || visited[ny][nx]) continue;
-      if (dfs(nx, ny)) return true;
+      
+      const newTurnCount = (lastDir && name !== lastDir) ? turnCount + 1 : turnCount;
+      if (generatePathWithTurns(nx, ny, name, newTurnCount)) return true;
     }
 
     visited[y][x] = false;
@@ -169,14 +208,43 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     return false;
   };
 
-  if (!dfs(start.x, start.y)) {
-    // Fallback: simple deterministic path (vertical then horizontal)
+  // Try multiple times to get a good path
+  let attempts = 0;
+  while (attempts < 10 && !generatePathWithTurns(start.x, start.y)) {
+    path.length = 0;
+    visited.forEach(row => row.fill(false));
+    attempts++;
+  }
+  
+  // Fallback: create a simpler but valid path
+  if (path.length === 0 || path[path.length - 1].x !== goal.x || path[path.length - 1].y !== goal.y) {
     path.length = 0;
     let x = start.x;
     let y = start.y;
     path.push({ x, y });
-    while (y > goal.y) { y -= 1; path.push({ x, y }); }
-    while (x < goal.x) { x += 1; path.push({ x, y }); }
+    
+    // Create L-shaped path with guaranteed turns
+    const midX = Math.floor((start.x + goal.x) / 2);
+    const midY = Math.floor((start.y + goal.y) / 2);
+    
+    // Move to intermediate point first
+    while (x !== midX) {
+      x += x < midX ? 1 : -1;
+      path.push({ x, y });
+    }
+    while (y !== midY) {
+      y += y < midY ? 1 : -1;
+      path.push({ x, y });
+    }
+    // Then to goal
+    while (x !== goal.x) {
+      x += x < goal.x ? 1 : -1;
+      path.push({ x, y });
+    }
+    while (y !== goal.y) {
+      y += y < goal.y ? 1 : -1;
+      path.push({ x, y });
+    }
   }
 
   // Convert the path into tiles with only straight/L connections
@@ -207,14 +275,46 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     };
   }
 
-  // Optionally add specials along the path (not on start/goal)
+  // Strategic gem placement at interesting path points
+  const gemPositions: { x: number; y: number }[] = [];
+  const turnPoints: number[] = [];
+  
+  // Find turn points in the path
   for (let i = 1; i < path.length - 1; i++) {
-    if (rng() < 0.15) {
-      const { x, y } = path[i];
-      const specials = ['key', 'time', 'gem'] as const;
-      board[y][x] = {
-        ...board[y][x],
-        special: specials[Math.floor(rng() * specials.length)]
+    const prev = path[i - 1];
+    const curr = path[i];
+    const next = path[i + 1];
+    
+    const prevDir = { x: curr.x - prev.x, y: curr.y - prev.y };
+    const nextDir = { x: next.x - curr.x, y: next.y - curr.y };
+    
+    // This is a turn if direction changes
+    if (prevDir.x !== nextDir.x || prevDir.y !== nextDir.y) {
+      turnPoints.push(i);
+    }
+  }
+  
+  // Place gems at strategic locations: turns and middle segments
+  const targetGems = Math.min(3, Math.max(1, Math.floor(path.length / 8)));
+  
+  // Always place gems at turns (most interesting spots)
+  for (let i = 0; i < Math.min(turnPoints.length, targetGems); i++) {
+    const pos = path[turnPoints[i]];
+    gemPositions.push(pos);
+    board[pos.y][pos.x] = {
+      ...board[pos.y][pos.x],
+      special: 'gem'
+    };
+  }
+  
+  // Add middle-path gems if we need more
+  if (gemPositions.length < targetGems) {
+    const midPoint = Math.floor(path.length / 2);
+    const midPos = path[midPoint];
+    if (!gemPositions.some(g => g.x === midPos.x && g.y === midPos.y)) {
+      board[midPos.y][midPos.x] = {
+        ...board[midPos.y][midPos.x],
+        special: 'gem'
       };
     }
   }
@@ -223,22 +323,41 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
 
-  // Add decoy tiles (straights/bends only) that never connect into the main path
+  // Create sophisticated decoy paths for visual trickery
   const isOnPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
+  
+  // First pass: create decoy tiles that almost connect to main path
+  const decoyDensity = 0.4 + rng() * 0.2; // 40-60% coverage
+  
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       if (isOnPath(x, y)) continue;
-      if (rng() < 0.45) {
+      
+      if (rng() < decoyDensity) {
         const pattern = { ...TILE_PATTERNS[Math.floor(rng() * TILE_PATTERNS.length)] };
-        // Block any connection that faces a path cell
+        
+        // Smart decoy placement: create almost-connections for visual traps
         const nIsPath = y - 1 >= 0 && isOnPath(x, y - 1);
         const sIsPath = y + 1 < rows && isOnPath(x, y + 1);
         const eIsPath = x + 1 < cols && isOnPath(x + 1, y);
         const wIsPath = x - 1 >= 0 && isOnPath(x - 1, y);
-        if (nIsPath) pattern.north = false;
-        if (sIsPath) pattern.south = false;
-        if (eIsPath) pattern.east = false;
-        if (wIsPath) pattern.west = false;
+        
+        const pathAdjacent = nIsPath || sIsPath || eIsPath || wIsPath;
+        
+        if (pathAdjacent) {
+          // Create "almost connection" - looks like it should connect but doesn't
+          if (rng() < 0.7) { // 70% chance to be a red herring
+            // Block the connection that would lead to main path
+            if (nIsPath) pattern.north = false;
+            if (sIsPath) pattern.south = false;
+            if (eIsPath) pattern.east = false;
+            if (wIsPath) pattern.west = false;
+          } else {
+            // 30% chance to create a real connection (makes puzzle more complex)
+            // Keep the pattern as is for potential shortcuts
+          }
+        }
+        
         board[y][x] = {
           type: TileType.PATH,
           connections: pattern,
@@ -247,6 +366,52 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
         };
       }
     }
+  }
+  
+  // Second pass: create mini decoy paths that form coherent but disconnected segments
+  const createDecoySegment = (startX: number, startY: number, length: number) => {
+    let x = startX, y = startY;
+    let segmentLength = 0;
+    let lastDir = '';
+    
+    while (segmentLength < length && inBounds(x, y) && board[y][x].type === TileType.EMPTY) {
+      if (isOnPath(x, y)) break; // Don't interfere with main path
+      
+      const availableDirs = dirs.filter(d => {
+        const nx = x + d.dx, ny = y + d.dy;
+        return inBounds(nx, ny) && !isOnPath(nx, ny) && d.name !== lastDir;
+      });
+      
+      if (availableDirs.length === 0) break;
+      
+      const dir = availableDirs[Math.floor(rng() * availableDirs.length)];
+      const nextX = x + dir.dx;
+      const nextY = y + dir.dy;
+      
+      // Create connection
+      const connections = { north: false, south: false, east: false, west: false };
+      connections[dir.name as keyof typeof connections] = true;
+      
+      board[y][x] = {
+        type: TileType.PATH,
+        connections,
+        special: null,
+        id: newId()
+      };
+      
+      x = nextX;
+      y = nextY;
+      lastDir = dir.name;
+      segmentLength++;
+    }
+  };
+  
+  // Add a few coherent decoy segments
+  const numDecoySegments = Math.floor(rng() * 3) + 1;
+  for (let i = 0; i < numDecoySegments; i++) {
+    const startX = Math.floor(rng() * cols);
+    const startY = Math.floor(rng() * rows);
+    createDecoySegment(startX, startY, 2 + Math.floor(rng() * 3));
   }
 
   // Intelligent scrambling for optimal difficulty
