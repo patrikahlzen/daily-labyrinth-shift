@@ -72,10 +72,53 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   let idCounter = 0;
   const newId = () => `t-${(++idCounter).toString(36)}`;
 
-  const rows = 4;
-  const cols = 5;
-  const start = { x: 1, y: 3 };
-  const goal = { x: 3, y: 0 };
+  // Variable board sizes based on seed
+  const boardSizes = [
+    { rows: 4, cols: 5 }, // Original size
+    { rows: 5, cols: 4 }, // Taller but narrower  
+    { rows: 4, cols: 6 }, // Wider
+    { rows: 5, cols: 5 }, // Square
+    { rows: 3, cols: 6 }, // Short and wide
+    { rows: 6, cols: 4 }, // Tall and narrow
+  ];
+  
+  const sizeIndex = Math.floor(rng() * boardSizes.length);
+  const { rows, cols } = boardSizes[sizeIndex];
+  
+  // Randomized start and goal positions with constraints
+  // Ensure good distance and avoid trivial placements
+  const getRandomPosition = (excludePositions: {x: number, y: number}[] = []) => {
+    let attempts = 0;
+    while (attempts < 50) {
+      const x = Math.floor(rng() * cols);
+      const y = Math.floor(rng() * rows);
+      
+      // Avoid edges for more interesting paths
+      if (x === 0 || x === cols - 1 || y === 0 || y === rows - 1) {
+        attempts++;
+        continue;
+      }
+      
+      // Check distance from excluded positions
+      const isValid = excludePositions.every(pos => {
+        const distance = Math.abs(pos.x - x) + Math.abs(pos.y - y);
+        return distance >= Math.min(rows, cols); // Minimum Manhattan distance
+      });
+      
+      if (isValid) return { x, y };
+      attempts++;
+    }
+    
+    // Fallback to corners if random fails
+    const corners = [
+      { x: Math.floor(cols * 0.2), y: Math.floor(rows * 0.8) },
+      { x: Math.floor(cols * 0.8), y: Math.floor(rows * 0.2) },
+    ];
+    return corners[excludePositions.length % corners.length];
+  };
+  
+  const start = getRandomPosition();
+  const goal = getRandomPosition([start]);
 
   // Initialize empty board
   const emptyTile = (): GameTile => ({
@@ -206,8 +249,12 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
-  // Scramble the path tiles to ensure the puzzle starts unsolved with a minimum swap distance
-  const MIN_SWAP_DISTANCE = 7; // target difficulty
+  // Intelligent scrambling for optimal difficulty
+  // Scale difficulty with board size - larger boards need more moves
+  const boardArea = rows * cols;
+  const MIN_SWAP_DISTANCE = Math.max(5, Math.floor(boardArea * 0.4)); // Dynamic difficulty
+  const MAX_SWAP_DISTANCE = Math.floor(boardArea * 0.7); // Upper bound to avoid impossibility
+  
   const movable = path.slice(1, -1); // exclude start and goal positions
 
   // Snapshot solved state for movable positions
@@ -244,34 +291,73 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     return swaps;
   };
 
-  // Try multiple shuffles until criteria met
-  let best: { ids: string[]; swaps: number } | null = null;
-  for (let attempt = 0; attempt < 20; attempt++) {
-    // Build a random long cycle covering k elements
-    const k = Math.min(movable.length, MIN_SWAP_DISTANCE + 1);
-    const idxs = Array.from({ length: movable.length }, (_, i) => i);
-    // pick k distinct indices (Fisher–Yates)
-    for (let i = idxs.length - 1; i > 0; i--) {
-      const r = Math.floor(rng() * (i + 1));
-      [idxs[i], idxs[r]] = [idxs[r], idxs[i]];
-    }
-    const cycle = idxs.slice(0, k);
-    // create permutation from a rotation of the cycle
+  // Enhanced shuffling algorithm for unique solutions
+  let best: { ids: string[]; swaps: number; solutionCount: number } | null = null;
+  const MAX_ATTEMPTS = 30;
+  
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    // Progressive difficulty: start with minimum swaps, increase if needed
+    const targetSwaps = MIN_SWAP_DISTANCE + Math.floor(attempt / 10);
+    const k = Math.min(movable.length, Math.max(3, targetSwaps));
+    
+    // Create more sophisticated permutations
     const order = Array.from({ length: movable.length }, (_, i) => i);
-    for (let i = 0; i < cycle.length; i++) {
-      const from = cycle[i];
-      const to = cycle[(i + 1) % cycle.length];
-      order[to] = from;
+    
+    // Multiple smaller cycles for more complex arrangements
+    const cycleCount = Math.min(3, Math.floor(k / 2) + 1);
+    const usedIndices = new Set<number>();
+    
+    for (let c = 0; c < cycleCount && usedIndices.size < movable.length; c++) {
+      const availableIndices = Array.from({ length: movable.length }, (_, i) => i)
+        .filter(i => !usedIndices.has(i));
+      
+      if (availableIndices.length < 2) break;
+      
+      // Fisher-Yates shuffle for this cycle
+      for (let i = availableIndices.length - 1; i > 0; i--) {
+        const r = Math.floor(rng() * (i + 1));
+        [availableIndices[i], availableIndices[r]] = [availableIndices[r], availableIndices[i]];
+      }
+      
+      const cycleSize = Math.min(Math.max(2, Math.floor(k / cycleCount)), availableIndices.length);
+      const cycle = availableIndices.slice(0, cycleSize);
+      
+      // Apply cycle
+      for (let i = 0; i < cycle.length; i++) {
+        const from = cycle[i];
+        const to = cycle[(i + 1) % cycle.length];
+        order[to] = from;
+        usedIndices.add(from);
+      }
     }
 
     applyPermutation(order);
 
-    // Verify not solved and measure distance
+    // Check if puzzle is valid and has unique solution
     const hasPath = !!findPath(board, start.x, start.y, goal.x, goal.y);
     const curIds = movable.map(({ x, y }) => board[y][x].id);
     const dist = minimalSwaps(curIds);
-    if (best === null || dist > best.swaps) best = { ids: curIds.slice(), swaps: dist };
-    if (!hasPath && dist >= MIN_SWAP_DISTANCE) break;
+    
+    // Count solution paths (for uniqueness)
+    const solutionCount = hasPath ? 1 : countSolutions(board, start, goal, movable, solvedTiles);
+    
+    // Prefer puzzles with exactly one solution and good difficulty
+    const isGoodPuzzle = !hasPath && 
+                        dist >= MIN_SWAP_DISTANCE && 
+                        dist <= MAX_SWAP_DISTANCE &&
+                        solutionCount === 1;
+    
+    if (isGoodPuzzle) {
+      best = { ids: curIds.slice(), swaps: dist, solutionCount };
+      break;
+    }
+    
+    // Track best candidate even if not perfect
+    if (best === null || 
+        (solutionCount <= best.solutionCount && dist > best.swaps) ||
+        (solutionCount < best.solutionCount)) {
+      best = { ids: curIds.slice(), swaps: dist, solutionCount };
+    }
 
     // Revert to solved and try again
     for (let i = 0; i < movable.length; i++) {
@@ -388,4 +474,52 @@ export const findPath = (
   }
   
   return null; // No path found
+};
+
+// Helper function to count possible solutions for uniqueness validation
+const countSolutions = (
+  board: GameTile[][],
+  start: { x: number; y: number },
+  goal: { x: number; y: number },
+  movable: { x: number; y: number }[],
+  solvedTiles: GameTile[],
+  maxSolutions = 3
+): number => {
+  let solutions = 0;
+  const boardCopy = board.map(row => row.map(tile => ({ ...tile })));
+  
+  // Try limited permutations to check for multiple solutions
+  const trySwap = (swapCount: number, maxSwaps: number) => {
+    if (solutions >= maxSolutions || swapCount >= maxSwaps) return;
+    
+    // Check current state
+    if (findPath(boardCopy, start.x, start.y, goal.x, goal.y)) {
+      solutions++;
+      return;
+    }
+    
+    // Try swapping pairs of movable tiles
+    for (let i = 0; i < movable.length && solutions < maxSolutions; i++) {
+      for (let j = i + 1; j < movable.length && solutions < maxSolutions; j++) {
+        const pos1 = movable[i];
+        const pos2 = movable[j];
+        
+        // Swap
+        const temp = boardCopy[pos1.y][pos1.x];
+        boardCopy[pos1.y][pos1.x] = boardCopy[pos2.y][pos2.x];
+        boardCopy[pos2.y][pos2.x] = temp;
+        
+        // Recurse
+        trySwap(swapCount + 1, maxSwaps);
+        
+        // Swap back
+        boardCopy[pos2.y][pos2.x] = boardCopy[pos1.y][pos1.x];
+        boardCopy[pos1.y][pos1.x] = temp;
+      }
+    }
+  };
+  
+  // Check solutions within 2-3 swaps for uniqueness
+  trySwap(0, Math.min(3, movable.length));
+  return solutions;
 };
