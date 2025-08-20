@@ -8,7 +8,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles, resetGame } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -81,7 +81,12 @@ const Index = () => {
           stars={gameState.stars}
           board={gameState.board}
           gemsCollected={gameState.gemsCollected}
-          onClose={() => setShowEnd(false)} 
+          attempts={gameState.attempts}
+          onClose={() => setShowEnd(false)}
+          onTryAgain={() => {
+            setShowEnd(false);
+            resetGame();
+          }}
         />
       )}
 

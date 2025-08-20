@@ -23,7 +23,6 @@ export interface GameState {
   board: GameTile[][];
   startPosition: { x: number; y: number };
   goalPosition: { x: number; y: number };
-  heldTile: GameTile | null;
   moves: number;
   timer: number;
   gameStarted: boolean;
@@ -37,7 +36,6 @@ export interface GameState {
     board: GameTile[][];
     startPosition: { x: number; y: number };
     goalPosition: { x: number; y: number };
-    heldTile: GameTile | null;
     moves: number;
   }[];
   // Swap-only mode state
@@ -45,6 +43,7 @@ export interface GameState {
   // Star rating and gem collection
   gemsCollected: number;
   stars: number;
+  attempts: number;
 }
 
 export interface GameResult {

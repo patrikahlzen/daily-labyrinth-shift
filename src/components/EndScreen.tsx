@@ -14,7 +14,9 @@ interface EndScreenProps {
   stars: number;
   board: GameTile[][];
   gemsCollected: number;
+  attempts: number;
   onClose: () => void;
+  onTryAgain: () => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -30,7 +32,9 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   stars, 
   board, 
   gemsCollected, 
-  onClose 
+  attempts,
+  onClose,
+  onTryAgain
 }) => {
   const { toast } = useToast();
 
@@ -105,11 +109,24 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           </div>
         </section>
 
-        <footer className="mt-6 grid grid-cols-2 gap-2">
-          <Button onClick={handleShare} className="flex items-center gap-2 justify-center bg-gradient-primary">
+        <footer className="mt-6 space-y-2">
+          <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center bg-gradient-primary">
             <Share2 className="w-4 h-4" /> Share
           </Button>
-          <Button variant="secondary" onClick={onClose} className="justify-center">Close</Button>
+          <div className="grid grid-cols-2 gap-2">
+            {attempts > 1 && (
+              <Button variant="outline" onClick={onTryAgain} className="justify-center">
+                Try Again
+              </Button>
+            )}
+            <Button 
+              variant="secondary" 
+              onClick={onClose} 
+              className={`justify-center ${attempts > 1 ? '' : 'col-span-2'}`}
+            >
+              Close
+            </Button>
+          </div>
         </footer>
       </article>
     </div>

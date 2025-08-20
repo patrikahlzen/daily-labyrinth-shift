@@ -78,7 +78,6 @@ export const useGameLogic = () => {
       board,
       startPosition: start,
       goalPosition: goal,
-      heldTile: generateRandomTile(),
       moves: 0,
       timer: 0,
       gameStarted: false,
@@ -89,7 +88,8 @@ export const useGameLogic = () => {
       pushHistory: [],
       selectedTile: null,
       gemsCollected: 0,
-      stars: 1
+      stars: 1,
+      attempts: 0
     };
   });
 
@@ -115,7 +115,7 @@ export const useGameLogic = () => {
   }, [gameState.gameStarted, gameState.gameCompleted]);
 
   const startGame = useCallback(() => {
-    setGameState(prev => ({ ...prev, gameStarted: true }));
+    setGameState(prev => ({ ...prev, gameStarted: true, attempts: prev.attempts + 1 }));
   }, []);
 
   const pushTile = useCallback((row: number, col: number, direction: Direction) => {
@@ -128,19 +128,13 @@ export const useGameLogic = () => {
         board: base.board.map(r => r.map(t => ({ ...t }))),
         startPosition: { ...base.startPosition },
         goalPosition: { ...base.goalPosition },
-        heldTile: base.heldTile,
         moves: base.moves
       };
 
       const newBoard = base.board.map(r => [...r]);
-      let newHeldTile = base.heldTile;
 
-      if (direction === 'right' && col === 0) {
-        const pushedTile = newBoard[row][3];
-        for (let i = 3; i > 0; i--) newBoard[row][i] = newBoard[row][i - 1];
-        newBoard[row][0] = base.heldTile!;
-        newHeldTile = pushedTile;
-      }
+      // Since we removed tile pushing, this function now only handles swapping
+      // Remove the push tile functionality entirely
 
       const pathCheck = checkPathConnection(newBoard, base.startPosition, base.goalPosition);
       const rating = calculateStarRating(pathCheck.connected, base.moves + 1, newBoard, base.gemsCollected);
@@ -148,7 +142,6 @@ export const useGameLogic = () => {
       return {
         ...base,
         board: newBoard,
-        heldTile: newHeldTile,
         moves: base.moves + 1,
         canUndo: true,
         connectedPath: pathCheck.path,
@@ -171,7 +164,6 @@ export const useGameLogic = () => {
       return {
         ...prev,
         board: last.board,
-        heldTile: last.heldTile,
         startPosition: last.startPosition,
         goalPosition: last.goalPosition,
         moves: last.moves,
@@ -201,7 +193,6 @@ export const useGameLogic = () => {
         board: prev.board.map(r => r.map(t => ({ ...t }))),
         startPosition: { ...prev.startPosition },
         goalPosition: { ...prev.goalPosition },
-        heldTile: prev.heldTile,
         moves: prev.moves
       };
 
@@ -236,7 +227,6 @@ export const useGameLogic = () => {
         board: prev.board.map(r => r.map(t => ({ ...t }))),
         startPosition: { ...prev.startPosition },
         goalPosition: { ...prev.goalPosition },
-        heldTile: prev.heldTile,
         moves: prev.moves
       };
 
@@ -263,12 +253,48 @@ export const useGameLogic = () => {
     });
   }, [checkPathConnection]);
 
+  const resetGame = useCallback(() => {
+    const dailySeed = `SEED_${getDailyKeySE()}`;
+    const board = createInitialBoard(dailySeed);
+
+    const findPos = (id: string): { x: number; y: number } => {
+      for (let y = 0; y < board.length; y++) {
+        for (let x = 0; x < (board[0]?.length ?? 0); x++) {
+          if (board[y][x]?.id === id) return { x, y };
+        }
+      }
+      return { x: 0, y: 0 };
+    };
+
+    const start = findPos('start-tile');
+    const goal = findPos('goal-tile');
+
+    setGameState(prev => ({
+      board,
+      startPosition: start,
+      goalPosition: goal,
+      moves: 0,
+      timer: 0,
+      gameStarted: false,
+      gameCompleted: false,
+      canUndo: false,
+      connectedPath: [],
+      validConnection: false,
+      pushHistory: [],
+      selectedTile: null,
+      gemsCollected: 0,
+      stars: 1,
+      attempts: prev.attempts // Keep attempt count
+    }));
+  }, []);
+
   return {
     gameState,
     startGame,
     pushTile,
     undoMove,
     onTileTap: tapTile,
-    onSwapTiles: swapTiles
+    onSwapTiles: swapTiles,
+    resetGame
   };
 };
