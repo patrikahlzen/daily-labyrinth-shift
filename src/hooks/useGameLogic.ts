@@ -190,10 +190,38 @@ export const useGameLogic = () => {
       if (prev.selectedTile.row === row && prev.selectedTile.col === col) {
         return { ...prev, selectedTile: null };
       }
-      // Perform swap and return to tapTile for the actual swap
-      return prev;
+      
+      // Perform the swap between selected tile and current tile
+      if (!prev.gameStarted) prev.gameStarted = true;
+
+      const snapshot = {
+        board: prev.board.map(r => r.map(t => ({ ...t }))),
+        startPosition: { ...prev.startPosition },
+        goalPosition: { ...prev.goalPosition },
+        heldTile: prev.heldTile,
+        moves: prev.moves
+      };
+
+      const newBoard = prev.board.map(r => r.slice());
+      const temp = newBoard[prev.selectedTile.row][prev.selectedTile.col];
+      newBoard[prev.selectedTile.row][prev.selectedTile.col] = newBoard[row][col];
+      newBoard[row][col] = temp;
+
+      const pathCheck = checkPathConnection(newBoard, prev.startPosition, prev.goalPosition);
+
+      return {
+        ...prev,
+        board: newBoard,
+        moves: prev.moves + 1,
+        canUndo: true,
+        connectedPath: pathCheck.path,
+        validConnection: pathCheck.connected,
+        gameCompleted: pathCheck.connected,
+        pushHistory: [...prev.pushHistory, snapshot],
+        selectedTile: null
+      };
     });
-  }, []);
+  }, [checkPathConnection]);
 
   const swapTiles = useCallback((fromRow: number, fromCol: number, toRow: number, toCol: number) => {
     setGameState(prev => {
