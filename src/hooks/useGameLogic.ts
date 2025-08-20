@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameTile, Direction, TileType, TileConnections } from '../types/game';
 import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/gameUtils';
 import { getDailyKeySE } from './useDaily';
+import { calculateStarRating } from '../utils/scoring';
 
 export const useGameLogic = () => {
   // Check for valid path connection from start to goal
@@ -142,6 +143,7 @@ export const useGameLogic = () => {
       }
 
       const pathCheck = checkPathConnection(newBoard, base.startPosition, base.goalPosition);
+      const rating = calculateStarRating(pathCheck.connected, base.moves + 1, newBoard, base.gemsCollected);
 
       return {
         ...base,
@@ -152,6 +154,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        stars: rating.stars,
         pushHistory: [...base.pushHistory, snapshot],
       };
     });
@@ -208,6 +211,7 @@ export const useGameLogic = () => {
       newBoard[row][col] = temp;
 
       const pathCheck = checkPathConnection(newBoard, prev.startPosition, prev.goalPosition);
+      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, prev.gemsCollected);
 
       return {
         ...prev,
@@ -217,6 +221,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        stars: rating.stars,
         pushHistory: [...prev.pushHistory, snapshot],
         selectedTile: null
       };
@@ -241,6 +246,7 @@ export const useGameLogic = () => {
       newBoard[toRow][toCol] = temp;
 
       const pathCheck = checkPathConnection(newBoard, prev.startPosition, prev.goalPosition);
+      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, prev.gemsCollected);
 
       return {
         ...prev,
@@ -250,6 +256,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        stars: rating.stars,
         pushHistory: [...prev.pushHistory, snapshot],
         selectedTile: null
       };

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { GameBoard } from '../components/GameBoard';
 import { GameHUD } from '../components/GameHUD';
 import { EndScreen } from '../components/EndScreen';
-
+import { Tutorial } from '../components/Tutorial';
+import { Button } from '../components/ui/button';
 import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
@@ -10,10 +11,24 @@ const Index = () => {
   const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    // Show tutorial for first-time users
+    return !localStorage.getItem('dailyLabyrinth_tutorialCompleted');
+  });
 
   useEffect(() => {
     if (gameState.gameCompleted) setShowEnd(true);
   }, [gameState.gameCompleted]);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('dailyLabyrinth_tutorialCompleted', 'true');
+    setShowTutorial(false);
+  };
+
+  const handleTutorialSkip = () => {
+    localStorage.setItem('dailyLabyrinth_tutorialCompleted', 'true');
+    setShowTutorial(false);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -49,28 +64,53 @@ const Index = () => {
           onSwapTiles={onSwapTiles}
         />
       </div>
+      {/* Tutorial overlay */}
+      {showTutorial && (
+        <Tutorial
+          onComplete={handleTutorialComplete}
+          onSkip={handleTutorialSkip}
+        />
+      )}
+
       {/* End screen overlay */}
       {showEnd && (
-        <EndScreen timer={gameState.timer} moves={gameState.moves} puzzleNumber={puzzleNumber} onClose={() => setShowEnd(false)} />
+        <EndScreen 
+          timer={gameState.timer} 
+          moves={gameState.moves} 
+          puzzleNumber={puzzleNumber}
+          stars={gameState.stars}
+          board={gameState.board}
+          gemsCollected={gameState.gemsCollected}
+          onClose={() => setShowEnd(false)} 
+        />
       )}
 
       {/* Welcome overlay for new players */}
-      {!gameState.gameStarted && (
+      {!gameState.gameStarted && !showTutorial && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
             <h2 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h2>
             <p className="text-muted-foreground mb-2">
-              Build a continuous path from Start to Goal by swapping tiles. Drag & drop or tap any two cells. Everyone plays the same daily puzzle.
+              Build a continuous path from Start to Goal by swapping tiles. Everyone plays the same daily puzzle.
             </p>
             <p className="text-sm text-muted-foreground mb-6">
-              Resets at midnight. Your time and moves are tracked. Puzzle #{String(puzzleNumber).padStart(2,'0')} · new in {countdown}
+              Puzzle #{String(puzzleNumber).padStart(2,'0')} · New in {countdown}
             </p>
-            <button
-              onClick={startGame}
-              className="w-full bg-gradient-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg shadow-glow hover:opacity-90 transition-opacity"
-            >
-              Start the daily puzzle
-            </button>
+            <div className="space-y-3">
+              <Button
+                onClick={startGame}
+                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+              >
+                Start Playing
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setShowTutorial(true)}
+                className="w-full text-muted-foreground hover:text-foreground"
+              >
+                Show Tutorial
+              </Button>
+            </div>
           </div>
         </div>
       )}
