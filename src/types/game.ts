@@ -23,23 +23,25 @@ export interface GameState {
   board: GameTile[][];
   startPosition: { x: number; y: number };
   goalPosition: { x: number; y: number };
-  playerPosition: { x: number; y: number };
   heldTile: GameTile | null;
   moves: number;
   timer: number;
   gameStarted: boolean;
   gameCompleted: boolean;
   canUndo: boolean;
-  previewMove: { row: number; col: number; direction: Direction } | null;
-  // New fields for auto-walk, rewind, and branch selection
-  previewPath: { x: number; y: number }[];
-  branchChoice: { x: number; y: number; options: Direction[] } | null;
-  walkTimeline: { x: number; y: number }[];
-  pushHistory: { board: GameTile[][]; startPosition: { x: number; y: number }; goalPosition: { x: number; y: number }; playerPosition: { x: number; y: number }; heldTile: GameTile | null; moves: number }[];
-  canRewind: boolean;
+  // Path highlighting
+  connectedPath: { x: number; y: number }[];
+  validConnection: boolean;
+  // History for undo
+  pushHistory: {
+    board: GameTile[][];
+    startPosition: { x: number; y: number };
+    goalPosition: { x: number; y: number };
+    heldTile: GameTile | null;
+    moves: number;
+  }[];
   // Swap-only mode state
   selectedTile?: { row: number; col: number } | null;
-  pendingSwap?: { from: { row: number; col: number }; to: { row: number; col: number } } | null;
   // Star rating and gem collection
   gemsCollected: number;
   stars: number;
