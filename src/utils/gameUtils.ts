@@ -1,4 +1,5 @@
 import { GameTile, TileType, TileConnections } from '../types/game';
+import { getDifficultyForDay, getTemplateForSeed, validatePuzzleQuality } from './difficultySystem';
 
 // Simple seeded PRNG (xmur3 + mulberry32)
 const xmur3 = (str: string) => {
@@ -72,20 +73,14 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   let idCounter = 0;
   const newId = () => `t-${(++idCounter).toString(36)}`;
 
-  // Varied board sizes for fresh daily gameplay
-  const boardSizes = [
-    { rows: 4, cols: 5 }, // Compact
-    { rows: 5, cols: 4 }, // Tall  
-    { rows: 4, cols: 6 }, // Wide
-    { rows: 5, cols: 5 }, // Square
-    { rows: 3, cols: 6 }, // Panoramic
-    { rows: 6, cols: 4 }, // Vertical
-    { rows: 4, cols: 4 }, // Small square
-    { rows: 3, cols: 7 }, // Ultra-wide
-  ];
+  // Use difficulty system for curated puzzle generation
+  const daysSinceEpoch = seed ? 
+    Math.floor(parseInt(seed.slice(-8), 16) / 86400000) : 
+    Math.floor(Date.now() / 86400000);
   
-  const sizeIndex = Math.floor(rng() * boardSizes.length);
-  const { rows, cols } = boardSizes[sizeIndex];
+  const difficulty = getDifficultyForDay(daysSinceEpoch);
+  const template = getTemplateForSeed(seed || Date.now().toString(), difficulty);
+  const { rows, cols } = template.boardSize;
   
   // Smart start/goal placement for optimal challenge
   const getRandomPosition = (excludePositions: {x: number, y: number}[] = []) => {
@@ -275,7 +270,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     };
   }
 
-  // Strategic gem placement at interesting path points
+  // Strategic gem placement using template guidance
   const gemPositions: { x: number; y: number }[] = [];
   const turnPoints: number[] = [];
   
@@ -294,10 +289,10 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
   
-  // Place gems at strategic locations: turns and middle segments
-  const targetGems = Math.min(3, Math.max(1, Math.floor(path.length / 8)));
+  // Place gems using template requirements instead of hardcoded logic
+  const targetGems = Math.min(template.gemCount, Math.max(1, Math.floor(path.length / 4)));
   
-  // Always place gems at turns (most interesting spots)
+  // Always place gems at turns first (most strategic spots)
   for (let i = 0; i < Math.min(turnPoints.length, targetGems); i++) {
     const pos = path[turnPoints[i]];
     gemPositions.push(pos);
@@ -307,15 +302,18 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     };
   }
   
-  // Add middle-path gems if we need more
+  // Add evenly spaced gems if we need more
   if (gemPositions.length < targetGems) {
-    const midPoint = Math.floor(path.length / 2);
-    const midPos = path[midPoint];
-    if (!gemPositions.some(g => g.x === midPos.x && g.y === midPos.y)) {
-      board[midPos.y][midPos.x] = {
-        ...board[midPos.y][midPos.x],
-        special: 'gem'
-      };
+    const interval = Math.max(2, Math.floor(path.length / (targetGems - gemPositions.length + 1)));
+    for (let i = interval; i < path.length - 1 && gemPositions.length < targetGems; i += interval) {
+      const pos = path[i];
+      if (!gemPositions.some(g => g.x === pos.x && g.y === pos.y)) {
+        board[pos.y][pos.x] = {
+          ...board[pos.y][pos.x],
+          special: 'gem'
+        };
+        gemPositions.push(pos);
+      }
     }
   }
 

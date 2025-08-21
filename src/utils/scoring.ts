@@ -1,4 +1,5 @@
 import { GameTile, TileType } from '../types/game';
+import { calculateStarThresholds, getDifficultyForDay, getTemplateForSeed } from './difficultySystem';
 
 export interface StarRating {
   stars: number;
@@ -23,14 +24,19 @@ export const calculateStarRating = (
   // Count total gems available
   const totalGems = board.flat().filter(tile => tile.special === 'gem').length;
   
-  // Calculate optimal solution metrics based on board size
+  // Use template-based thresholds for better difficulty balance
+  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+  const difficulty = getDifficultyForDay(daysSinceEpoch);
+  const template = getTemplateForSeed(Date.now().toString(), difficulty);
+  const templateThresholds = calculateStarThresholds(template);
+  
+  // Fall back to dynamic calculation if template system unavailable
   const boardArea = board.length * (board[0]?.length || 0);
   const pathLength = board.flat().filter(tile => tile.type === TileType.PATH).length;
+  const baseOptimalMoves = Math.max(2, Math.floor(pathLength * 0.12));
   
-  // Dynamic thresholds based on puzzle complexity
-  const baseOptimalMoves = Math.max(3, Math.floor(pathLength * 0.15)); // ~15% of path length
-  const maxMovesFor3Stars = baseOptimalMoves + Math.floor(boardArea * 0.1);
-  const maxMovesFor2Stars = baseOptimalMoves + Math.floor(boardArea * 0.2);
+  const maxMovesFor3Stars = templateThresholds?.maxMovesFor3Stars ?? baseOptimalMoves + 1;
+  const maxMovesFor2Stars = templateThresholds?.maxMovesFor2Stars ?? baseOptimalMoves + 2;
   
   const requirements = {
     completed: gameCompleted,
@@ -50,7 +56,7 @@ export const calculateStarRating = (
     stars = 2;
   }
   
-  // 3 stars: Complete efficiently + collect all gems (within 3-star threshold)
+  // 3 stars: Complete with all gems within optimal threshold
   if (requirements.completed && requirements.gemsCollected && moves <= maxMovesFor3Stars) {
     stars = 3;
   }
