@@ -50,8 +50,8 @@ export const calculateStarRating = (
     stars = 2;
   }
   
-  // 3 stars: Complete efficiently + collect all gems
-  if (requirements.efficient && requirements.gemsCollected && moves <= maxMovesFor3Stars) {
+  // 3 stars: Complete efficiently + collect all gems (within 3-star threshold)
+  if (requirements.completed && requirements.gemsCollected && moves <= maxMovesFor3Stars) {
     stars = 3;
   }
   

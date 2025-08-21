@@ -10,25 +10,25 @@ interface TutorialProps {
 const tutorialSteps = [
   {
     title: "Welcome to Daily Labyrinth!",
-    content: "Connect the blue start tile to the golden goal tile by creating a path using pipe tiles.",
+    content: "Your goal is to connect the blue start tile to the golden goal tile by creating the most efficient path possible.",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "goal"
   },
   {
-    title: "How to Move Tiles",
-    content: "Tap two tiles to swap their positions, or drag and drop them. Create continuous pipe connections to form a path.",
+    title: "How to Play",
+    content: "Swap tiles by tapping two tiles or drag and drop them. Build continuous pipe connections to form a complete path from start to goal.",
     icon: <Hand className="w-8 h-8 text-primary" />,
     highlight: "swap"
   },
   {
-    title: "Push New Tiles",
-    content: "Click the direction arrows to push your held tile into the board. This will push out a tile on the opposite side.",
+    title: "Collect Gems & Be Efficient",
+    content: "Collect gems along your path for bonus points. The fewer moves you use, the better your score will be!",
     icon: <MousePointer className="w-8 h-8 text-primary" />,
-    highlight: "push"
+    highlight: "gems"
   },
   {
-    title: "Star Rating System",
-    content: "Earn stars based on your performance: 1 star for completion, 2 stars for efficiency, 3 stars for perfection with all gems!",
+    title: "Earn Stars!",
+    content: "Complete puzzles to earn 1-3 stars based on your performance. 1 star: completion, 2 stars: efficient solution, 3 stars: perfect efficiency with all gems collected!",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "rating"
   }
