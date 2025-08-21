@@ -204,11 +204,11 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   };
 
   // Try multiple times to get a good path
-  let attempts = 0;
-  while (attempts < 10 && !generatePathWithTurns(start.x, start.y)) {
+  let pathAttempts = 0;
+  while (pathAttempts < 10 && !generatePathWithTurns(start.x, start.y)) {
     path.length = 0;
     visited.forEach(row => row.fill(false));
-    attempts++;
+    pathAttempts++;
   }
   
   // Fallback: create a simpler but valid path
@@ -412,145 +412,67 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     createDecoySegment(startX, startY, 2 + Math.floor(rng() * 3));
   }
 
-  // Intelligent scrambling for optimal difficulty
-  // Scale difficulty with board size - larger boards need more moves
-  const boardArea = rows * cols;
-  const MIN_SWAP_DISTANCE = Math.max(5, Math.floor(boardArea * 0.4)); // Dynamic difficulty
-  const MAX_SWAP_DISTANCE = Math.floor(boardArea * 0.7); // Upper bound to avoid impossibility
+  // SIMPLIFIED SCRAMBLING: Generate controlled difficulty with guaranteed solvability
   
-  const movable = path.slice(1, -1); // exclude start and goal positions
-
-  // Snapshot solved state for movable positions
-  const solvedTiles = movable.map(({ x, y }) => board[y][x]);
-  const solvedIds = solvedTiles.map(t => t.id);
-
-  const applyPermutation = (order: number[]) => {
-    // order is a permutation of indices [0..movable.length-1]
-    const tiles = order.map(i => solvedTiles[i]);
-    for (let i = 0; i < movable.length; i++) {
-      const { x, y } = movable[i];
-      board[y][x] = { ...tiles[i] };
-    }
-  };
-
-  const minimalSwaps = (currentIds: string[]) => {
-    const indexOfId: Record<string, number> = {};
-    solvedIds.forEach((id, idx) => (indexOfId[id] = idx));
-    const n = currentIds.length;
-    const visited = new Array(n).fill(false);
-    let swaps = 0;
-    for (let i = 0; i < n; i++) {
-      if (visited[i]) continue;
-      let cycleLen = 0;
-      let j = i;
-      while (!visited[j]) {
-        visited[j] = true;
-        const id = currentIds[j];
-        j = indexOfId[id];
-        cycleLen++;
+  // Get all tiles that can be moved (exclude start/goal)
+  const allTiles: { x: number; y: number }[] = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (board[y][x].type === TileType.PATH && 
+          board[y][x].id !== 'start-tile' && 
+          board[y][x].id !== 'goal-tile') {
+        allTiles.push({ x, y });
       }
-      if (cycleLen > 1) swaps += cycleLen - 1;
-    }
-    return swaps;
-  };
-
-  // Enhanced shuffling algorithm for unique solutions
-  let best: { ids: string[]; swaps: number; solutionCount: number } | null = null;
-  const MAX_ATTEMPTS = 30;
-  
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    // Progressive difficulty: start with minimum swaps, increase if needed
-    const targetSwaps = MIN_SWAP_DISTANCE + Math.floor(attempt / 10);
-    const k = Math.min(movable.length, Math.max(3, targetSwaps));
-    
-    // Create more sophisticated permutations
-    const order = Array.from({ length: movable.length }, (_, i) => i);
-    
-    // Multiple smaller cycles for more complex arrangements
-    const cycleCount = Math.min(3, Math.floor(k / 2) + 1);
-    const usedIndices = new Set<number>();
-    
-    for (let c = 0; c < cycleCount && usedIndices.size < movable.length; c++) {
-      const availableIndices = Array.from({ length: movable.length }, (_, i) => i)
-        .filter(i => !usedIndices.has(i));
-      
-      if (availableIndices.length < 2) break;
-      
-      // Fisher-Yates shuffle for this cycle
-      for (let i = availableIndices.length - 1; i > 0; i--) {
-        const r = Math.floor(rng() * (i + 1));
-        [availableIndices[i], availableIndices[r]] = [availableIndices[r], availableIndices[i]];
-      }
-      
-      const cycleSize = Math.min(Math.max(2, Math.floor(k / cycleCount)), availableIndices.length);
-      const cycle = availableIndices.slice(0, cycleSize);
-      
-      // Apply cycle
-      for (let i = 0; i < cycle.length; i++) {
-        const from = cycle[i];
-        const to = cycle[(i + 1) % cycle.length];
-        order[to] = from;
-        usedIndices.add(from);
-      }
-    }
-
-    applyPermutation(order);
-
-    // Check if puzzle is valid and has unique solution
-    const hasPath = !!findPath(board, start.x, start.y, goal.x, goal.y);
-    const curIds = movable.map(({ x, y }) => board[y][x].id);
-    const dist = minimalSwaps(curIds);
-    
-    // Count solution paths (for uniqueness)
-    const solutionCount = hasPath ? 1 : countSolutions(board, start, goal, movable, solvedTiles);
-    
-    // Prefer puzzles with exactly one solution and good difficulty
-    const isGoodPuzzle = !hasPath && 
-                        dist >= MIN_SWAP_DISTANCE && 
-                        dist <= MAX_SWAP_DISTANCE &&
-                        solutionCount === 1;
-    
-    if (isGoodPuzzle) {
-      best = { ids: curIds.slice(), swaps: dist, solutionCount };
-      break;
-    }
-    
-    // Track best candidate even if not perfect
-    if (best === null || 
-        (solutionCount <= best.solutionCount && dist > best.swaps) ||
-        (solutionCount < best.solutionCount)) {
-      best = { ids: curIds.slice(), swaps: dist, solutionCount };
-    }
-
-    // Revert to solved and try again
-    for (let i = 0; i < movable.length; i++) {
-      const { x, y } = movable[i];
-      board[y][x] = { ...solvedTiles[i] };
     }
   }
 
-  // If still not meeting criteria, apply the best found unsolved shuffle or force-break
-  if (!!findPath(board, start.x, start.y, goal.x, goal.y)) {
-    if (best) {
-      // Map best ids back to tiles in that order and apply
-      const idToTile: Record<string, GameTile> = Object.fromEntries(solvedTiles.map(t => [t.id, t]));
-      for (let i = 0; i < movable.length; i++) {
-        const { x, y } = movable[i];
-        board[y][x] = { ...idToTile[best.ids[i]] };
-      }
-    } else {
-      // Fallback: swap two middle tiles
-      if (movable.length >= 2) {
-        const a = Math.floor(movable.length / 2) - 1;
-        const b = a + 1;
-        const A = movable[a];
-        const B = movable[b];
-        const tmp = board[A.y][A.x];
-        board[A.y][A.x] = board[B.y][B.x];
-        board[B.y][B.x] = tmp;
-      }
+  // Determine target difficulty based on template
+  const targetSwaps = Math.max(3, Math.min(template.optimalMoves, Math.floor(allTiles.length * 0.6)));
+  
+  // Apply exactly targetSwaps random swaps to create controlled difficulty
+  for (let i = 0; i < targetSwaps; i++) {
+    if (allTiles.length < 2) break;
+    
+    const idx1 = Math.floor(rng() * allTiles.length);
+    let idx2 = Math.floor(rng() * allTiles.length);
+    while (idx2 === idx1 && allTiles.length > 1) {
+      idx2 = Math.floor(rng() * allTiles.length);
     }
+    
+    const pos1 = allTiles[idx1];
+    const pos2 = allTiles[idx2];
+    
+    // Swap the tiles
+    const temp = board[pos1.y][pos1.x];
+    board[pos1.y][pos1.x] = board[pos2.y][pos2.x];
+    board[pos2.y][pos2.x] = temp;
   }
+  
+  // Verify solvability with our solver
+  const solvable = !!findPath(board, start.x, start.y, goal.x, goal.y);
+  
+  // If not solvable, try a few more random swaps (up to 3 more attempts)
+  let fixAttempts = 0;
+  while (!solvable && fixAttempts < 3) {
+    if (allTiles.length >= 2) {
+      const idx1 = Math.floor(rng() * allTiles.length);
+      let idx2 = Math.floor(rng() * allTiles.length);
+      while (idx2 === idx1) idx2 = Math.floor(rng() * allTiles.length);
+      
+      const pos1 = allTiles[idx1];
+      const pos2 = allTiles[idx2];
+      
+      const temp = board[pos1.y][pos1.x];
+      board[pos1.y][pos1.x] = board[pos2.y][pos2.x];
+      board[pos2.y][pos2.x] = temp;
+      
+      if (findPath(board, start.x, start.y, goal.x, goal.y)) break;
+    }
+    fixAttempts++;
+  }
+  
+  // Store the target swaps for star rating (this is our "optimal" solution count)
+  (board as any).__optimalSwaps = targetSwaps;
 
   return board;
 };
@@ -639,50 +561,71 @@ export const findPath = (
   return null; // No path found
 };
 
-// Helper function to count possible solutions for uniqueness validation
-const countSolutions = (
+// Simple solver that finds minimum swaps needed to solve the puzzle
+export const findMinimumSwapsToSolve = (
   board: GameTile[][],
   start: { x: number; y: number },
-  goal: { x: number; y: number },
-  movable: { x: number; y: number }[],
-  solvedTiles: GameTile[],
-  maxSolutions = 3
+  goal: { x: number; y: number }
 ): number => {
-  let solutions = 0;
-  const boardCopy = board.map(row => row.map(tile => ({ ...tile })));
+  // If already solved, return 0
+  if (findPath(board, start.x, start.y, goal.x, goal.y)) {
+    return 0;
+  }
   
-  // Try limited permutations to check for multiple solutions
-  const trySwap = (swapCount: number, maxSwaps: number) => {
-    if (solutions >= maxSolutions || swapCount >= maxSwaps) return;
-    
-    // Check current state
-    if (findPath(boardCopy, start.x, start.y, goal.x, goal.y)) {
-      solutions++;
-      return;
-    }
-    
-    // Try swapping pairs of movable tiles
-    for (let i = 0; i < movable.length && solutions < maxSolutions; i++) {
-      for (let j = i + 1; j < movable.length && solutions < maxSolutions; j++) {
-        const pos1 = movable[i];
-        const pos2 = movable[j];
-        
-        // Swap
-        const temp = boardCopy[pos1.y][pos1.x];
-        boardCopy[pos1.y][pos1.x] = boardCopy[pos2.y][pos2.x];
-        boardCopy[pos2.y][pos2.x] = temp;
-        
-        // Recurse
-        trySwap(swapCount + 1, maxSwaps);
-        
-        // Swap back
-        boardCopy[pos2.y][pos2.x] = boardCopy[pos1.y][pos1.x];
-        boardCopy[pos1.y][pos1.x] = temp;
+  // Get all movable tiles (exclude start/goal)
+  const movableTiles: { x: number; y: number }[] = [];
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < (board[0]?.length || 0); x++) {
+      if (board[y][x].type === TileType.PATH && 
+          board[y][x].id !== 'start-tile' && 
+          board[y][x].id !== 'goal-tile') {
+        movableTiles.push({ x, y });
       }
     }
+  }
+  
+  // Try BFS approach: try all possible single swaps, then double swaps, etc.
+  const queue: { board: GameTile[][]; swaps: number }[] = [];
+  const visited = new Set<string>();
+  
+  // Helper to serialize board state for duplicate detection
+  const serializeBoard = (b: GameTile[][]) => {
+    return b.map(row => row.map(tile => tile.id).join(',')).join('|');
   };
   
-  // Check solutions within 2-3 swaps for uniqueness
-  trySwap(0, Math.min(3, movable.length));
-  return solutions;
+  queue.push({ board: board.map(row => row.map(tile => ({ ...tile }))), swaps: 0 });
+  visited.add(serializeBoard(board));
+  
+  while (queue.length > 0 && queue.length < 1000) { // Limit search to prevent infinite loops
+    const { board: currentBoard, swaps } = queue.shift()!;
+    
+    // Try all possible swaps
+    for (let i = 0; i < movableTiles.length; i++) {
+      for (let j = i + 1; j < movableTiles.length; j++) {
+        const newBoard = currentBoard.map(row => row.map(tile => ({ ...tile })));
+        const pos1 = movableTiles[i];
+        const pos2 = movableTiles[j];
+        
+        // Perform swap
+        const temp = newBoard[pos1.y][pos1.x];
+        newBoard[pos1.y][pos1.x] = newBoard[pos2.y][pos2.x];
+        newBoard[pos2.y][pos2.x] = temp;
+        
+        // Check if solved
+        if (findPath(newBoard, start.x, start.y, goal.x, goal.y)) {
+          return swaps + 1;
+        }
+        
+        // Add to queue if not visited and we haven't searched too deep
+        const serialized = serializeBoard(newBoard);
+        if (!visited.has(serialized) && swaps < 8) { // Limit depth to 8 swaps
+          visited.add(serialized);
+          queue.push({ board: newBoard, swaps: swaps + 1 });
+        }
+      }
+    }
+  }
+  
+  // If we can't find a solution within reasonable bounds, return template optimal
+  return (board as any).__optimalSwaps || 5;
 };

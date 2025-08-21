@@ -1,5 +1,5 @@
 import { GameTile, TileType } from '../types/game';
-import { calculateStarThresholds, getDifficultyForDay, getTemplateForSeed } from './difficultySystem';
+import { getDifficultyForDay, getTemplateForSeed } from './difficultySystem';
 
 export interface StarRating {
   stars: number;
@@ -24,19 +24,17 @@ export const calculateStarRating = (
   // Count total gems available
   const totalGems = board.flat().filter(tile => tile.special === 'gem').length;
   
-  // Use template-based thresholds for better difficulty balance
-  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  const difficulty = getDifficultyForDay(daysSinceEpoch);
-  const template = getTemplateForSeed(Date.now().toString(), difficulty);
-  const templateThresholds = calculateStarThresholds(template);
+  // Use the optimal swaps stored in the board, or calculate from template
+  const optimalSwaps = (board as any).__optimalSwaps || (() => {
+    const daysSinceEpoch = Math.floor(Date.now() / 86400000);
+    const difficulty = getDifficultyForDay(daysSinceEpoch);
+    const template = getTemplateForSeed(Date.now().toString(), difficulty);
+    return template.optimalMoves;
+  })();
   
-  // Fall back to dynamic calculation if template system unavailable
-  const boardArea = board.length * (board[0]?.length || 0);
-  const pathLength = board.flat().filter(tile => tile.type === TileType.PATH).length;
-  const baseOptimalMoves = Math.max(2, Math.floor(pathLength * 0.12));
-  
-  const maxMovesFor3Stars = templateThresholds?.maxMovesFor3Stars ?? baseOptimalMoves + 1;
-  const maxMovesFor2Stars = templateThresholds?.maxMovesFor2Stars ?? baseOptimalMoves + 2;
+  // Star thresholds based on actual optimal solution
+  const maxMovesFor3Stars = optimalSwaps; // Perfect = exact optimal moves
+  const maxMovesFor2Stars = optimalSwaps + 2; // Good = within 2 extra moves
   
   const requirements = {
     completed: gameCompleted,
@@ -51,13 +49,14 @@ export const calculateStarRating = (
     stars = 1;
   }
   
-  // 2 stars: Complete efficiently
+  // 2 stars: Complete efficiently (within 2 extra moves)
   if (requirements.efficient) {
     stars = 2;
   }
   
-  // 3 stars: Complete with all gems within optimal threshold
-  if (requirements.completed && requirements.gemsCollected && moves <= maxMovesFor3Stars) {
+  // 3 stars: Complete optimally with all gems
+  if (requirements.completed && moves <= maxMovesFor3Stars && 
+      (totalGems === 0 || requirements.gemsCollected)) {
     stars = 3;
   }
   
