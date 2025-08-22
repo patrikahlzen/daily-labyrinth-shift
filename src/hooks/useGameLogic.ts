@@ -97,10 +97,55 @@ export const useGameLogic = () => {
   const STORAGE_KEY = `dlab_state_${getDailyKeySE()}`;
 
   useEffect(() => {
+    if (!STORAGE_KEY) return;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
+        // Validate saved board's goal tile so we don't resurrect broken states
+        const board: GameTile[][] | undefined = saved?.board;
+        if (Array.isArray(board) && board.length > 0 && Array.isArray(board[0])) {
+          // Recompute start/goal from IDs to be safe
+          const findPos = (id: string): { x: number; y: number } => {
+            for (let y = 0; y < board.length; y++) {
+              for (let x = 0; x < (board[0]?.length ?? 0); x++) {
+                if (board[y][x]?.id === id) return { x, y };
+              }
+            }
+            return { x: 0, y: 0 };
+          };
+          const start = findPos('start-tile');
+          const goal = findPos('goal-tile');
+          const goalTile = board?.[goal.y]?.[goal.x];
+          const hasConnection = !!goalTile && goalTile.type === TileType.PATH && Object.values(goalTile.connections || {}).some(Boolean);
+          if (!hasConnection) {
+            // Discard broken save and regenerate a fresh, validated board for today
+            const dailySeed = `SEED_${getDailyKeySE()}`;
+            const fresh = createInitialBoard(dailySeed);
+            const newStart = findPos('start-tile');
+            const newGoal = findPos('goal-tile');
+            setGameState(prev => ({
+              ...prev,
+              board: fresh,
+              startPosition: newStart,
+              goalPosition: newGoal,
+              connectedPath: [],
+              validConnection: false,
+              moves: 0,
+              timer: 0,
+              gameStarted: false,
+              gameCompleted: false,
+              canUndo: false,
+              pushHistory: [],
+              selectedTile: null,
+              gemsCollected: 0,
+              stars: 1
+            }));
+            // Clear the broken state to avoid loading it again
+            localStorage.removeItem(STORAGE_KEY);
+            return;
+          }
+        }
         setGameState(prev => ({ ...prev, ...saved, connectedPath: [], validConnection: false }));
       }
     } catch {}
