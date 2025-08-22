@@ -472,6 +472,35 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   // Use actual minimum swaps from current state for star rating as requested
   (finalBoard as any).__optimalSwaps = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
 
+  // If too easy, try to raise the minimum swaps to at least 3 while keeping solvability
+  const desiredMin = 3;
+  if ((finalBoard as any).__optimalSwaps < desiredMin) {
+    const attemptsRaise = 40;
+    for (let k = 0; k < attemptsRaise; k++) {
+      const candidate = cloneBoard(finalBoard);
+      const movable = getMovable(candidate);
+      const swapsToApply = 1 + Math.floor(rng() * 3); // 1-3 extra swaps
+      for (let s = 0; s < swapsToApply && movable.length >= 2; s++) {
+        const i1 = Math.floor(rng() * movable.length);
+        let i2 = Math.floor(rng() * movable.length);
+        while (i2 === i1 && movable.length > 1) i2 = Math.floor(rng() * movable.length);
+        const a = movable[i1];
+        const b = movable[i2];
+        const tmp = candidate[a.y][a.x];
+        candidate[a.y][a.x] = candidate[b.y][b.x];
+        candidate[b.y][b.x] = tmp;
+      }
+      if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
+        const minSwaps = findMinimumSwapsToSolve(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+        if (minSwaps >= desiredMin) {
+          finalBoard = candidate;
+          (finalBoard as any).__optimalSwaps = minSwaps;
+          break;
+        }
+      }
+    }
+  }
+
   // Safety: ensure start/goal tiles are path tiles with at least one connection and IDs are correct
   const hasConn = (t: GameTile) => t && t.type === TileType.PATH && Object.values(t.connections || {}).some(Boolean);
 
