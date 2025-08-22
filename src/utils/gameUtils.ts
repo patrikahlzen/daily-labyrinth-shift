@@ -413,68 +413,63 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   }
 
   // SIMPLIFIED SCRAMBLING: Generate controlled difficulty with guaranteed solvability
-  
-  // Get all tiles that can be moved (exclude start/goal)
-  const allTiles: { x: number; y: number }[] = [];
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      if (board[y][x].type === TileType.PATH && 
-          board[y][x].id !== 'start-tile' && 
-          board[y][x].id !== 'goal-tile') {
-        allTiles.push({ x, y });
+  // Create a pristine copy BEFORE scrambling so we can retry safely
+  const cloneBoard = (b: GameTile[][]) => b.map(row => row.map(tile => ({
+    ...tile,
+    connections: { ...tile.connections },
+  })));
+  const baseSolvedBoard = cloneBoard(board);
+
+  // Helper to collect movable tile coordinates for a given board state
+  const getMovable = (b: GameTile[][]) => {
+    const coords: { x: number; y: number }[] = [];
+    for (let yy = 0; yy < rows; yy++) {
+      for (let xx = 0; xx < cols; xx++) {
+        const t = b[yy][xx];
+        if (t.type === TileType.PATH && t.id !== 'start-tile' && t.id !== 'goal-tile') {
+          coords.push({ x: xx, y: yy });
+        }
       }
     }
-  }
+    return coords;
+  };
 
   // Determine target difficulty based on template
-  const targetSwaps = Math.max(3, Math.min(template.optimalMoves, Math.floor(allTiles.length * 0.6)));
-  
-  // Apply exactly targetSwaps random swaps to create controlled difficulty
-  for (let i = 0; i < targetSwaps; i++) {
-    if (allTiles.length < 2) break;
-    
-    const idx1 = Math.floor(rng() * allTiles.length);
-    let idx2 = Math.floor(rng() * allTiles.length);
-    while (idx2 === idx1 && allTiles.length > 1) {
-      idx2 = Math.floor(rng() * allTiles.length);
-    }
-    
-    const pos1 = allTiles[idx1];
-    const pos2 = allTiles[idx2];
-    
-    // Swap the tiles
-    const temp = board[pos1.y][pos1.x];
-    board[pos1.y][pos1.x] = board[pos2.y][pos2.x];
-    board[pos2.y][pos2.x] = temp;
-  }
-  
-  // Verify solvability with our solver
-  const solvable = !!findPath(board, start.x, start.y, goal.x, goal.y);
-  
-  // If not solvable, try a few more random swaps (up to 3 more attempts)
-  let fixAttempts = 0;
-  while (!solvable && fixAttempts < 3) {
-    if (allTiles.length >= 2) {
-      const idx1 = Math.floor(rng() * allTiles.length);
-      let idx2 = Math.floor(rng() * allTiles.length);
-      while (idx2 === idx1) idx2 = Math.floor(rng() * allTiles.length);
-      
-      const pos1 = allTiles[idx1];
-      const pos2 = allTiles[idx2];
-      
-      const temp = board[pos1.y][pos1.x];
-      board[pos1.y][pos1.x] = board[pos2.y][pos2.x];
-      board[pos2.y][pos2.x] = temp;
-      
-      if (findPath(board, start.x, start.y, goal.x, goal.y)) break;
-    }
-    fixAttempts++;
-  }
-  
-  // Store the target swaps for star rating (this is our "optimal" solution count)
-  (board as any).__optimalSwaps = targetSwaps;
+  const targetSwaps = Math.max(3, Math.min(template.optimalMoves, Math.floor((rows * cols) * 0.6)));
 
-  return board;
+  // Try multiple scramble attempts until the solver confirms solvability
+  let scrambled: GameTile[][] | null = null;
+  const maxAttempts = 30;
+  for (let attempt = 0; attempt < maxAttempts && !scrambled; attempt++) {
+    const candidate = cloneBoard(baseSolvedBoard);
+    const movable = getMovable(candidate);
+
+    // Apply exactly targetSwaps random swaps
+    for (let i = 0; i < targetSwaps && movable.length >= 2; i++) {
+      const idx1 = Math.floor(rng() * movable.length);
+      let idx2 = Math.floor(rng() * movable.length);
+      while (idx2 === idx1 && movable.length > 1) idx2 = Math.floor(rng() * movable.length);
+
+      const a = movable[idx1];
+      const b = movable[idx2];
+      const temp = candidate[a.y][a.x];
+      candidate[a.y][a.x] = candidate[b.y][b.x];
+      candidate[b.y][b.x] = temp;
+    }
+
+    if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
+      scrambled = candidate;
+      break;
+    }
+  }
+
+  // If we failed to find a solvable scramble, fall back to the solved base
+  const finalBoard = scrambled ?? baseSolvedBoard;
+
+  // Use actual minimum swaps from current state for star rating as requested
+  (finalBoard as any).__optimalSwaps = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+
+  return finalBoard;
 };
 
 export const canMoveTo = (
