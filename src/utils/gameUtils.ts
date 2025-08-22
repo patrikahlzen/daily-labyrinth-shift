@@ -434,8 +434,11 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     return coords;
   };
 
-  // Determine target difficulty based on template
-  const targetSwaps = Math.max(3, Math.min(template.optimalMoves, Math.floor((rows * cols) * 0.6)));
+  // Determine target difficulty based on template (slightly harder with variability)
+  const baseTarget = template.optimalMoves;
+  const variability = Math.floor(rng() * 2); // 0-1 extra swaps
+  const minByDifficulty = template.difficulty === 'hard' ? 6 : template.difficulty === 'medium' ? 4 : 3;
+  const targetSwaps = Math.max(minByDifficulty, baseTarget + variability);
 
   // Try multiple scramble attempts until the solver confirms solvability
   let scrambled: GameTile[][] | null = null;
@@ -464,10 +467,46 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   }
 
   // If we failed to find a solvable scramble, fall back to the solved base
-  const finalBoard = scrambled ?? baseSolvedBoard;
+  let finalBoard = scrambled ?? baseSolvedBoard;
 
   // Use actual minimum swaps from current state for star rating as requested
   (finalBoard as any).__optimalSwaps = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+
+  // Safety: ensure start/goal tiles are path tiles with at least one connection and IDs are correct
+  const hasConn = (t: GameTile) => t && t.type === TileType.PATH && Object.values(t.connections || {}).some(Boolean);
+
+  // Remove stray start/goal IDs off their coordinates
+  for (let yy = 0; yy < rows; yy++) {
+    for (let xx = 0; xx < cols; xx++) {
+      if ((xx !== start.x || yy !== start.y) && finalBoard[yy][xx].id === 'start-tile') {
+        finalBoard[yy][xx].id = `t-fix-s-${yy}-${xx}`;
+      }
+      if ((xx !== goal.x || yy !== goal.y) && finalBoard[yy][xx].id === 'goal-tile') {
+        finalBoard[yy][xx].id = `t-fix-g-${yy}-${xx}`;
+      }
+    }
+  }
+
+  // Re-stamp IDs on correct cells
+  finalBoard[start.y][start.x].id = 'start-tile';
+  finalBoard[goal.y][goal.x].id = 'goal-tile';
+
+  // Ensure both are PATH with visible shape; fallback to the pristine solved board's tiles if needed
+  if (!hasConn(finalBoard[start.y][start.x])) {
+    const backup = baseSolvedBoard[start.y][start.x];
+    finalBoard[start.y][start.x] = { ...backup, id: 'start-tile' };
+  }
+  if (!hasConn(finalBoard[goal.y][goal.x])) {
+    const backup = baseSolvedBoard[goal.y][goal.x];
+    finalBoard[goal.y][goal.x] = { ...backup, id: 'goal-tile' };
+  }
+
+  // Final solvability guard
+  if (!findPath(finalBoard, start.x, start.y, goal.x, goal.y)) {
+    finalBoard = baseSolvedBoard.map(row => row.map(tile => ({ ...tile, connections: { ...tile.connections } })));
+    finalBoard[start.y][start.x].id = 'start-tile';
+    finalBoard[goal.y][goal.x].id = 'goal-tile';
+  }
 
   return finalBoard;
 };

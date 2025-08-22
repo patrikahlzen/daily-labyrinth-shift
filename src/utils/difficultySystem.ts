@@ -33,6 +33,22 @@ export const PUZZLE_TEMPLATES: Record<Difficulty, PuzzleTemplate[]> = {
       decoyDensity: 0.4,
       optimalMoves: 3,
       difficulty: Difficulty.EASY
+    },
+    {
+      boardSize: { rows: 3, cols: 5 },
+      pathComplexity: 2,
+      gemCount: 1,
+      decoyDensity: 0.45,
+      optimalMoves: 3,
+      difficulty: Difficulty.EASY
+    },
+    {
+      boardSize: { rows: 4, cols: 5 },
+      pathComplexity: 2,
+      gemCount: 1,
+      decoyDensity: 0.5,
+      optimalMoves: 4,
+      difficulty: Difficulty.EASY
     }
   ],
   [Difficulty.MEDIUM]: [
@@ -51,6 +67,22 @@ export const PUZZLE_TEMPLATES: Record<Difficulty, PuzzleTemplate[]> = {
       decoyDensity: 0.6,
       optimalMoves: 5,
       difficulty: Difficulty.MEDIUM
+    },
+    {
+      boardSize: { rows: 4, cols: 6 },
+      pathComplexity: 3,
+      gemCount: 2,
+      decoyDensity: 0.55,
+      optimalMoves: 5,
+      difficulty: Difficulty.MEDIUM
+    },
+    {
+      boardSize: { rows: 5, cols: 6 },
+      pathComplexity: 4,
+      gemCount: 2,
+      decoyDensity: 0.6,
+      optimalMoves: 6,
+      difficulty: Difficulty.MEDIUM
     }
   ],
   [Difficulty.HARD]: [
@@ -68,6 +100,22 @@ export const PUZZLE_TEMPLATES: Record<Difficulty, PuzzleTemplate[]> = {
       gemCount: 4,
       decoyDensity: 0.8,
       optimalMoves: 8,
+      difficulty: Difficulty.HARD
+    },
+    {
+      boardSize: { rows: 5, cols: 7 },
+      pathComplexity: 5,
+      gemCount: 3,
+      decoyDensity: 0.75,
+      optimalMoves: 7,
+      difficulty: Difficulty.HARD
+    },
+    {
+      boardSize: { rows: 6, cols: 7 },
+      pathComplexity: 5,
+      gemCount: 4,
+      decoyDensity: 0.8,
+      optimalMoves: 9,
       difficulty: Difficulty.HARD
     }
   ]
