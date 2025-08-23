@@ -469,17 +469,31 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   // If we failed to find a solvable scramble, fall back to the solved base
   let finalBoard = scrambled ?? baseSolvedBoard;
 
-  // Use actual minimum swaps from current state for star rating as requested
-  (finalBoard as any).__optimalSwaps = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+  // Calculate optimal swaps for both scenarios and store them
+  const optimalToGoal = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+  
+  // Find optimal path visiting all gems
+  const allGems = finalBoard.flat().filter(tile => tile.special === 'gem');
+  const totalGems = allGems.length;
+  let optimalAllGems = optimalToGoal; // Default to same as goal if no gems
+  
+  if (totalGems > 0) {
+    optimalAllGems = findMinimumSwapsToCollectAllGems(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+  }
 
-  // If too easy, try to raise the minimum swaps to at least 3 while keeping solvability
-  const desiredMin = 3;
-  if ((finalBoard as any).__optimalSwaps < desiredMin) {
-    const attemptsRaise = 40;
+  // Store both values and gem count on the board for stable star rating
+  (finalBoard as any).__optimalToGoal = optimalToGoal;
+  (finalBoard as any).__optimalAllGems = optimalAllGems;
+  (finalBoard as any).__totalGems = totalGems;
+
+  // If too easy, try to raise the minimum swaps to at least 5 while keeping solvability
+  const desiredMin = 5;
+  if (Math.max(optimalToGoal, optimalAllGems) < desiredMin) {
+    const attemptsRaise = 50;
     for (let k = 0; k < attemptsRaise; k++) {
       const candidate = cloneBoard(finalBoard);
       const movable = getMovable(candidate);
-      const swapsToApply = 1 + Math.floor(rng() * 3); // 1-3 extra swaps
+      const swapsToApply = 2 + Math.floor(rng() * 4); // 2-5 extra swaps for more difficulty
       for (let s = 0; s < swapsToApply && movable.length >= 2; s++) {
         const i1 = Math.floor(rng() * movable.length);
         let i2 = Math.floor(rng() * movable.length);
@@ -491,10 +505,16 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
         candidate[b.y][b.x] = tmp;
       }
       if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
-        const minSwaps = findMinimumSwapsToSolve(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
-        if (minSwaps >= desiredMin) {
+        const newOptimalToGoal = findMinimumSwapsToSolve(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
+        const newOptimalAllGems = totalGems > 0 ? 
+          findMinimumSwapsToCollectAllGems(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y }) : 
+          newOptimalToGoal;
+        
+        if (Math.max(newOptimalToGoal, newOptimalAllGems) >= desiredMin) {
           finalBoard = candidate;
-          (finalBoard as any).__optimalSwaps = minSwaps;
+          (finalBoard as any).__optimalToGoal = newOptimalToGoal;
+          (finalBoard as any).__optimalAllGems = newOptimalAllGems;
+          (finalBoard as any).__totalGems = totalGems;
           break;
         }
       }
@@ -690,5 +710,137 @@ export const findMinimumSwapsToSolve = (
   }
   
   // If we can't find a solution within reasonable bounds, return template optimal
-  return (board as any).__optimalSwaps || 5;
+  return 5; // Default fallback raised to 5
+};
+
+export const findMinimumSwapsToCollectAllGems = (
+  board: GameTile[][],
+  start: { x: number; y: number },
+  goal: { x: number; y: number }
+): number => {
+  // Find all gem positions
+  const gems: { x: number; y: number }[] = [];
+  for (let y = 0; y < board.length; y++) {
+    for (let x = 0; x < board[0].length; x++) {
+      if (board[y][x].special === 'gem') {
+        gems.push({ x, y });
+      }
+    }
+  }
+
+  if (gems.length === 0) {
+    return findMinimumSwapsToSolve(board, start, goal);
+  }
+
+  // Find minimum swaps to create a path that visits all gems and reaches goal
+  const maxDepth = 15;
+  const queue: { board: GameTile[][]; swaps: number }[] = [{ board, swaps: 0 }];
+  const visited = new Set<string>();
+
+  const serializeBoard = (b: GameTile[][]) => {
+    return b.map(row => 
+      row.map(tile => `${tile.type}-${tile.connections.north}-${tile.connections.south}-${tile.connections.east}-${tile.connections.west}-${tile.special || ''}`).join('|')
+    ).join('||');
+  };
+
+  visited.add(serializeBoard(board));
+
+  while (queue.length > 0) {
+    const { board: currentBoard, swaps } = queue.shift()!;
+
+    // Check if we can reach goal via all gems
+    if (canReachGoalViaAllGems(currentBoard, start, goal, gems)) {
+      return swaps;
+    }
+
+    if (swaps >= maxDepth) {
+      continue;
+    }
+
+    // Get movable tiles for this board
+    const movable: { x: number; y: number }[] = [];
+    for (let y = 0; y < currentBoard.length; y++) {
+      for (let x = 0; x < currentBoard[0].length; x++) {
+        const t = currentBoard[y][x];
+        if (t.type === TileType.PATH && t.id !== 'start-tile' && t.id !== 'goal-tile') {
+          movable.push({ x, y });
+        }
+      }
+    }
+    
+    for (let i = 0; i < movable.length; i++) {
+      for (let j = i + 1; j < movable.length; j++) {
+        const newBoard = currentBoard.map(row => row.map(tile => ({
+          ...tile,
+          connections: { ...tile.connections },
+        })));
+        const pos1 = movable[i];
+        const pos2 = movable[j];
+        
+        const temp = newBoard[pos1.y][pos1.x];
+        newBoard[pos1.y][pos1.x] = newBoard[pos2.y][pos2.x];
+        newBoard[pos2.y][pos2.x] = temp;
+
+        const boardStr = serializeBoard(newBoard);
+        if (!visited.has(boardStr)) {
+          visited.add(boardStr);
+          queue.push({ board: newBoard, swaps: swaps + 1 });
+        }
+      }
+    }
+  }
+
+  return 5; // Default fallback
+};
+
+const canReachGoalViaAllGems = (
+  board: GameTile[][],
+  start: { x: number; y: number },
+  goal: { x: number; y: number },
+  gems: { x: number; y: number }[]
+): boolean => {
+  // Use DFS to check if there's a path from start to goal that visits all gems
+  const visited = new Set<string>();
+  const gemsToVisit = new Set(gems.map(g => `${g.x},${g.y}`));
+  
+  const dfs = (x: number, y: number, visitedGems: Set<string>): boolean => {
+    const key = `${x},${y}`;
+    if (visited.has(key)) return false;
+    visited.add(key);
+
+    // Check if we collected a gem at this position
+    const newVisitedGems = new Set(visitedGems);
+    if (gemsToVisit.has(key)) {
+      newVisitedGems.add(key);
+    }
+
+    // If we reached goal and have all gems, success
+    if (x === goal.x && y === goal.y && newVisitedGems.size === gems.length) {
+      return true;
+    }
+
+    // Try all adjacent connected tiles
+    const directions = [
+      { dx: 0, dy: -1, from: 'south', to: 'north' }, // North
+      { dx: 0, dy: 1, from: 'north', to: 'south' },  // South
+      { dx: 1, dy: 0, from: 'west', to: 'east' },    // East
+      { dx: -1, dy: 0, from: 'east', to: 'west' }    // West
+    ];
+
+    for (const dir of directions) {
+      const newX = x + dir.dx;
+      const newY = y + dir.dy;
+      
+      if (canMoveTo(board, x, y, newX, newY)) {
+        if (dfs(newX, newY, newVisitedGems)) {
+          return true;
+        }
+      }
+    }
+
+    visited.delete(key);
+    return false;
+  };
+
+  return dfs(start.x, start.y, new Set());
 };

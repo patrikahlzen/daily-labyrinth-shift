@@ -1,5 +1,5 @@
 import { GameTile, TileType } from '../types/game';
-import { findMinimumSwapsToSolve } from './gameUtils';
+import { findMinimumSwapsToSolve, findMinimumSwapsToCollectAllGems } from './gameUtils';
 
 export interface StarRating {
   stars: number;
@@ -21,13 +21,20 @@ export const calculateStarRating = (
   board: GameTile[][],
   gemsCollected = 0
 ): StarRating => {
-  // Count total gems available
-  const totalGems = board.flat().filter(tile => tile.special === 'gem').length;
+  // Use stored optimal values from board generation for stable thresholds
+  const storedOptimalToGoal = (board as any).__optimalToGoal as number | undefined;
+  const storedOptimalAllGems = (board as any).__optimalAllGems as number | undefined;
+  const storedTotalGems = (board as any).__totalGems as number | undefined;
   
-  // Use stored optimal swaps or compute deterministically from current board
-  let computedOptimal = (board as any).__optimalSwaps as number | undefined;
-  if (computedOptimal == null) {
-    // Locate start and goal on the current board
+  // Fallback to counting gems if not stored
+  const totalGems = storedTotalGems ?? board.flat().filter(tile => tile.special === 'gem').length;
+  
+  // Use stored values or fallback calculation
+  let optimalToGoal = storedOptimalToGoal;
+  let optimalAllGems = storedOptimalAllGems;
+  
+  if (optimalToGoal == null || optimalAllGems == null) {
+    // Fallback: locate start and goal and compute
     let startPos: { x: number; y: number } | null = null;
     let goalPos: { x: number; y: number } | null = null;
     for (let y = 0; y < board.length; y++) {
@@ -38,14 +45,23 @@ export const calculateStarRating = (
       }
     }
     if (startPos && goalPos) {
-      computedOptimal = findMinimumSwapsToSolve(board, startPos, goalPos);
+      optimalToGoal = findMinimumSwapsToSolve(board, startPos, goalPos);
+      // For fallback, compute gems path if any gems exist
+      optimalAllGems = totalGems > 0 ? 
+        findMinimumSwapsToCollectAllGems(board, startPos, goalPos) : 
+        optimalToGoal;
     }
   }
-  const optimalSwaps = Math.max(3, computedOptimal ?? 3);
   
-  // Star thresholds based on the actual optimal solution (clamped)
-  const maxMovesFor3Stars = optimalSwaps; // Perfect = exact optimal moves (min 3)
-  const maxMovesFor2Stars = optimalSwaps + 2; // Good = within 2 extra moves
+  // Ensure minimum values
+  optimalToGoal = Math.max(5, optimalToGoal ?? 5);
+  optimalAllGems = Math.max(5, optimalAllGems ?? 5);
+  
+  // Star thresholds: 
+  // 3 stars = optimal moves to collect all gems (or to goal if no gems)
+  // 2 stars = optimal to goal + 2 moves
+  const maxMovesFor3Stars = totalGems > 0 ? optimalAllGems : optimalToGoal;
+  const maxMovesFor2Stars = optimalToGoal + 2;
   
   const requirements = {
     completed: gameCompleted,
@@ -60,15 +76,17 @@ export const calculateStarRating = (
     stars = 1;
   }
   
-  // 2 stars: Complete efficiently (within 2 extra moves)
+  // 2 stars: Complete efficiently (within 2 extra moves of optimal to goal)
   if (requirements.efficient) {
     stars = 2;
   }
   
-  // 3 stars: Complete optimally with all gems
-  if (requirements.completed && moves <= maxMovesFor3Stars && 
-      (totalGems === 0 || requirements.gemsCollected)) {
-    stars = 3;
+  // 3 stars: Complete with optimal moves for all gems scenario
+  if (requirements.completed && moves <= maxMovesFor3Stars) {
+    // If there are gems, require all gems collected
+    if (totalGems === 0 || requirements.gemsCollected) {
+      stars = 3;
+    }
   }
   
   return {
