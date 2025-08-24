@@ -434,21 +434,27 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     return coords;
   };
 
-  // Determine target difficulty based on template (slightly harder with variability)
-  const baseTarget = template.optimalMoves;
-  const variability = Math.floor(rng() * 2); // 0-1 extra swaps
-  const minByDifficulty = template.difficulty === 'hard' ? 6 : template.difficulty === 'medium' ? 4 : 3;
-  const targetSwaps = Math.max(minByDifficulty, baseTarget + variability);
+  // Improved scrambling algorithm - create significantly more challenging puzzles
+  const movableCount = getMovable(baseSolvedBoard).length;
+  
+  // Aggressive scrambling based on board size and movable tiles
+  const boardComplexity = rows * cols;
+  const baseScrambleIntensity = Math.max(8, Math.floor(movableCount * 0.7)); // At least 70% of movable tiles
+  const difficultyMultiplier = template.difficulty === 'hard' ? 1.4 : template.difficulty === 'medium' ? 1.2 : 1.0;
+  const targetSwaps = Math.floor(baseScrambleIntensity * difficultyMultiplier);
 
-  // Try multiple scramble attempts until the solver confirms solvability
+  // Multi-phase scrambling for better randomization
   let scrambled: GameTile[][] | null = null;
-  const maxAttempts = 30;
+  const maxAttempts = 50;
+  
   for (let attempt = 0; attempt < maxAttempts && !scrambled; attempt++) {
     const candidate = cloneBoard(baseSolvedBoard);
+    
+    // Phase 1: Heavy initial scrambling
     const movable = getMovable(candidate);
-
-    // Apply exactly targetSwaps random swaps
-    for (let i = 0; i < targetSwaps && movable.length >= 2; i++) {
+    const phase1Swaps = Math.max(targetSwaps, Math.floor(movable.length * 0.8));
+    
+    for (let i = 0; i < phase1Swaps && movable.length >= 2; i++) {
       const idx1 = Math.floor(rng() * movable.length);
       let idx2 = Math.floor(rng() * movable.length);
       while (idx2 === idx1 && movable.length > 1) idx2 = Math.floor(rng() * movable.length);
@@ -459,10 +465,31 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       candidate[a.y][a.x] = candidate[b.y][b.x];
       candidate[b.y][b.x] = temp;
     }
-
-    if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
+    
+    // Phase 2: Verify still solvable, if not apply corrective swaps
+    if (!findPath(candidate, start.x, start.y, goal.x, goal.y)) {
+      // Try a few corrective swaps
+      for (let correction = 0; correction < 5; correction++) {
+        const movableNow = getMovable(candidate);
+        if (movableNow.length >= 2) {
+          const idx1 = Math.floor(rng() * movableNow.length);
+          let idx2 = Math.floor(rng() * movableNow.length);
+          while (idx2 === idx1 && movableNow.length > 1) idx2 = Math.floor(rng() * movableNow.length);
+          
+          const a = movableNow[idx1];
+          const b = movableNow[idx2];
+          const temp = candidate[a.y][a.x];
+          candidate[a.y][a.x] = candidate[b.y][b.x];
+          candidate[b.y][b.x] = temp;
+          
+          if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
+            scrambled = candidate;
+            break;
+          }
+        }
+      }
+    } else {
       scrambled = candidate;
-      break;
     }
   }
 
