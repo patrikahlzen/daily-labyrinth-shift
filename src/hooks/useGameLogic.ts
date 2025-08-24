@@ -298,6 +298,45 @@ export const useGameLogic = () => {
     });
   }, [checkPathConnection]);
 
+  const generateNewPuzzle = useCallback(() => {
+    // Generate a new puzzle with a random seed based on current timestamp
+    const randomSeed = `PUZZLE_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    const board = createInitialBoard(randomSeed);
+
+    const findPos = (id: string): { x: number; y: number } => {
+      for (let y = 0; y < board.length; y++) {
+        for (let x = 0; x < (board[0]?.length ?? 0); x++) {
+          if (board[y][x]?.id === id) return { x, y };
+        }
+      }
+      return { x: 0, y: 0 };
+    };
+
+    const start = findPos('start-tile');
+    const goal = findPos('goal-tile');
+
+    setGameState(prev => ({
+      board,
+      startPosition: start,
+      goalPosition: goal,
+      moves: 0,
+      timer: 0,
+      gameStarted: false,
+      gameCompleted: false,
+      canUndo: false,
+      connectedPath: [],
+      validConnection: false,
+      pushHistory: [],
+      selectedTile: null,
+      gemsCollected: 0,
+      stars: 1,
+      attempts: 0 // Reset attempt count for new puzzle
+    }));
+    
+    // Clear any saved state since this is a new puzzle
+    localStorage.removeItem(STORAGE_KEY);
+  }, [STORAGE_KEY]);
+
   const resetGame = useCallback(() => {
     const dailySeed = `SEED_${getDailyKeySE()}`;
     const board = createInitialBoard(dailySeed);
@@ -340,6 +379,7 @@ export const useGameLogic = () => {
     undoMove,
     onTileTap: tapTile,
     onSwapTiles: swapTiles,
-    resetGame
+    resetGame,
+    generateNewPuzzle
   };
 };

@@ -8,7 +8,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles, resetGame } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles, resetGame, generateNewPuzzle } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -107,6 +107,13 @@ const Index = () => {
                 className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
               >
                 Start Playing
+              </Button>
+              <Button
+                variant="outline"
+                onClick={generateNewPuzzle}
+                className="w-full"
+              >
+                Generate Test Puzzle
               </Button>
               <Button
                 variant="ghost"
