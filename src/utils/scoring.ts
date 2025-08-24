@@ -1,5 +1,4 @@
-import { GameTile, TileType } from '../types/game';
-import { findMinimumSwapsToSolve, findMinimumSwapsToCollectAllGems } from './gameUtils';
+import { GameTile } from '../types/game';
 
 export interface StarRating {
   stars: number;
@@ -34,23 +33,12 @@ export const calculateStarRating = (
   let optimalAllGems = storedOptimalAllGems;
   
   if (optimalToGoal == null || optimalAllGems == null) {
-    // Fallback: locate start and goal and compute
-    let startPos: { x: number; y: number } | null = null;
-    let goalPos: { x: number; y: number } | null = null;
-    for (let y = 0; y < board.length; y++) {
-      for (let x = 0; x < (board[0]?.length || 0); x++) {
-        const id = board[y][x].id;
-        if (id === 'start-tile') startPos = { x, y };
-        if (id === 'goal-tile') goalPos = { x, y };
-      }
-    }
-    if (startPos && goalPos) {
-      optimalToGoal = findMinimumSwapsToSolve(board, startPos, goalPos);
-      // For fallback, compute gems path if any gems exist
-      optimalAllGems = totalGems > 0 ? 
-        findMinimumSwapsToCollectAllGems(board, startPos, goalPos) : 
-        optimalToGoal;
-    }
+    const rows = board.length;
+    const cols = board[0]?.length || 0;
+    const area = rows * cols;
+    const estimate = Math.max(5, Math.min(12, Math.round(area / 6)));
+    optimalToGoal = estimate;
+    optimalAllGems = totalGems > 0 ? estimate + Math.min(2, totalGems) : estimate;
   }
   
   // Ensure minimum values

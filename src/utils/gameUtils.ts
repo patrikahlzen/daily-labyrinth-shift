@@ -469,57 +469,17 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   // If we failed to find a solvable scramble, fall back to the solved base
   let finalBoard = scrambled ?? baseSolvedBoard;
 
-  // Calculate optimal swaps for both scenarios and store them
-  const optimalToGoal = findMinimumSwapsToSolve(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
-  
-  // Find optimal path visiting all gems
-  const allGems = finalBoard.flat().filter(tile => tile.special === 'gem');
-  const totalGems = allGems.length;
-  let optimalAllGems = optimalToGoal; // Default to same as goal if no gems
-  
-  if (totalGems > 0) {
-    optimalAllGems = findMinimumSwapsToCollectAllGems(finalBoard, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
-  }
+  // Calculate estimated optimal swaps quickly (avoid heavy CPU for Vercel/mobile)
+  const totalGems = finalBoard.flat().filter(tile => tile.special === 'gem').length;
+  const boardArea = rows * cols;
+  const baseEstimate = Math.max(5, Math.min(12, Math.round(boardArea / 6)));
+  const optimalToGoal = Math.max(baseEstimate, targetSwaps);
+  const optimalAllGems = totalGems > 0 ? optimalToGoal + Math.min(2, totalGems) : optimalToGoal;
 
-  // Store both values and gem count on the board for stable star rating
+  // Store values on the board for stable star rating
   (finalBoard as any).__optimalToGoal = optimalToGoal;
   (finalBoard as any).__optimalAllGems = optimalAllGems;
   (finalBoard as any).__totalGems = totalGems;
-
-  // If too easy, try to raise the minimum swaps to at least 5 while keeping solvability
-  const desiredMin = 5;
-  if (Math.max(optimalToGoal, optimalAllGems) < desiredMin) {
-    const attemptsRaise = 50;
-    for (let k = 0; k < attemptsRaise; k++) {
-      const candidate = cloneBoard(finalBoard);
-      const movable = getMovable(candidate);
-      const swapsToApply = 2 + Math.floor(rng() * 4); // 2-5 extra swaps for more difficulty
-      for (let s = 0; s < swapsToApply && movable.length >= 2; s++) {
-        const i1 = Math.floor(rng() * movable.length);
-        let i2 = Math.floor(rng() * movable.length);
-        while (i2 === i1 && movable.length > 1) i2 = Math.floor(rng() * movable.length);
-        const a = movable[i1];
-        const b = movable[i2];
-        const tmp = candidate[a.y][a.x];
-        candidate[a.y][a.x] = candidate[b.y][b.x];
-        candidate[b.y][b.x] = tmp;
-      }
-      if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
-        const newOptimalToGoal = findMinimumSwapsToSolve(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y });
-        const newOptimalAllGems = totalGems > 0 ? 
-          findMinimumSwapsToCollectAllGems(candidate, { x: start.x, y: start.y }, { x: goal.x, y: goal.y }) : 
-          newOptimalToGoal;
-        
-        if (Math.max(newOptimalToGoal, newOptimalAllGems) >= desiredMin) {
-          finalBoard = candidate;
-          (finalBoard as any).__optimalToGoal = newOptimalToGoal;
-          (finalBoard as any).__optimalAllGems = newOptimalAllGems;
-          (finalBoard as any).__totalGems = totalGems;
-          break;
-        }
-      }
-    }
-  }
 
   // Safety: ensure start/goal tiles are path tiles with at least one connection and IDs are correct
   const hasConn = (t: GameTile) => t && t.type === TileType.PATH && Object.values(t.connections || {}).some(Boolean);
