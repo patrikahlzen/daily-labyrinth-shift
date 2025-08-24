@@ -1,15 +1,14 @@
 import { GameTile } from '../types/game';
 
 export interface StarRating {
-  stars: number;
+  stars: number; // 0 or 1
   requirements: {
     completed: boolean;
-    efficient: boolean;
+    goldAchieved: boolean;
     gemsCollected: boolean;
   };
   thresholds: {
-    maxMovesFor2Stars: number;
-    maxMovesFor3Stars: number;
+    maxMovesForGold: number;
     totalGems: number;
   };
 }
@@ -45,60 +44,31 @@ export const calculateStarRating = (
   optimalToGoal = Math.max(5, optimalToGoal ?? 5);
   optimalAllGems = Math.max(5, optimalAllGems ?? 5);
   
-  // Star thresholds: 
-  // 3 stars = optimal moves to collect all gems (or to goal if no gems)
-  // 2 stars = optimal to goal + 2 moves
-  const maxMovesFor3Stars = totalGems > 0 ? optimalAllGems : optimalToGoal;
-  const maxMovesFor2Stars = optimalToGoal + 2;
+  // Golden star threshold: optimal all-gems (or goal if no gems) + 1 move
+  const maxMovesForGold = (totalGems > 0 ? optimalAllGems : optimalToGoal) + 1;
   
   const requirements = {
     completed: gameCompleted,
-    efficient: gameCompleted && moves <= maxMovesFor2Stars,
-    gemsCollected: gameCompleted && gemsCollected >= totalGems && totalGems > 0
+    gemsCollected: gameCompleted && (totalGems === 0 || gemsCollected >= totalGems),
+    goldAchieved: gameCompleted && moves <= maxMovesForGold && (totalGems === 0 || gemsCollected >= totalGems)
   };
   
-  let stars = 0;
-  
-  // 1 star: Complete the game
-  if (requirements.completed) {
-    stars = 1;
-  }
-  
-  // 2 stars: Complete efficiently (within 2 extra moves of optimal to goal)
-  if (requirements.efficient) {
-    stars = 2;
-  }
-  
-  // 3 stars: Complete with optimal moves for all gems scenario
-  if (requirements.completed && moves <= maxMovesFor3Stars) {
-    // If there are gems, require all gems collected
-    if (totalGems === 0 || requirements.gemsCollected) {
-      stars = 3;
-    }
-  }
+  const stars = requirements.goldAchieved ? 1 : 0;
   
   return {
     stars,
     requirements,
     thresholds: {
-      maxMovesFor2Stars,
-      maxMovesFor3Stars,
+      maxMovesForGold,
       totalGems
     }
   };
 };
 
 export const getStarDescription = (stars: number): string => {
-  switch (stars) {
-    case 3:
-      return "Perfect! Efficient solution with all gems collected!";
-    case 2:
-      return "Great! Efficient solution!";
-    case 1:
-      return "Well done! Puzzle completed!";
-    default:
-      return "Keep trying!";
-  }
+  return stars >= 1
+    ? "Perfect! Golden star achieved!"
+    : "Keep trying!";
 };
 
 export const getNextStarRequirement = (
@@ -106,17 +76,11 @@ export const getNextStarRequirement = (
   moves: number,
   thresholds: StarRating['thresholds']
 ): string => {
-  switch (currentStars) {
-    case 0:
-      return "Complete the puzzle to earn your first star!";
-    case 1:
-      return `Complete in ${thresholds.maxMovesFor2Stars} moves or fewer for 2 stars!`;
-    case 2:
-      if (thresholds.totalGems > 0) {
-        return `Complete in ${thresholds.maxMovesFor3Stars} moves with all ${thresholds.totalGems} gems for 3 stars!`;
-      }
-      return "Perfect! Maximum stars achieved!";
-    default:
-      return "Perfect! Maximum stars achieved!";
+  if (currentStars >= 1) {
+    return "Perfect! Maximum reward achieved!";
   }
+  if (thresholds.totalGems > 0) {
+    return `Complete in ${thresholds.maxMovesForGold} moves and collect all ${thresholds.totalGems} gems for the gold star!`;
+  }
+  return `Complete in ${thresholds.maxMovesForGold} moves for the gold star!`;
 };

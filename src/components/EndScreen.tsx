@@ -43,12 +43,10 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   const nextRequirement = getNextStarRequirement(stars, moves, rating.thresholds);
 
   useEffect(() => {
-    // Enhanced celebration based on stars
-    const confettiConfig = stars >= 3 
-      ? { particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FF6B6B'] }
-      : stars >= 2
-      ? { particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#4ECDC4', '#45B7D1', '#96CEB4'] }
-      : { particleCount: 100, spread: 60, origin: { y: 0.6 } };
+    // Golden celebration if earned
+    const confettiConfig = stars >= 1 
+      ? { particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FFCF40'] }
+      : { particleCount: 120, spread: 70, origin: { y: 0.6 } };
     
     confetti(confettiConfig);
   }, [stars]);
@@ -81,13 +79,12 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           </Button>
         </header>
 
-        {/* Star Rating Section */}
         <section className="text-center mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
           <div className="flex justify-center mb-3">
-            <StarRating stars={stars} size="lg" />
+            <StarRating stars={stars} size="lg" maxStars={1} />
           </div>
           <p className="text-foreground font-medium mb-2">{starDescription}</p>
-          {stars < 3 && (
+          {stars < 1 && (
             <p className="text-sm text-muted-foreground">{nextRequirement}</p>
           )}
         </section>

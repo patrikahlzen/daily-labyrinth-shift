@@ -88,7 +88,7 @@ export const useGameLogic = () => {
       pushHistory: [],
       selectedTile: null,
       gemsCollected: 0,
-      stars: 1,
+      stars: 0,
       attempts: 0
     };
   });
@@ -139,7 +139,7 @@ export const useGameLogic = () => {
               pushHistory: [],
               selectedTile: null,
               gemsCollected: 0,
-              stars: 1
+              stars: 0
             }));
             // Clear the broken state to avoid loading it again
             localStorage.removeItem(STORAGE_KEY);
@@ -329,7 +329,7 @@ export const useGameLogic = () => {
       pushHistory: [],
       selectedTile: null,
       gemsCollected: 0,
-      stars: 1,
+      stars: 0,
       attempts: 0 // Reset attempt count for new puzzle
     }));
     
@@ -367,7 +367,7 @@ export const useGameLogic = () => {
       pushHistory: [],
       selectedTile: null,
       gemsCollected: 0,
-      stars: 1,
+      stars: 0,
       attempts: prev.attempts // Keep attempt count
     }));
   }, []);

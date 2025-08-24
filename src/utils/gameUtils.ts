@@ -537,11 +537,25 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     finalBoard[goal.y][goal.x] = { ...backup, id: 'goal-tile' };
   }
 
-  // Final solvability guard
-  if (!findPath(finalBoard, start.x, start.y, goal.x, goal.y)) {
-    finalBoard = baseSolvedBoard.map(row => row.map(tile => ({ ...tile, connections: { ...tile.connections } })));
-    finalBoard[start.y][start.x].id = 'start-tile';
-    finalBoard[goal.y][goal.x].id = 'goal-tile';
+  // Ensure the puzzle is not already solved at start while remaining solvable by swaps
+  let minSwapsToSolve = findMinimumSwapsToSolve(finalBoard, start, goal);
+  if (minSwapsToSolve === 0) {
+    const movableNow = getMovable(finalBoard);
+    for (let tries = 0; tries < 40 && minSwapsToSolve === 0; tries++) {
+      if (movableNow.length < 2) break;
+      const i = Math.floor(rng() * movableNow.length);
+      let j = Math.floor(rng() * movableNow.length);
+      while (j === i && movableNow.length > 1) j = Math.floor(rng() * movableNow.length);
+      const a = movableNow[i];
+      const b = movableNow[j];
+      const tmp = finalBoard[a.y][a.x];
+      finalBoard[a.y][a.x] = finalBoard[b.y][b.x];
+      finalBoard[b.y][b.x] = tmp;
+      // Re-stamp IDs to be safe
+      finalBoard[start.y][start.x].id = 'start-tile';
+      finalBoard[goal.y][goal.x].id = 'goal-tile';
+      minSwapsToSolve = findMinimumSwapsToSolve(finalBoard, start, goal);
+    }
   }
 
   return finalBoard;

@@ -7,7 +7,7 @@ interface StarRatingProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export const StarRating: React.FC<StarRatingProps> = ({ stars, maxStars = 3, size = 'md' }) => {
+export const StarRating: React.FC<StarRatingProps> = ({ stars, maxStars = 1, size = 'md' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-5 h-5',

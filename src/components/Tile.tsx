@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameTile, TileType } from '../types/game';
-import { Clock, Square, Gem, Zap } from 'lucide-react';
+import { Clock, Square, Gem, Zap, Flag } from 'lucide-react';
 
 interface TileProps {
   tile: GameTile;
@@ -150,18 +150,16 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
       )}
 
 
-      {/* Enhanced Goal with magnetic attraction effect */}
+      {/* Goal marker: non-blocking ring + corner flag for visibility */}
       {isGoal && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            <div className="w-9 h-9 bg-gradient-to-br from-game-goal to-accent rounded-xl goal-magnetic border-2 border-accent/50 backdrop-blur-sm flex items-center justify-center"
-                 style={{ boxShadow: 'var(--shadow-glass)' }}>
-              <Gem className="w-5 h-5 text-accent-foreground drop-shadow-sm" />
-            </div>
-            <div className="absolute inset-0 w-9 h-9 rounded-xl bg-gradient-glass pointer-events-none" />
+        <>
+          <div className="absolute inset-0 rounded-lg ring-2 ring-accent/70 pointer-events-none animate-[pulse_2s_ease-in-out_infinite]" />
+          <div className="absolute -top-1 -right-1">
+            <Flag className="w-4 h-4 text-accent drop-shadow-sm" />
           </div>
-        </div>
+        </>
       )}
+
 
       {/* Enhanced Energy Source (Start) with beacon effect */}
       {isStart && (
