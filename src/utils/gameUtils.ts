@@ -437,10 +437,10 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   // Improved scrambling algorithm - create significantly more challenging puzzles
   const movableCount = getMovable(baseSolvedBoard).length;
   
-  // Aggressive scrambling based on board size and movable tiles
+  // Much more aggressive scrambling based on board size and movable tiles
   const boardComplexity = rows * cols;
-  const baseScrambleIntensity = Math.max(8, Math.floor(movableCount * 0.7)); // At least 70% of movable tiles
-  const difficultyMultiplier = template.difficulty === 'hard' ? 1.4 : template.difficulty === 'medium' ? 1.2 : 1.0;
+  const baseScrambleIntensity = Math.max(12, Math.floor(movableCount * 0.9)); // At least 90% of movable tiles
+  const difficultyMultiplier = template.difficulty === 'hard' ? 2.0 : template.difficulty === 'medium' ? 1.6 : 1.3;
   const targetSwaps = Math.floor(baseScrambleIntensity * difficultyMultiplier);
 
   // Multi-phase scrambling for better randomization
@@ -450,9 +450,9 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   for (let attempt = 0; attempt < maxAttempts && !scrambled; attempt++) {
     const candidate = cloneBoard(baseSolvedBoard);
     
-    // Phase 1: Heavy initial scrambling
+    // Phase 1: Much heavier initial scrambling
     const movable = getMovable(candidate);
-    const phase1Swaps = Math.max(targetSwaps, Math.floor(movable.length * 0.8));
+    const phase1Swaps = Math.max(targetSwaps * 2, Math.floor(movable.length * 1.2));
     
     for (let i = 0; i < phase1Swaps && movable.length >= 2; i++) {
       const idx1 = Math.floor(rng() * movable.length);

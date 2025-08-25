@@ -1,6 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameTile, Direction, TileType, TileConnections } from '../types/game';
 import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/gameUtils';
+
+// Helper function to count gems along a path
+const countCollectedGems = (board: GameTile[][], path: { x: number; y: number }[]): number => {
+  let gemsCount = 0;
+  for (const pos of path) {
+    const tile = board[pos.y]?.[pos.x];
+    if (tile && tile.special === 'gem') {
+      gemsCount++;
+    }
+  }
+  return gemsCount;
+};
 import { getDailyKeySE } from './useDaily';
 import { calculateStarRating } from '../utils/scoring';
 
@@ -182,7 +194,14 @@ export const useGameLogic = () => {
       // Remove the push tile functionality entirely
 
       const pathCheck = checkPathConnection(newBoard, base.startPosition, base.goalPosition);
-      const rating = calculateStarRating(pathCheck.connected, base.moves + 1, newBoard, base.gemsCollected);
+      
+      // Count collected gems when game is completed
+      let newGemsCollected = base.gemsCollected;
+      if (pathCheck.connected) {
+        newGemsCollected = countCollectedGems(newBoard, pathCheck.path);
+      }
+      
+      const rating = calculateStarRating(pathCheck.connected, base.moves + 1, newBoard, newGemsCollected);
 
       return {
         ...base,
@@ -192,6 +211,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        gemsCollected: newGemsCollected,
         stars: rating.stars,
         pushHistory: [...base.pushHistory, snapshot],
       };
@@ -247,7 +267,14 @@ export const useGameLogic = () => {
       newBoard[row][col] = temp;
 
       const pathCheck = checkPathConnection(newBoard, prev.startPosition, prev.goalPosition);
-      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, prev.gemsCollected);
+      
+      // Count collected gems when game is completed
+      let newGemsCollected = prev.gemsCollected;
+      if (pathCheck.connected) {
+        newGemsCollected = countCollectedGems(newBoard, pathCheck.path);
+      }
+      
+      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, newGemsCollected);
 
       return {
         ...prev,
@@ -257,6 +284,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        gemsCollected: newGemsCollected,
         stars: rating.stars,
         pushHistory: [...prev.pushHistory, snapshot],
         selectedTile: null
@@ -281,7 +309,14 @@ export const useGameLogic = () => {
       newBoard[toRow][toCol] = temp;
 
       const pathCheck = checkPathConnection(newBoard, prev.startPosition, prev.goalPosition);
-      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, prev.gemsCollected);
+      
+      // Count collected gems when game is completed
+      let newGemsCollected = prev.gemsCollected;
+      if (pathCheck.connected) {
+        newGemsCollected = countCollectedGems(newBoard, pathCheck.path);
+      }
+      
+      const rating = calculateStarRating(pathCheck.connected, prev.moves + 1, newBoard, newGemsCollected);
 
       return {
         ...prev,
@@ -291,6 +326,7 @@ export const useGameLogic = () => {
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
+        gemsCollected: newGemsCollected,
         stars: rating.stars,
         pushHistory: [...prev.pushHistory, snapshot],
         selectedTile: null
