@@ -15,107 +15,107 @@ export interface PuzzleTemplate {
   difficulty: Difficulty;
 }
 
-// Curated puzzle templates for consistent quality
+// Curated puzzle templates for consistent quality - minimum 5x5 boards
 export const PUZZLE_TEMPLATES: Record<Difficulty, PuzzleTemplate[]> = {
   [Difficulty.EASY]: [
     {
-      boardSize: { rows: 3, cols: 4 },
-      pathComplexity: 1,
-      gemCount: 1,
-      decoyDensity: 0.3,
-      optimalMoves: 2,
-      difficulty: Difficulty.EASY
-    },
-    {
-      boardSize: { rows: 4, cols: 4 },
+      boardSize: { rows: 5, cols: 5 },
       pathComplexity: 2,
       gemCount: 1,
       decoyDensity: 0.4,
-      optimalMoves: 3,
+      optimalMoves: 4,
       difficulty: Difficulty.EASY
     },
     {
-      boardSize: { rows: 3, cols: 5 },
+      boardSize: { rows: 5, cols: 6 },
       pathComplexity: 2,
       gemCount: 1,
       decoyDensity: 0.45,
-      optimalMoves: 3,
+      optimalMoves: 5,
       difficulty: Difficulty.EASY
     },
     {
-      boardSize: { rows: 4, cols: 5 },
+      boardSize: { rows: 6, cols: 5 },
       pathComplexity: 2,
       gemCount: 1,
       decoyDensity: 0.5,
-      optimalMoves: 4,
+      optimalMoves: 5,
+      difficulty: Difficulty.EASY
+    },
+    {
+      boardSize: { rows: 6, cols: 6 },
+      pathComplexity: 3,
+      gemCount: 1,
+      decoyDensity: 0.5,
+      optimalMoves: 6,
       difficulty: Difficulty.EASY
     }
   ],
   [Difficulty.MEDIUM]: [
     {
-      boardSize: { rows: 4, cols: 5 },
+      boardSize: { rows: 6, cols: 6 },
       pathComplexity: 3,
-      gemCount: 2,
-      decoyDensity: 0.5,
-      optimalMoves: 4,
-      difficulty: Difficulty.MEDIUM
-    },
-    {
-      boardSize: { rows: 5, cols: 5 },
-      pathComplexity: 3,
-      gemCount: 2,
-      decoyDensity: 0.6,
-      optimalMoves: 5,
-      difficulty: Difficulty.MEDIUM
-    },
-    {
-      boardSize: { rows: 4, cols: 6 },
-      pathComplexity: 3,
-      gemCount: 2,
-      decoyDensity: 0.55,
-      optimalMoves: 5,
-      difficulty: Difficulty.MEDIUM
-    },
-    {
-      boardSize: { rows: 5, cols: 6 },
-      pathComplexity: 4,
       gemCount: 2,
       decoyDensity: 0.6,
       optimalMoves: 6,
+      difficulty: Difficulty.MEDIUM
+    },
+    {
+      boardSize: { rows: 6, cols: 7 },
+      pathComplexity: 4,
+      gemCount: 2,
+      decoyDensity: 0.65,
+      optimalMoves: 7,
+      difficulty: Difficulty.MEDIUM
+    },
+    {
+      boardSize: { rows: 7, cols: 6 },
+      pathComplexity: 4,
+      gemCount: 2,
+      decoyDensity: 0.65,
+      optimalMoves: 7,
+      difficulty: Difficulty.MEDIUM
+    },
+    {
+      boardSize: { rows: 7, cols: 7 },
+      pathComplexity: 4,
+      gemCount: 2,
+      decoyDensity: 0.7,
+      optimalMoves: 8,
       difficulty: Difficulty.MEDIUM
     }
   ],
   [Difficulty.HARD]: [
     {
-      boardSize: { rows: 5, cols: 6 },
-      pathComplexity: 4,
-      gemCount: 3,
-      decoyDensity: 0.7,
-      optimalMoves: 6,
-      difficulty: Difficulty.HARD
-    },
-    {
-      boardSize: { rows: 6, cols: 6 },
-      pathComplexity: 5,
-      gemCount: 4,
-      decoyDensity: 0.8,
-      optimalMoves: 8,
-      difficulty: Difficulty.HARD
-    },
-    {
-      boardSize: { rows: 5, cols: 7 },
+      boardSize: { rows: 7, cols: 7 },
       pathComplexity: 5,
       gemCount: 3,
       decoyDensity: 0.75,
-      optimalMoves: 7,
+      optimalMoves: 9,
       difficulty: Difficulty.HARD
     },
     {
-      boardSize: { rows: 6, cols: 7 },
+      boardSize: { rows: 8, cols: 7 },
       pathComplexity: 5,
       gemCount: 4,
       decoyDensity: 0.8,
-      optimalMoves: 9,
+      optimalMoves: 10,
+      difficulty: Difficulty.HARD
+    },
+    {
+      boardSize: { rows: 7, cols: 8 },
+      pathComplexity: 5,
+      gemCount: 4,
+      decoyDensity: 0.8,
+      optimalMoves: 10,
+      difficulty: Difficulty.HARD
+    },
+    {
+      boardSize: { rows: 8, cols: 8 },
+      pathComplexity: 5,
+      gemCount: 5,
+      decoyDensity: 0.85,
+      optimalMoves: 12,
       difficulty: Difficulty.HARD
     }
   ]
