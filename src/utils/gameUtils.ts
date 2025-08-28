@@ -442,6 +442,8 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   const baseScrambleIntensity = Math.max(20, Math.floor(movableCount * 1.5)); // At least 150% of movable tiles
   const difficultyMultiplier = template.difficulty === 'hard' ? 3.5 : template.difficulty === 'medium' ? 2.8 : 2.2;
   const targetSwaps = Math.floor(baseScrambleIntensity * difficultyMultiplier);
+  const minRequiredSwaps = template.difficulty === 'hard' ? 5 : template.difficulty === 'medium' ? 5 : 4;
+  let acceptedSwaps = -1;
 
   // Multi-phase scrambling for better randomization
   let scrambled: GameTile[][] | null = null;
@@ -466,41 +468,23 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       candidate[b.y][b.x] = temp;
     }
     
-    // Phase 2: Verify still solvable, if not apply corrective swaps
-    if (!findPath(candidate, start.x, start.y, goal.x, goal.y)) {
-      // Try a few corrective swaps
-      for (let correction = 0; correction < 5; correction++) {
-        const movableNow = getMovable(candidate);
-        if (movableNow.length >= 2) {
-          const idx1 = Math.floor(rng() * movableNow.length);
-          let idx2 = Math.floor(rng() * movableNow.length);
-          while (idx2 === idx1 && movableNow.length > 1) idx2 = Math.floor(rng() * movableNow.length);
-          
-          const a = movableNow[idx1];
-          const b = movableNow[idx2];
-          const temp = candidate[a.y][a.x];
-          candidate[a.y][a.x] = candidate[b.y][b.x];
-          candidate[b.y][b.x] = temp;
-          
-          if (findPath(candidate, start.x, start.y, goal.x, goal.y)) {
-            scrambled = candidate;
-            break;
-          }
-        }
-      }
-    } else {
+    // Phase 2: Evaluate solvability by swaps and enforce minimum required depth
+    const swapsNeeded = findMinimumSwapsToSolve(candidate, start, goal);
+    if (swapsNeeded >= minRequiredSwaps) {
       scrambled = candidate;
+      acceptedSwaps = swapsNeeded;
     }
   }
 
   // If we failed to find a solvable scramble, fall back to the solved base
   let finalBoard = scrambled ?? baseSolvedBoard;
 
-  // Calculate estimated optimal swaps quickly (avoid heavy CPU for Vercel/mobile)
+  // Calculate and store optimal swap estimates based on actual solver depth
   const totalGems = finalBoard.flat().filter(tile => tile.special === 'gem').length;
   const boardArea = rows * cols;
   const baseEstimate = Math.max(5, Math.min(12, Math.round(boardArea / 6)));
-  const optimalToGoal = Math.max(baseEstimate, targetSwaps);
+  const computedMin = acceptedSwaps > 0 ? acceptedSwaps : findMinimumSwapsToSolve(finalBoard, start, goal);
+  const optimalToGoal = Math.max(baseEstimate, computedMin);
   const optimalAllGems = totalGems > 0 ? optimalToGoal + Math.min(2, totalGems) : optimalToGoal;
 
   // Store values on the board for stable star rating
@@ -537,11 +521,11 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     finalBoard[goal.y][goal.x] = { ...backup, id: 'goal-tile' };
   }
 
-  // Ensure the puzzle is not already solved at start while remaining solvable by swaps
+  // Ensure the puzzle meets the minimum required swap depth
   let minSwapsToSolve = findMinimumSwapsToSolve(finalBoard, start, goal);
-  if (minSwapsToSolve === 0) {
+  if (minSwapsToSolve < minRequiredSwaps) {
     const movableNow = getMovable(finalBoard);
-    for (let tries = 0; tries < 40 && minSwapsToSolve === 0; tries++) {
+    for (let tries = 0; tries < 60 && minSwapsToSolve < minRequiredSwaps; tries++) {
       if (movableNow.length < 2) break;
       const i = Math.floor(rng() * movableNow.length);
       let j = Math.floor(rng() * movableNow.length);
