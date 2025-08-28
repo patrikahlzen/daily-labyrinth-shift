@@ -8,7 +8,7 @@ import { useGameLogic } from '../hooks/useGameLogic';
 import { useDailyInfo } from '../hooks/useDaily';
 
 const Index = () => {
-  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles, resetGame, generateNewPuzzle } = useGameLogic();
+  const { gameState, startGame, pushTile, undoMove, onTileTap, onSwapTiles, resetGame, generateNewPuzzle, undoUsage } = useGameLogic();
   const { puzzleNumber, countdown } = useDailyInfo();
   const [showEnd, setShowEnd] = useState(false);
   const [showTutorial, setShowTutorial] = useState(() => {
@@ -43,11 +43,12 @@ const Index = () => {
       </header>
 
       {/* Top HUD */}
-        <GameHUD
-          timer={gameState.timer}
-          moves={gameState.moves}
-          canUndo={gameState.canUndo}
+        <GameHUD 
+          timer={gameState.timer} 
+          moves={gameState.moves} 
+          canUndo={gameState.canUndo} 
           onUndo={undoMove}
+          undoUsage={undoUsage}
         />
 
       {/* Main Game Area */}

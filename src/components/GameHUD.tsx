@@ -6,13 +6,15 @@ interface GameHUDProps {
   moves: number;
   canUndo: boolean;
   onUndo: () => void;
+  undoUsage?: number;
 }
 
 export const GameHUD: React.FC<GameHUDProps> = ({
   timer,
   moves,
   canUndo,
-  onUndo
+  onUndo,
+  undoUsage = 0
 }) => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -47,7 +49,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           className="group flex items-center gap-2 px-6 py-3 bg-card/70 backdrop-blur-sm border border-border/50 text-foreground rounded-xl hover:bg-card/90 hover:border-accent/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-glow"
         >
           <Undo2 className="w-4 h-4 group-hover:text-accent transition-colors" />
-          <span className="font-medium">Undo</span>
+          <span className="font-medium">Undo ({3 - undoUsage} kvar)</span>
         </button>
       </div>
     </>

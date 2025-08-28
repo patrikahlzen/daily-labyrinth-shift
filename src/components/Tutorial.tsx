@@ -10,25 +10,25 @@ interface TutorialProps {
 const tutorialSteps = [
   {
     title: "Welcome to Daily Labyrinth!",
-    content: "Your goal is to connect the blue start tile to the golden goal tile by creating the most efficient path possible.",
+    content: "Ett nytt pussel varje dag! Koppla ihop den blå startrutan med den gyllene målrutan genom att skapa den mest effektiva vägen möjligt.",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "goal"
   },
   {
-    title: "How to Play",
-    content: "Swap tiles by tapping two tiles or drag and drop them. Build continuous pipe connections to form a complete path from start to goal.",
+    title: "Hur man spelar",
+    content: "Byt plats på rutor genom att trycka på två rutor. Bygg sammanhängande rörförbindelser för att skapa en komplett väg från start till mål.",
     icon: <Hand className="w-8 h-8 text-primary" />,
     highlight: "swap"
   },
   {
-    title: "Collect Gems & Be Efficient",
-    content: "Collect gems along your path for bonus points. The fewer moves you use, the better your score will be!",
+    title: "Samla ädelstenar & var effektiv",
+    content: "Samla ädelstenar längs din väg för bonuspoäng. Ju färre drag du använder, desto bättre blir din poäng!",
     icon: <MousePointer className="w-8 h-8 text-primary" />,
     highlight: "gems"
   },
   {
-    title: "Earn Stars!",
-    content: "Complete puzzles to earn 1-3 stars based on your performance. 1 star: completion, 2 stars: efficient solution, 3 stars: perfect efficiency with all gems collected!",
+    title: "Tjäna stjärnor!",
+    content: "Slutför pussel för att tjäna 1-3 stjärnor baserat på din prestation. Du har 3 undo-drag per dag att använda strategiskt!",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "rating"
   }

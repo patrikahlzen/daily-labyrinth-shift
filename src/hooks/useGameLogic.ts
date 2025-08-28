@@ -1,6 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameTile, Direction, TileType, TileConnections } from '../types/game';
 import { generateRandomTile, createInitialBoard, canMoveTo } from '../utils/gameUtils';
+import { getDailyKeySE } from './useDaily';
+import { calculateStarRating } from '../utils/scoring';
+
+// Daily undo tracking utilities
+const getUndoUsageKey = () => `undo_usage_${getDailyKeySE()}`;
+
+const getUndoUsage = () => {
+  const key = getUndoUsageKey();
+  const stored = localStorage.getItem(key);
+  return stored ? parseInt(stored, 10) : 0;
+};
+
+const incrementUndoUsage = () => {
+  const key = getUndoUsageKey();
+  const current = getUndoUsage();
+  localStorage.setItem(key, (current + 1).toString());
+};
+
+const canUseUndo = () => {
+  return getUndoUsage() < 3; // Max 3 undos per day
+};
 
 // Helper function to count gems along a path
 const countCollectedGems = (board: GameTile[][], path: { x: number; y: number }[]): number => {
@@ -13,8 +34,6 @@ const countCollectedGems = (board: GameTile[][], path: { x: number; y: number }[
   }
   return gemsCount;
 };
-import { getDailyKeySE } from './useDaily';
-import { calculateStarRating } from '../utils/scoring';
 
 export const useGameLogic = () => {
   // Check for valid path connection from start to goal
@@ -219,11 +238,14 @@ export const useGameLogic = () => {
   }, [gameState.gameCompleted, checkPathConnection]);
 
   const undoMove = useCallback(() => {
+    if (!canUseUndo()) return;
+    
     setGameState(prev => {
       const history = [...prev.pushHistory];
       const last = history.pop();
       if (!last) return prev;
       
+      incrementUndoUsage();
       const pathCheck = checkPathConnection(last.board, last.startPosition, last.goalPosition);
       
       return {
@@ -233,7 +255,7 @@ export const useGameLogic = () => {
         goalPosition: last.goalPosition,
         moves: last.moves,
         pushHistory: history,
-        canUndo: history.length > 0,
+        canUndo: history.length > 0 && canUseUndo(),
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
@@ -280,7 +302,7 @@ export const useGameLogic = () => {
         ...prev,
         board: newBoard,
         moves: prev.moves + 1,
-        canUndo: true,
+        canUndo: canUseUndo(),
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
@@ -322,7 +344,7 @@ export const useGameLogic = () => {
         ...prev,
         board: newBoard,
         moves: prev.moves + 1,
-        canUndo: true,
+        canUndo: canUseUndo(),
         connectedPath: pathCheck.path,
         validConnection: pathCheck.connected,
         gameCompleted: pathCheck.connected,
@@ -416,6 +438,7 @@ export const useGameLogic = () => {
     onTileTap: tapTile,
     onSwapTiles: swapTiles,
     resetGame,
-    generateNewPuzzle
+    generateNewPuzzle,
+    undoUsage: getUndoUsage()
   };
 };
