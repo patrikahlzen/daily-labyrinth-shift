@@ -65,20 +65,23 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
   };
 
   const getTileClassName = () => {
-    let baseClass = "w-full h-full rounded-lg relative transition-smooth backdrop-blur-sm ";
+    let baseClass = "tile ";
     
-    if (tile.type === TileType.EMPTY) {
-      baseClass += "bg-game-tile-empty ";
-    } else if (tile.type === TileType.PATH) {
-      baseClass += "shadow-tile ";
+    if (tile.type === TileType.PATH) {
+      baseClass += "tile--path ";
     }
 
-    // Liquid glass effect with subtle border
-    baseClass += "ring-1 ring-foreground/15 ";
-    
     // Connected path effect
     if (isConnected && isValidPath) {
-      baseClass += "ring-2 ring-energy/60 shadow-glow ";
+      baseClass += "tile--energized ";
+    }
+
+    // Start/Goal specific styling
+    if (isStart) {
+      baseClass += "tile--start ";
+    }
+    if (isGoal) {
+      baseClass += "tile--goal ";
     }
 
     return baseClass;
@@ -86,94 +89,32 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
 
   return (
     <div className={getTileClassName()}>
-      {/* Enhanced PATH tiles with liquid glass effect */}
+      {/* Neutral path symbol for path tiles */}
       {tile.type === TileType.PATH && (
-        <>
-          <div className="absolute inset-0 rounded-lg bg-gradient-tile" />
-          {/* Liquid glass layers */}
-          <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-glass" 
-               style={{ boxShadow: 'var(--shadow-glass)' }} />
-          <div className="absolute inset-0 rounded-lg pointer-events-none backdrop-blur-[2px] bg-foreground/5" />
-          {isConnected && isValidPath && (
-            <div className="absolute inset-0 rounded-lg liquid-shimmer pointer-events-none" />
-          )}
-        </>
-      )}
-
-      {/* Empty tiles background */}
-      {tile.type === TileType.EMPTY && (
-        <div className="absolute inset-0 rounded-lg bg-game-tile-empty" />
-      )}
-
-      {/* Neutral path symbol (always visible) */}
-      {tile.type === TileType.PATH && (
-        <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--foreground))' }}>
+        <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--tile-path))' }}>
           {renderPathMask()}
-          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.7} mask={`url(#${maskId})`} />
+          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.6} mask={`url(#${maskId})`} />
         </svg>
-      )}
-
-      {/* Enhanced energy flow for connected paths */}
-      {tile.type === TileType.PATH && isConnected && isValidPath && (
-          <svg
-            className="absolute inset-0 pointer-events-none opacity-100 energy-flow"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            style={{ 
-              filter: 'drop-shadow(0 0 15px hsl(var(--energy) / 0.8)) brightness(1.2)'
-            }}
-          >
-            {renderPathMask()}
-            <defs>
-              <linearGradient id={`energy-gradient-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--energy))" stopOpacity="0.9" />
-                <stop offset="50%" stopColor="hsl(var(--energy-flow))" stopOpacity="1" />
-                <stop offset="100%" stopColor="hsl(var(--energy))" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <rect x={0} y={0} width={100} height={100} 
-                  fill={`url(#energy-gradient-${tile.id})`} 
-                  mask={`url(#${maskId})`} />
-          </svg>
-      )}
-
-      {/* Empty tiles keep their background */}
-      {tile.type === TileType.EMPTY && (
-        <div className="absolute inset-0 rounded-lg" />
       )}
 
       {/* Special items */}
       {tile.special && (
-        <div className="absolute top-1 right-1">
+        <div className="absolute top-1 right-1 z-20">
           {getSpecialIcon()}
         </div>
       )}
 
-
-      {/* Goal marker: non-blocking ring + corner flag for visibility */}
+      {/* Goal marker: flag icon */}
       {isGoal && (
-        <>
-          <div className="absolute inset-0 rounded-lg ring-2 ring-accent/70 pointer-events-none animate-[pulse_2s_ease-in-out_infinite]" />
-          <div className="absolute -top-1 -right-1">
-            <Flag className="w-4 h-4 text-accent drop-shadow-sm" />
-          </div>
-        </>
+        <div className="absolute -top-1 -right-1 z-20">
+          <Flag className="w-4 h-4 text-prism-a drop-shadow-sm" />
+        </div>
       )}
 
-
-      {/* Enhanced Energy Source (Start) with beacon effect */}
+      {/* Start marker: energy icon */}
       {isStart && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-start/30 to-start/20 border-2 border-start/40 start-beacon backdrop-blur-sm flex items-center justify-center"
-                 style={{ 
-                   boxShadow: '0 0 15px hsl(var(--start) / 0.5), var(--shadow-glass)'
-                 }}>
-              <Zap className="w-4 h-4 text-start drop-shadow-sm" />
-            </div>
-            <div className="absolute inset-0 w-7 h-7 rounded-full bg-gradient-glass pointer-events-none" />
-            <div className="absolute inset-0 w-7 h-7 rounded-full bg-start/20 animate-ping" />
-          </div>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <Zap className="w-4 h-4 text-prism-b drop-shadow-sm" />
         </div>
       )}
     </div>

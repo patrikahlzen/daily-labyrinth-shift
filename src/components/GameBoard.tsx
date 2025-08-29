@@ -89,7 +89,7 @@ const handleDragEnd = () => {
 <div className="relative w-full px-4 md:px-8 overscroll-none select-none">
       {/* Game Board */}
 <div 
-        className="grid gap-1 p-3 md:p-4 bg-gradient-board rounded-2xl shadow-game w-full max-w-3xl md:max-w-3xl xl:max-w-4xl mx-auto"
+        className="board grid gap-1 w-full max-w-3xl md:max-w-3xl xl:max-w-4xl mx-auto"
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
       >
         {board.map((row, rowIndex) =>

@@ -276,6 +276,186 @@ All colors MUST be HSL.
 }
 
 
+/* New Prism Theme */
+:root.theme-prism {
+  /* Chromatic dark – inga svarta ytor */
+  --background: 234 24% 9%;
+  --foreground: 220 18% 92%;
+
+  /* Surfaces (nivå 1–3) */
+  --card: 234 20% 12%;
+  --card-foreground: var(--foreground);
+  --popover: 234 18% 14%;
+  --popover-foreground: var(--foreground);
+
+  /* Prism-accents (för text, highlights och energi) */
+  --prism-a: 285 92% 61%;   /* magenta */
+  --prism-b: 202 92% 60%;   /* cyan */
+  --prism-c: 152 85% 54%;   /* lime */
+
+  --primary: 285 92% 61%;
+  --primary-foreground: 234 24% 9%;
+
+  --accent: 202 92% 60%;
+  --accent-foreground: 234 24% 9%;
+
+  --muted: 234 14% 22%;
+  --muted-foreground: 234 12% 68%;
+
+  --border: 234 16% 22%;
+  --ring: 202 92% 60%;      /* cyan ring */
+
+  /* Game */
+  --game-board: 234 22% 10%;
+  --tile-empty: 234 18% 14%;
+  --tile-path: 230 10% 72%; /* ljus "tub" på mörk yta */
+  --tile-special: 152 85% 54%;
+  --player: 202 92% 60%;
+  --goal: 285 92% 61%;
+  --energy: 202 92% 60%;
+
+  /* Gradients & material */
+  --gradient-prism: linear-gradient(90deg,
+    hsl(var(--prism-a)) 0%,
+    hsl(var(--prism-b)) 50%,
+    hsl(var(--prism-c)) 100%);
+  --gradient-surface: linear-gradient(180deg,
+    hsl(var(--card)) 0%,
+    hsl(236 22% 10%) 100%);
+
+  /* Glas */
+  --glass-blur: blur(14px);
+  --glass-bd: 1px solid hsl(var(--foreground)/.08);
+  --glass-shadow: 0 18px 60px hsl(234 60% 4% / .55);
+
+  --radius: 1rem;
+}
+
+/* Typography */
+.theme-prism body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font-feature-settings: "ss01","cv01","tnum","lnum";
+}
+
+.display-xl {
+  font-family: 'Bricolage Grotesque', 'Space Grotesk', Inter, ui-sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  font-size: clamp(32px, 6vw, 72px);
+  line-height: .94;
+  background: var(--gradient-prism);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.meta, .counter {
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .02em;
+}
+.counter { font-size: clamp(18px, 3vw, 28px); }
+
+/* Komponenter – bar, piller och glasytor */
+.gamebar {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding: .9rem 1rem;
+  border-radius: calc(var(--radius) + .25rem);
+  background: linear-gradient(180deg, hsl(var(--card)/.66), hsl(var(--popover)/.66));
+  backdrop-filter: saturate(140%) var(--glass-blur);
+  border: var(--glass-bd);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 hsl(var(--foreground)/.06);
+}
+
+/* Prism-pill för status, tid, moves */
+.pill {
+  display:inline-flex; align-items:center; gap:.5rem;
+  padding:.45rem .7rem; border-radius: 999px;
+  background: linear-gradient(180deg, hsl(var(--tile-empty)/.7), hsl(var(--card)/.7));
+  border: 1px solid hsl(var(--foreground)/.12);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground)/.08);
+}
+.pill--hot { background: var(--gradient-prism); color: hsl(var(--primary-foreground)); border: 0; }
+
+/* Board – färgad mörk yta, inte svart */
+.board {
+  background: var(--gradient-surface);
+  border: 1px solid hsl(var(--foreground)/.08);
+  border-radius: calc(var(--radius) + .25rem);
+  box-shadow: var(--glass-shadow);
+  padding: .75rem;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Subtil "aurora"-bakgrund i hörn (very Verge) */
+.board::before {
+  content:"";
+  position:absolute; inset:-10%;
+  background:
+    radial-gradient(60% 60% at 10% 0%, hsl(var(--prism-b)/.18), transparent 60%),
+    radial-gradient(70% 70% at 100% 100%, hsl(var(--prism-a)/.16), transparent 60%);
+  filter: blur(30px) saturate(120%);
+  z-index:-1;
+}
+
+/* Tile – glasbit med inner edge */
+.tile {
+  position: relative;
+  background: linear-gradient(180deg, hsl(var(--tile-empty)), hsl(234 18% 13%));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--foreground)/.10);
+  box-shadow:
+    0 4px 18px hsl(234 60% 4% / .45),
+    inset 0 1px 0 hsl(var(--foreground)/.08),
+    inset 0 -1px 0 hsl(234 30% 6% / .8);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.tile:hover { transform: translateY(-2px); border-color: hsl(var(--foreground)/.22); }
+
+/* "Tubväg" under glas – luminans + skimmer */
+.tile--path::after {
+  content:""; position:absolute; inset: 20%;
+  border-radius: .6rem;
+  background:
+    radial-gradient(120% 120% at 30% 20%, hsl(0 0% 100%/.14), transparent 40%),
+    linear-gradient(180deg, hsl(var(--tile-path)), hsl(230 10% 64%));
+  box-shadow:
+    0 0 16px hsl(var(--prism-b)/.28),
+    0 0 40px hsl(var(--prism-b)/.18);
+  mix-blend-mode: screen;
+  overflow:hidden;
+}
+
+/* Energiflöde – "ion beam" som rör sig genom tuben */
+.tile--energized::after {
+  background:
+    linear-gradient(90deg,
+      hsl(var(--prism-b)/.0) 0%,
+      hsl(var(--prism-b)/.85) 40%,
+      hsl(var(--prism-a)/.85) 60%,
+      hsl(var(--prism-b)/.0) 100%),
+    linear-gradient(180deg, hsl(var(--tile-path)), hsl(230 10% 64%));
+  background-size: 220% 100%, 100% 100%;
+  animation: ion-flow 1.8s ease-in-out infinite;
+}
+@keyframes ion-flow { 50% { background-position: 100% 0, 0 0; } }
+
+/* Start/Goal – ringar i prismafärg, lugn puls */
+.tile--start::before, .tile--goal::before {
+  content:""; position:absolute; inset: 30%; border-radius: 999px;
+  border: 2px solid hsl(var(--foreground)/.22);
+  box-shadow: inset 0 0 0 2px hsl(var(--foreground)/.08);
+}
+.tile--goal::before { border-color: hsl(var(--prism-a)); box-shadow: 0 0 22px hsl(var(--prism-a)/.35) inset; }
+.tile--start::before { border-color: hsl(var(--prism-b)); box-shadow: 0 0 22px hsl(var(--prism-b)/.35) inset; }
+
+/* Fokus – tydligt, modernt */
+:where(.tile, button, .pill):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) { .tile, .tile::after { animation:none !important; } }
+
 @layer utilities {
   .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
   .animate-shake { animation: shake 0.35s ease-in-out; }

@@ -32,6 +32,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <script dangerouslySetInnerHTML={{__html: `document.body.classList.add('theme-prism')`}} />
       {/* Header with daily info */}
       <header className="w-full py-6">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">

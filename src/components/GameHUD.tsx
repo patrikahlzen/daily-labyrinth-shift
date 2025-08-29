@@ -24,22 +24,22 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
   return (
     <>
-      {/* Enhanced Top HUD with liquid glass design */}
-      <div className="text-center mb-4">
-        <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-3">
-          Daily Challenge
-        </h1>
-        <div className="flex justify-center items-center gap-8 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="font-medium">{formatTime(timer)}</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-card/50 backdrop-blur-sm border border-border/50">
-            <Target className="w-4 h-4 text-accent" />
-            <span className="font-medium">{moves} moves</span>
-          </div>
+      {/* Prism Theme Header */}
+      <header className="gamebar theme-prism mb-6">
+        <div>
+          <div className="display-xl">Daily&nbsp;Challenge</div>
+          <div className="meta" style={{opacity: 0.8}}>Puzzle #{String(new Date().getDate()).padStart(2,'0')} • Today</div>
         </div>
-      </div>
+        <div style={{display: 'flex', gap: '.5rem', alignItems: 'center'}}>
+          <span className="pill">
+            <Clock className="w-4 h-4" />
+            <span className="counter">{formatTime(timer)}</span>
+          </span>
+          <span className="pill pill--hot">
+            <strong>{moves}</strong>&nbsp;moves
+          </span>
+        </div>
+      </header>
 
       {/* Enhanced Bottom HUD with glass morphism */}
       <div className="flex justify-center">
