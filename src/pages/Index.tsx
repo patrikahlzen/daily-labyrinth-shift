@@ -31,19 +31,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
       <script dangerouslySetInnerHTML={{__html: `document.body.classList.add('theme-prism')`}} />
-      {/* Header with daily info */}
-      <header className="w-full py-6">
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-semibold text-foreground">Puzzle #{String(puzzleNumber).padStart(2,'0')}</h1>
-          <div className="text-sm md:text-base text-muted-foreground" aria-live="polite" title="Time until new puzzle">
-            New puzzle in {countdown}
-          </div>
-        </div>
-      </header>
-
-      {/* Top HUD */}
+      
+      {/* Streamlined layout without extra header */}
+      <div className="flex-1 flex flex-col p-4 sm:p-6 max-w-4xl mx-auto w-full">
+        {/* Game HUD */}
         <GameHUD 
           timer={gameState.timer} 
           moves={gameState.moves} 
@@ -52,19 +45,20 @@ const Index = () => {
           undoUsage={undoUsage}
         />
 
-      {/* Main Game Area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <GameBoard
-          board={gameState.board}
-          goalPosition={gameState.goalPosition}
-          startPosition={gameState.startPosition}
-          onTilePush={pushTile}
-          connectedPath={gameState.connectedPath}
-          validConnection={gameState.validConnection}
-          onTileTap={onTileTap}
-          selectedTile={gameState.selectedTile}
-          onSwapTiles={onSwapTiles}
-        />
+        {/* Main Game Area - optimized spacing */}
+        <div className="flex-1 flex items-center justify-center py-4">
+          <GameBoard
+            board={gameState.board}
+            goalPosition={gameState.goalPosition}
+            startPosition={gameState.startPosition}
+            onTilePush={pushTile}
+            connectedPath={gameState.connectedPath}
+            validConnection={gameState.validConnection}
+            onTileTap={onTileTap}
+            selectedTile={gameState.selectedTile}
+            onSwapTiles={onSwapTiles}
+          />
+        </div>
       </div>
       {/* Tutorial overlay */}
       {showTutorial && (
@@ -92,37 +86,37 @@ const Index = () => {
         />
       )}
 
-      {/* Welcome overlay for new players */}
+      {/* Compact welcome overlay */}
       {!gameState.gameStarted && !showTutorial && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-center p-8 bg-card rounded-2xl shadow-game max-w-sm mx-4">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">Daily Labyrinth</h2>
-            <p className="text-muted-foreground mb-2">
-              Build a continuous path from Start to Goal by swapping tiles. Everyone plays the same daily puzzle.
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="text-center p-6 sm:p-8 bg-card rounded-2xl shadow-game max-w-xs sm:max-w-sm mx-auto w-full">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">Daily Labyrinth</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-2">
+              Bygg en kontinuerlig väg från Start till Mål genom att byta platser på brickorna.
             </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Puzzle #{String(puzzleNumber).padStart(2,'0')} · New in {countdown}
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
+              Puzzle #{String(puzzleNumber).padStart(2,'0')} • Nytt om {countdown}
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Button
                 onClick={startGame}
-                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-sm sm:text-base py-2 sm:py-3"
               >
-                Start Playing
+                Starta spel
               </Button>
               <Button
                 variant="outline"
                 onClick={generateNewPuzzle}
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
               >
-                Generate Test Puzzle
+                Generera testpussel
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setShowTutorial(true)}
-                className="w-full text-muted-foreground hover:text-foreground"
+                className="w-full text-muted-foreground hover:text-foreground text-xs sm:text-sm py-1 sm:py-2"
               >
-                Show Tutorial
+                Visa tutorial
               </Button>
             </div>
           </div>

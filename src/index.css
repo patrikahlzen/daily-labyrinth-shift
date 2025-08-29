@@ -341,7 +341,7 @@ All colors MUST be HSL.
   font-family: 'Bricolage Grotesque', 'Space Grotesk', Inter, ui-sans-serif;
   font-weight: 800;
   letter-spacing: -0.015em;
-  font-size: clamp(32px, 6vw, 72px);
+  font-size: clamp(24px, 5vw, 48px);
   line-height: .94;
   background: var(--gradient-prism);
   -webkit-background-clip: text;
@@ -353,12 +353,12 @@ All colors MUST be HSL.
   font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: .02em;
 }
-.counter { font-size: clamp(18px, 3vw, 28px); }
+.counter { font-size: clamp(14px, 2.5vw, 20px); }
 
-/* Komponenter – bar, piller och glasytor */
+/* Gamebar responsive adjustments */
 .gamebar {
   display:flex; align-items:center; justify-content:space-between; gap:1rem;
-  padding: .9rem 1rem;
+  padding: .7rem .8rem;
   border-radius: calc(var(--radius) + .25rem);
   background: linear-gradient(180deg, hsl(var(--card)/.66), hsl(var(--popover)/.66));
   backdrop-filter: saturate(140%) var(--glass-blur);
@@ -366,25 +366,45 @@ All colors MUST be HSL.
   box-shadow: var(--glass-shadow), inset 0 1px 0 hsl(var(--foreground)/.06);
 }
 
-/* Prism-pill för status, tid, moves */
+@media (min-width: 640px) {
+  .gamebar {
+    padding: .9rem 1rem;
+  }
+}
+
+/* Prism-pill responsive för status, tid, moves */
 .pill {
-  display:inline-flex; align-items:center; gap:.5rem;
-  padding:.45rem .7rem; border-radius: 999px;
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.35rem .6rem; border-radius: 999px;
   background: linear-gradient(180deg, hsl(var(--tile-empty)/.7), hsl(var(--card)/.7));
   border: 1px solid hsl(var(--foreground)/.12);
   box-shadow: inset 0 1px 0 hsl(var(--foreground)/.08);
+  transition: all 0.2s ease;
 }
 .pill--hot { background: var(--gradient-prism); color: hsl(var(--primary-foreground)); border: 0; }
 
-/* Board – färgad mörk yta, inte svart */
+@media (min-width: 640px) {
+  .pill {
+    gap: .5rem;
+    padding: .45rem .7rem;
+  }
+}
+
+/* Board – responsive sizing */
 .board {
   background: var(--gradient-surface);
   border: 1px solid hsl(var(--foreground)/.08);
   border-radius: calc(var(--radius) + .25rem);
   box-shadow: var(--glass-shadow);
-  padding: .75rem;
+  padding: .5rem;
   position: relative;
   isolation: isolate;
+}
+
+@media (min-width: 640px) {
+  .board {
+    padding: .75rem;
+  }
 }
 
 /* Subtil "aurora"-bakgrund i hörn (very Verge) */
@@ -410,7 +430,14 @@ All colors MUST be HSL.
     inset 0 -1px 0 hsl(234 30% 6% / .8);
   transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
-.tile:hover { transform: translateY(-2px); border-color: hsl(var(--foreground)/.22); }
+.tile:hover { transform: translateY(-1px); border-color: hsl(var(--foreground)/.22); }
+
+/* Mobile touch targets */
+@media (max-width: 640px) {
+  .tile {
+    min-height: 44px; /* iOS minimum touch target */
+  }
+}
 
 /* "Tubväg" under glas – luminans + skimmer */
 .tile--path::after {

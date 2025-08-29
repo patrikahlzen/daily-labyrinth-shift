@@ -86,10 +86,10 @@ const handleDragEnd = () => {
 };
 
   return (
-<div className="relative w-full px-4 md:px-8 overscroll-none select-none">
-      {/* Game Board */}
+<div className="w-full overscroll-none select-none">
+      {/* Optimized Game Board */}
 <div 
-        className="board grid gap-1 w-full max-w-3xl md:max-w-3xl xl:max-w-4xl mx-auto"
+        className="board grid gap-1 sm:gap-2 w-full max-w-sm sm:max-w-lg mx-auto"
         style={{ WebkitOverflowScrolling: 'touch', gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))` }}
       >
         {board.map((row, rowIndex) =>
@@ -104,7 +104,7 @@ const handleDragEnd = () => {
                 key={`${rowIndex}-${colIndex}`}
                 data-row={rowIndex}
                 data-col={colIndex}
-                className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isLockedCell) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
+                className={`relative aspect-square ${ (tile.type === TileType.EMPTY || isLockedCell) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer touch-manipulation' } ${shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex ? 'animate-shake' : ''}`}
                 draggable={!(tile.type === TileType.EMPTY || isLockedCell)}
                 onDragStart={(e) => handleDragStart(e, rowIndex, colIndex, tile)}
                 onDragOver={(e) => handleDragOver(e, rowIndex, colIndex, tile)}
