@@ -55,19 +55,21 @@ export const Tutorial: React.FC<TutorialProps> = ({ onComplete, onSkip }) => {
 
   return (
     <div className="absolute inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="w-full max-w-md mx-4 bg-card rounded-2xl shadow-game p-6 animate-scale-in">
+      <article className="gamebar w-full max-w-md mx-4 animate-scale-in">
         <header className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            {step.icon}
-            <h2 className="text-xl font-semibold text-foreground">{step.title}</h2>
+            <div className="w-8 h-8 rounded-full bg-gradient-prism flex items-center justify-center">
+              <Zap className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>{step.title}</h2>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Skip tutorial" onClick={onSkip}>
+          <Button variant="ghost" size="icon" aria-label="Skip tutorial" onClick={onSkip} className="pill">
             <X className="w-4 h-4" />
           </Button>
         </header>
 
         <section className="mb-6">
-          <p className="text-muted-foreground leading-relaxed">{step.content}</p>
+          <p className="text-muted-foreground leading-relaxed meta">{step.content}</p>
           
           {/* Progress indicator */}
           <div className="flex gap-2 mt-4">
@@ -76,9 +78,9 @@ export const Tutorial: React.FC<TutorialProps> = ({ onComplete, onSkip }) => {
                 key={index}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   index === currentStep
-                    ? 'bg-primary w-8'
+                    ? 'bg-gradient-prism w-8'
                     : index < currentStep
-                    ? 'bg-primary/60 w-6'
+                    ? 'bg-prism-b/60 w-6'
                     : 'bg-muted w-4'
                 }`}
               />
@@ -91,19 +93,19 @@ export const Tutorial: React.FC<TutorialProps> = ({ onComplete, onSkip }) => {
             variant="ghost"
             onClick={prevStep}
             disabled={currentStep === 0}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 pill"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
           
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-muted-foreground meta">
             {currentStep + 1} of {tutorialSteps.length}
           </span>
           
           <Button
             onClick={nextStep}
-            className="flex items-center gap-2 bg-gradient-primary"
+            className="flex items-center gap-2 pill pill--hot"
           >
             {currentStep === tutorialSteps.length - 1 ? 'Start Playing!' : 'Next'}
             <ArrowRight className="w-4 h-4" />

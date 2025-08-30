@@ -23,7 +23,7 @@ export const StarRating: React.FC<StarRatingProps> = ({ stars, maxStars = 1, siz
             key={index}
             className={`${sizeClasses[size]} transition-all duration-300 ${
               filled 
-                ? 'fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' 
+                ? 'fill-prism-c text-prism-c drop-shadow-[0_0_8px_hsl(var(--prism-c)/0.6)]' 
                 : 'fill-muted text-muted-foreground'
             }`}
           />

@@ -107,14 +107,16 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
       {/* Goal marker: flag icon */}
       {isGoal && (
         <div className="absolute -top-1 -right-1 z-20">
-          <Flag className="w-4 h-4 text-prism-a drop-shadow-sm" />
+          <Flag className="w-4 h-4 text-prism-a drop-shadow-sm" 
+                style={{ filter: 'drop-shadow(0 0 8px hsl(var(--prism-a) / 0.8))' }} />
         </div>
       )}
 
       {/* Start marker: energy icon */}
       {isStart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <Zap className="w-4 h-4 text-prism-b drop-shadow-sm" />
+          <Zap className="w-4 h-4 text-prism-b drop-shadow-sm" 
+               style={{ filter: 'drop-shadow(0 0 8px hsl(var(--prism-b) / 0.8))' }} />
         </div>
       )}
     </div>

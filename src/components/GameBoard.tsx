@@ -126,15 +126,21 @@ const handleDragEnd = () => {
                   />
                   {/* Connected path highlight */}
                   {isConnected && validConnection && (
-                    <div className="absolute inset-0 ring-2 ring-energy/80 rounded-lg pointer-events-none path-glow" />
+                    <div className="absolute inset-0 ring-2 rounded-lg pointer-events-none animate-pulse" 
+                         style={{ 
+                           borderColor: 'hsl(var(--prism-b))', 
+                           boxShadow: '0 0 20px hsl(var(--prism-b)/.6), inset 0 0 20px hsl(var(--prism-b)/.3)' 
+                         }} />
                   )}
                   {/* Selected tile highlight */}
                   {selectedTile && selectedTile.row === rowIndex && selectedTile.col === colIndex && (
-                    <div className="absolute inset-0 ring-2 ring-accent/60 rounded-lg pointer-events-none" />
+                    <div className="absolute inset-0 ring-2 rounded-lg pointer-events-none" 
+                         style={{ borderColor: 'hsl(var(--prism-a))', boxShadow: '0 0 15px hsl(var(--prism-a)/.5)' }} />
                   )}
                   {/* Drag over highlight */}
                   {dragOver && dragOver.row === rowIndex && dragOver.col === colIndex && (
-                    <div className="absolute inset-0 ring-2 ring-accent/70 rounded-lg pointer-events-none" />
+                    <div className="absolute inset-0 ring-2 rounded-lg pointer-events-none" 
+                         style={{ borderColor: 'hsl(var(--prism-c))', boxShadow: '0 0 15px hsl(var(--prism-c)/.5)' }} />
                   )}
                 </div>
                 

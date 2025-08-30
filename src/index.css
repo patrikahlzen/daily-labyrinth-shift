@@ -444,11 +444,12 @@ All colors MUST be HSL.
   content:""; position:absolute; inset: 20%;
   border-radius: .6rem;
   background:
-    radial-gradient(120% 120% at 30% 20%, hsl(0 0% 100%/.14), transparent 40%),
-    linear-gradient(180deg, hsl(var(--tile-path)), hsl(230 10% 64%));
+    radial-gradient(120% 120% at 30% 20%, hsl(0 0% 100%/.4), transparent 60%),
+    linear-gradient(180deg, hsl(0 0% 95%), hsl(0 0% 88%));
   box-shadow:
-    0 0 16px hsl(var(--prism-b)/.28),
-    0 0 40px hsl(var(--prism-b)/.18);
+    0 0 20px hsl(var(--prism-b)/.4),
+    0 0 50px hsl(var(--prism-b)/.25),
+    inset 0 1px 0 hsl(0 0% 100%/.6);
   mix-blend-mode: screen;
   overflow:hidden;
 }
@@ -458,14 +459,22 @@ All colors MUST be HSL.
   background:
     linear-gradient(90deg,
       hsl(var(--prism-b)/.0) 0%,
-      hsl(var(--prism-b)/.85) 40%,
-      hsl(var(--prism-a)/.85) 60%,
-      hsl(var(--prism-b)/.0) 100%),
-    linear-gradient(180deg, hsl(var(--tile-path)), hsl(230 10% 64%));
-  background-size: 220% 100%, 100% 100%;
-  animation: ion-flow 1.8s ease-in-out infinite;
+      hsl(var(--prism-b)) 20%,
+      hsl(0 0% 100%) 50%,
+      hsl(var(--prism-a)) 80%,
+      hsl(var(--prism-a)/.0) 100%),
+    linear-gradient(180deg, hsl(0 0% 98%), hsl(0 0% 92%));
+  background-size: 300% 100%, 100% 100%;
+  animation: ion-flow 1.2s ease-in-out infinite;
+  box-shadow:
+    0 0 30px hsl(var(--prism-b)/.8),
+    0 0 60px hsl(var(--prism-a)/.6),
+    inset 0 1px 0 hsl(0 0% 100%);
 }
-@keyframes ion-flow { 50% { background-position: 100% 0, 0 0; } }
+@keyframes ion-flow { 
+  0% { background-position: -100% 0, 0 0; }
+  100% { background-position: 200% 0, 0 0; }
+}
 
 /* Start/Goal – ringar i prismafärg, lugn puls */
 .tile--start::before, .tile--goal::before {

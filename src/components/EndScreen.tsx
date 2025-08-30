@@ -68,58 +68,60 @@ export const EndScreen: React.FC<EndScreenProps> = ({
 
   return (
     <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="w-full max-w-sm mx-4 bg-card rounded-2xl shadow-game p-6">
+      <article className="gamebar w-full max-w-sm mx-4">
         <header className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Trophy className="w-6 h-6 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Puzzle Solved!</h2>
+            <div className="w-8 h-8 rounded-full bg-gradient-prism flex items-center justify-center">
+              <Trophy className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>Puzzle Solved!</h2>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose}>
+          <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} className="pill">
             <X className="w-4 h-4" />
           </Button>
         </header>
 
-        <section className="text-center mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+        <section className="text-center mb-6 p-4 rounded-xl" style={{ background: 'var(--gradient-prism)', opacity: 0.1 }}>
           <div className="flex justify-center mb-3">
             <StarRating stars={stars} size="lg" maxStars={1} />
           </div>
-          <p className="text-foreground font-medium mb-2">{starDescription}</p>
+          <p className="text-foreground font-medium mb-2 meta">{starDescription}</p>
           {stars < 1 && (
-            <p className="text-sm text-muted-foreground">{nextRequirement}</p>
+            <p className="text-sm text-muted-foreground meta">{nextRequirement}</p>
           )}
         </section>
 
         <section className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
+          <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span>Time</span>
+              <Clock className="w-4 h-4 text-prism-b" />
+              <span className="meta">Time</span>
             </div>
-            <span className="font-mono">{formatTime(timer)}</span>
+            <span className="counter">{formatTime(timer)}</span>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
+          <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
-              <Move className="w-4 h-4 text-muted-foreground" />
-              <span>Moves</span>
+              <Move className="w-4 h-4 text-prism-a" />
+              <span className="meta">Moves</span>
             </div>
-            <span className="font-mono">{moves}</span>
+            <span className="counter">{moves}</span>
           </div>
         </section>
 
         <footer className="mt-6 space-y-2">
-          <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center bg-gradient-primary">
+          <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center pill pill--hot">
             <Share2 className="w-4 h-4" /> Share
           </Button>
           <div className="grid grid-cols-2 gap-2">
             {attempts > 1 && (
-              <Button variant="outline" onClick={onTryAgain} className="justify-center">
+              <Button variant="outline" onClick={onTryAgain} className="justify-center pill">
                 Try Again
               </Button>
             )}
             <Button 
               variant="secondary" 
               onClick={onClose} 
-              className={`justify-center ${attempts > 1 ? '' : 'col-span-2'}`}
+              className={`justify-center pill ${attempts > 1 ? '' : 'col-span-2'}`}
             >
               Close
             </Button>
