@@ -57,6 +57,10 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Prism theme colors
+				'prism-a': 'hsl(var(--prism-a))',
+				'prism-b': 'hsl(var(--prism-b))',
+				'prism-c': 'hsl(var(--prism-c))',
 				game: {
 					board: 'hsl(var(--game-board))',
 					'tile-path': 'hsl(var(--tile-path))',
@@ -68,12 +72,18 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-prism': 'var(--gradient-prism)',
+				'gradient-surface': 'var(--gradient-surface)',
 				'gradient-board': 'var(--gradient-board)',
 				'gradient-tile': 'var(--gradient-tile)',
 				'gradient-special': 'var(--gradient-special)'
 			},
+			backdropBlur: {
+				'glass': 'var(--glass-blur)'
+			},
 			boxShadow: {
 				'game': 'var(--shadow-game)',
+				'glass': 'var(--glass-shadow)',
 				'tile': 'var(--shadow-tile)',
 				'glow': 'var(--shadow-glow)'
 			},

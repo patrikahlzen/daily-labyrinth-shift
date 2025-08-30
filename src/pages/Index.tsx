@@ -86,38 +86,50 @@ const Index = () => {
         />
       )}
 
-      {/* Compact welcome overlay */}
+      {/* Prism-themed welcome overlay */}
       {!gameState.gameStarted && !showTutorial && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="text-center p-6 sm:p-8 bg-card rounded-2xl shadow-game max-w-xs sm:max-w-sm mx-auto w-full">
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">Daily Labyrinth</h2>
-            <p className="text-sm sm:text-base text-muted-foreground mb-2">
-              Bygg en kontinuerlig väg från Start till Mål genom att byta platser på brickorna.
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-              Puzzle #{String(puzzleNumber).padStart(2,'0')} • Nytt om {countdown}
-            </p>
-            <div className="space-y-2 sm:space-y-3">
+          <div className="gamebar text-center max-w-xs sm:max-w-sm mx-auto w-full">
+            <div className="mb-6">
+              <h1 className="display-xl mb-2">Daily Labyrinth</h1>
+              <div className="meta" style={{ opacity: 0.8 }}>
+                Puzzle #{String(puzzleNumber).padStart(2,'0')} • Today
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <p className="text-sm sm:text-base text-muted-foreground meta">
+                Bygg en kontinuerlig väg från Start till Mål genom att byta platser på brickorna.
+              </p>
+              <div className="pill">
+                <span className="text-xs sm:text-sm text-prism-b">⏰</span>
+                <span className="text-xs sm:text-sm meta">Nytt pussel om {countdown}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
               <Button
                 onClick={startGame}
-                className="w-full bg-gradient-primary hover:opacity-90 transition-opacity text-sm sm:text-base py-2 sm:py-3"
+                className="w-full pill pill--hot text-sm sm:text-base py-3"
               >
                 Starta spel
               </Button>
-              <Button
-                variant="outline"
-                onClick={generateNewPuzzle}
-                className="w-full text-sm sm:text-base py-2 sm:py-3"
-              >
-                Generera testpussel
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setShowTutorial(true)}
-                className="w-full text-muted-foreground hover:text-foreground text-xs sm:text-sm py-1 sm:py-2"
-              >
-                Visa tutorial
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={generateNewPuzzle}
+                  className="pill text-xs sm:text-sm py-2"
+                >
+                  Testpussel
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowTutorial(true)}
+                  className="pill text-xs sm:text-sm py-2"
+                >
+                  Tutorial
+                </Button>
+              </div>
             </div>
           </div>
         </div>

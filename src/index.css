@@ -381,7 +381,12 @@ All colors MUST be HSL.
   box-shadow: inset 0 1px 0 hsl(var(--foreground)/.08);
   transition: all 0.2s ease;
 }
-.pill--hot { background: var(--gradient-prism); color: hsl(var(--primary-foreground)); border: 0; }
+.pill--hot { 
+  background: var(--gradient-prism); 
+  color: hsl(var(--primary-foreground)); 
+  border: 0; 
+  font-weight: 600;
+}
 
 @media (min-width: 640px) {
   .pill {
@@ -482,15 +487,26 @@ All colors MUST be HSL.
   border: 2px solid hsl(var(--foreground)/.22);
   box-shadow: inset 0 0 0 2px hsl(var(--foreground)/.08);
 }
-.tile--goal::before { border-color: hsl(var(--prism-a)); box-shadow: 0 0 22px hsl(var(--prism-a)/.35) inset; }
-.tile--start::before { border-color: hsl(var(--prism-b)); box-shadow: 0 0 22px hsl(var(--prism-b)/.35) inset; }
+.tile--goal::before { border-color: hsl(var(--prism-a)); box-shadow: 0 0 22px hsl(var(--prism-a)/.35) inset; animation: goal-pulse 2s ease-in-out infinite; }
+.tile--start::before { border-color: hsl(var(--prism-b)); box-shadow: 0 0 22px hsl(var(--prism-b)/.35) inset; animation: start-pulse 2s ease-in-out infinite; }
 
 /* Fokus – tydligt, modernt */
 :where(.tile, button, .pill):focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 3px;
 }
-@media (prefers-reduced-motion: reduce) { .tile, .tile::after { animation:none !important; } }
+@media (prefers-reduced-motion: reduce) { .tile, .tile::after, .tile::before { animation:none !important; } }
+
+/* Additional Prism animations */
+@keyframes goal-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes start-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
 
 @layer utilities {
   .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
