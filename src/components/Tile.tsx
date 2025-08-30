@@ -89,11 +89,11 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
 
   return (
     <div className={getTileClassName()}>
-      {/* Neutral path symbol for path tiles */}
+      {/* Bright path symbols for path tiles */}
       {tile.type === TileType.PATH && (
-        <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ color: 'hsl(var(--tile-path))' }}>
+        <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
           {renderPathMask()}
-          <rect x={0} y={0} width={100} height={100} fill="currentColor" fillOpacity={0.6} mask={`url(#${maskId})`} />
+          <rect x={0} y={0} width={100} height={100} fill="hsl(0 0% 98%)" mask={`url(#${maskId})`} />
         </svg>
       )}
 
