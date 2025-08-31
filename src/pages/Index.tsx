@@ -88,15 +88,15 @@ const Index = () => {
 
       {/* PREMIUM GAME START MENU */}
       {!gameState.gameStarted && !showTutorial && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black flex items-center justify-center p-6">
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl text-center max-w-lg mx-auto w-full p-8 space-y-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black flex items-center justify-center p-4 sm:p-6">
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl text-center w-full max-w-lg p-6 sm:p-8 space-y-8">
             
             {/* HERO TITLE */}
-            <div className="space-y-4">
-              <h1 className="font-black text-5xl tracking-tighter text-white mb-4 leading-none">
+            <div className="space-y-3 sm:space-y-4">
+              <h1 className="font-black text-4xl sm:text-5xl tracking-tighter text-white leading-tight sm:leading-none">
                 Daily Labyrinth
               </h1>
-              <div className="font-bold text-2xl text-white">
+              <div className="font-bold text-xl sm:text-2xl text-white">
                 Puzzle #{String(puzzleNumber).padStart(2,'0')} • Today
               </div>
               <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent w-full"></div>
@@ -104,14 +104,14 @@ const Index = () => {
             
             {/* GAME DESCRIPTION */}
             <div className="space-y-6">
-              <p className="font-semibold text-xl text-gray-300 leading-relaxed">
+              <p className="font-semibold text-base sm:text-xl text-gray-300 leading-relaxed">
                 Build a continuous path from Start to Goal by swapping tiles.
               </p>
               
               {/* COUNTDOWN PILL */}
-              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
-                <span className="text-2xl">⏰</span>
-                <span className="font-semibold text-lg text-white">New puzzle in {countdown}</span>
+              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                <span className="text-xl sm:text-2xl">⏰</span>
+                <span className="font-semibold text-base sm:text-lg text-white">New puzzle in {countdown}</span>
               </div>
             </div>
             
@@ -120,24 +120,24 @@ const Index = () => {
               {/* PRIMARY START BUTTON */}
               <Button
                 onClick={startGame}
-                className="w-full h-16 text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 hover:from-cyan-300 hover:via-blue-400 hover:to-cyan-300 text-white border-0 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                className="w-full h-14 sm:h-16 text-lg sm:text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 hover:from-cyan-300 hover:via-blue-400 hover:to-cyan-300 text-white border-0 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
               >
                 🎮 Start Daily Challenge
               </Button>
               
               {/* SECONDARY BUTTONS */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <Button
                   variant="outline"
                   onClick={generateNewPuzzle}
-                  className="h-14 text-lg font-semibold bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 rounded-xl transition-all duration-300 hover:scale-105"
+                  className="h-12 sm:h-14 text-base sm:text-lg font-semibold bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 rounded-xl transition-all duration-300 hover:scale-105"
                 >
                   🏃 Practice Mode
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setShowTutorial(true)}
-                  className="h-14 text-lg font-semibold text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-105"
+                  className="h-12 sm:h-14 text-base sm:text-lg font-semibold text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-105"
                 >
                   📚 How to Play
                 </Button>

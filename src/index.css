@@ -440,6 +440,8 @@ All colors MUST be HSL.
 /* BOLD TILES */
 .tile {
   position: relative;
+  z-index: 0; /* establish stacking context for Safari */
+  isolation: isolate;
   background: var(--gradient-card);
   border-radius: var(--radius);
   border: var(--glass-bd);
@@ -491,6 +493,8 @@ All colors MUST be HSL.
     0 0 40px hsl(189 94% 55% / 0.2),
     inset 0 1px 0 hsl(0 0% 100%);
   opacity: 1;
+  z-index: 0; /* keep behind SVG pipes */
+  pointer-events: none;
 }
 
 /* ELECTRIC ENERGY FLOW */
