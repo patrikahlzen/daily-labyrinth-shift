@@ -89,17 +89,24 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
 
   return (
     <div className={getTileClassName()}>
-      {/* BOLD THICK PIPES */}
+      {/* VISIBLE PIPE CONNECTIONS */}
       {tile.type === TileType.PATH && (
         <svg className="absolute inset-2 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <linearGradient id={`pipe-gradient-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(0 0% 100%)" />
-              <stop offset="50%" stopColor="hsl(189 94% 55%)" />
-              <stop offset="100%" stopColor="hsl(0 0% 100%)" />
+              <stop offset="0%" stopColor="hsl(220 15% 25%)" />
+              <stop offset="50%" stopColor="hsl(220 20% 15%)" />
+              <stop offset="100%" stopColor="hsl(220 15% 25%)" />
+            </linearGradient>
+            <linearGradient id={`pipe-energized-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(189 94% 55%)" />
+              <stop offset="50%" stopColor="hsl(199 89% 48%)" />
+              <stop offset="100%" stopColor="hsl(189 94% 55%)" />
             </linearGradient>
           </defs>
-          <g stroke={`url(#pipe-gradient-${tile.id})`} strokeWidth="6" strokeLinecap="round" fill="none">
+          <g stroke={isConnected && isValidPath ? `url(#pipe-energized-${tile.id})` : `url(#pipe-gradient-${tile.id})`} 
+             strokeWidth="8" strokeLinecap="round" fill="none"
+             className={isConnected && isValidPath ? "animate-pulse" : ""}>
             {tile.connections.north && (
               <line x1="50" y1="50" x2="50" y2="0" />
             )}

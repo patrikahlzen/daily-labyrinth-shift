@@ -86,50 +86,69 @@ const Index = () => {
         />
       )}
 
-      {/* BOLD START MENU */}
+      {/* PREMIUM GAME START MENU */}
       {!gameState.gameStarted && !showTutorial && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black flex items-center justify-center p-4">
-          <div className="gamebar text-center max-w-md mx-auto w-full space-y-6">
-            <div>
-              <h1 className="display-xl mb-3">Daily Labyrinth</h1>
-              <div className="header-text text-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black flex items-center justify-center p-6">
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl text-center max-w-lg mx-auto w-full p-8 space-y-8">
+            
+            {/* HERO TITLE */}
+            <div className="space-y-4">
+              <h1 className="font-black text-5xl tracking-tighter text-white mb-4 leading-none">
+                Daily Labyrinth
+              </h1>
+              <div className="font-bold text-2xl text-white">
                 Puzzle #{String(puzzleNumber).padStart(2,'0')} • Today
               </div>
+              <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent w-full"></div>
             </div>
             
+            {/* GAME DESCRIPTION */}
             <div className="space-y-6">
-              <p className="body-text text-gray-300 text-base sm:text-lg font-semibold">
+              <p className="font-semibold text-xl text-gray-300 leading-relaxed">
                 Build a continuous path from Start to Goal by swapping tiles.
               </p>
-              <div className="pill">
-                <span className="text-lg">⏰</span>
-                <span className="body-text">New puzzle in {countdown}</span>
+              
+              {/* COUNTDOWN PILL */}
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
+                <span className="text-2xl">⏰</span>
+                <span className="font-semibold text-lg text-white">New puzzle in {countdown}</span>
               </div>
             </div>
             
-            <div className="space-y-3">
+            {/* LARGE ACTION BUTTONS */}
+            <div className="space-y-4">
+              {/* PRIMARY START BUTTON */}
               <Button
                 onClick={startGame}
-                className="w-full pill pill--hot text-lg font-bold py-4"
+                className="w-full h-16 text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 hover:from-cyan-300 hover:via-blue-400 hover:to-cyan-300 text-white border-0 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
               >
-                Start Game
+                🎮 Start Daily Challenge
               </Button>
-              <div className="grid grid-cols-2 gap-3">
+              
+              {/* SECONDARY BUTTONS */}
+              <div className="grid grid-cols-2 gap-4">
                 <Button
                   variant="outline"
                   onClick={generateNewPuzzle}
-                  className="pill font-semibold py-3"
+                  className="h-14 text-lg font-semibold bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 rounded-xl transition-all duration-300 hover:scale-105"
                 >
-                  Practice
+                  🏃 Practice Mode
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setShowTutorial(true)}
-                  className="pill font-semibold py-3"
+                  className="h-14 text-lg font-semibold text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover:scale-105"
                 >
-                  Tutorial
+                  📚 How to Play
                 </Button>
               </div>
+            </div>
+            
+            {/* SUBTLE DECORATION */}
+            <div className="flex justify-center space-x-2 opacity-50">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75"></div>
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse delay-150"></div>
             </div>
           </div>
         </div>
