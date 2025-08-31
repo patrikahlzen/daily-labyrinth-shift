@@ -86,46 +86,46 @@ const Index = () => {
         />
       )}
 
-      {/* Prism-themed welcome overlay */}
+      {/* BOLD START MENU */}
       {!gameState.gameStarted && !showTutorial && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="gamebar text-center max-w-xs sm:max-w-sm mx-auto w-full">
-            <div className="mb-6">
-              <h1 className="display-xl mb-2">Daily Labyrinth</h1>
-              <div className="meta" style={{ opacity: 0.8 }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-slate-800 to-black flex items-center justify-center p-4">
+          <div className="gamebar text-center max-w-md mx-auto w-full space-y-6">
+            <div>
+              <h1 className="display-xl mb-3">Daily Labyrinth</h1>
+              <div className="header-text text-white">
                 Puzzle #{String(puzzleNumber).padStart(2,'0')} • Today
               </div>
             </div>
             
-            <div className="space-y-4 mb-6">
-              <p className="text-sm sm:text-base text-muted-foreground meta">
-                Bygg en kontinuerlig väg från Start till Mål genom att byta platser på brickorna.
+            <div className="space-y-6">
+              <p className="body-text text-gray-300 text-base sm:text-lg font-semibold">
+                Build a continuous path from Start to Goal by swapping tiles.
               </p>
               <div className="pill">
-                <span className="text-xs sm:text-sm text-prism-b">⏰</span>
-                <span className="text-xs sm:text-sm meta">Nytt pussel om {countdown}</span>
+                <span className="text-lg">⏰</span>
+                <span className="body-text">New puzzle in {countdown}</span>
               </div>
             </div>
             
             <div className="space-y-3">
               <Button
                 onClick={startGame}
-                className="w-full pill pill--hot text-sm sm:text-base py-3"
+                className="w-full pill pill--hot text-lg font-bold py-4"
               >
-                Starta spel
+                Start Game
               </Button>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
                   onClick={generateNewPuzzle}
-                  className="pill text-xs sm:text-sm py-2"
+                  className="pill font-semibold py-3"
                 >
-                  Testpussel
+                  Practice
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setShowTutorial(true)}
-                  className="pill text-xs sm:text-sm py-2"
+                  className="pill font-semibold py-3"
                 >
                   Tutorial
                 </Button>

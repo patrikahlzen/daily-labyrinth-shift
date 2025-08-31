@@ -24,32 +24,32 @@ export const GameHUD: React.FC<GameHUDProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Compact Prism Header */}
+      {/* BOLD HEADER */}
       <header className="gamebar theme-prism">
         <div>
-          <div className="display-xl">Daily&nbsp;Challenge</div>
-          <div className="meta" style={{opacity: 0.8}}>Puzzle #{String(new Date().getDate()).padStart(2,'0')} • Today</div>
+          <div className="display-xl">Daily Challenge</div>
+          <div className="header-text text-white">Puzzle #{String(new Date().getDate()).padStart(2,'0')} • Today</div>
         </div>
-        <div style={{display: 'flex', gap: '.5rem', alignItems: 'center'}}>
+        <div style={{display: 'flex', gap: '.75rem', alignItems: 'center'}}>
           <span className="pill">
-            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="counter text-sm sm:text-base">{formatTime(timer)}</span>
+            <Clock className="w-4 h-4" />
+            <span className="counter font-bold">{formatTime(timer)}</span>
           </span>
           <span className="pill pill--hot">
-            <strong className="text-sm sm:text-base">{moves}</strong>&nbsp;<span className="hidden sm:inline">moves</span><span className="sm:hidden">m</span>
+            <strong className="text-lg font-black">{moves}</strong>&nbsp;<span className="font-bold">moves</span>
           </span>
         </div>
       </header>
 
-      {/* Compact bottom controls */}
+      {/* BOLD UNDO BUTTON */}
       <div className="flex justify-center">
         <button
           onClick={onUndo}
           disabled={!canUndo}
-          className="pill group flex items-center gap-2 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95"
+          className="pill group flex items-center gap-2 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-95 font-bold text-lg backdrop-blur-xl"
         >
-          <Undo2 className="w-3 h-3 sm:w-4 sm:h-4 group-hover:text-accent transition-colors" />
-          <span className="text-xs sm:text-sm font-medium">Undo ({3 - undoUsage})</span>
+          <span className="text-xl group-hover:text-accent transition-colors">⟲</span>
+          <span className="font-black">{3 - undoUsage}</span>
         </button>
       </div>
     </div>

@@ -89,11 +89,30 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
 
   return (
     <div className={getTileClassName()}>
-      {/* Bright path symbols for path tiles */}
+      {/* BOLD THICK PIPES */}
       {tile.type === TileType.PATH && (
-        <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {renderPathMask()}
-          <rect x={0} y={0} width={100} height={100} fill="hsl(0 0% 98%)" mask={`url(#${maskId})`} />
+        <svg className="absolute inset-2 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id={`pipe-gradient-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(0 0% 100%)" />
+              <stop offset="50%" stopColor="hsl(189 94% 55%)" />
+              <stop offset="100%" stopColor="hsl(0 0% 100%)" />
+            </linearGradient>
+          </defs>
+          <g stroke={`url(#pipe-gradient-${tile.id})`} strokeWidth="6" strokeLinecap="round" fill="none">
+            {tile.connections.north && (
+              <line x1="50" y1="50" x2="50" y2="0" />
+            )}
+            {tile.connections.south && (
+              <line x1="50" y1="50" x2="50" y2="100" />
+            )}
+            {tile.connections.east && (
+              <line x1="50" y1="50" x2="100" y2="50" />
+            )}
+            {tile.connections.west && (
+              <line x1="50" y1="50" x2="0" y2="50" />
+            )}
+          </g>
         </svg>
       )}
 
