@@ -91,21 +91,9 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
     <div className={getTileClassName()}>
       {/* VISIBLE PIPE CONNECTIONS */}
       {tile.type === TileType.PATH && (
-        <svg className="absolute inset-2 pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
-          <defs>
-            <linearGradient id={`pipe-gradient-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1f2937" />
-              <stop offset="50%" stopColor="#374151" />
-              <stop offset="100%" stopColor="#1f2937" />
-            </linearGradient>
-            <linearGradient id={`pipe-energized-${tile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#06b6d4" />
-            </linearGradient>
-          </defs>
-          <g stroke={isConnected && isValidPath ? `url(#pipe-energized-${tile.id})` : `url(#pipe-gradient-${tile.id})`} 
-             strokeWidth="12" strokeLinecap="round" fill="none">
+        <svg className="absolute inset-2 pointer-events-none z-20" viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
+          <g stroke={isConnected && isValidPath ? "#0ea5e9" : "#1f2937"} 
+             strokeWidth="16" strokeLinecap="round" fill="none">
             {tile.connections.north && (
               <line x1="50" y1="50" x2="50" y2="0" />
             )}
