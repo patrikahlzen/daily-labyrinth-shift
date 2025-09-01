@@ -54,60 +54,75 @@ export const Tutorial: React.FC<TutorialProps> = ({ onComplete, onSkip }) => {
   const step = tutorialSteps[currentStep];
 
   return (
-    <div className="absolute inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="gamebar w-full max-w-md mx-4 animate-scale-in">
-        <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-prism flex items-center justify-center">
-              <Zap className="w-4 h-4 text-primary-foreground" />
+    <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <article className="gamebar w-full max-w-lg mx-auto animate-scale-in">
+        <header className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-gradient-prism flex items-center justify-center shadow-lg">
+              <Zap className="w-5 h-5 text-white" />
             </div>
-            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>{step.title}</h2>
+            <div>
+              <h2 className="display-xl">{step.title}</h2>
+              <div className="flex gap-1 mt-1">
+                {tutorialSteps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      index === currentStep
+                        ? 'bg-gradient-prism w-6'
+                        : index < currentStep
+                        ? 'bg-prism-b/60 w-4'
+                        : 'bg-muted w-3'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
           <Button variant="ghost" size="icon" aria-label="Skip tutorial" onClick={onSkip} className="pill">
             <X className="w-4 h-4" />
           </Button>
         </header>
 
-        <section className="mb-6">
-          <p className="text-muted-foreground leading-relaxed meta">{step.content}</p>
-          
-          {/* Progress indicator */}
-          <div className="flex gap-2 mt-4">
-            {tutorialSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentStep
-                    ? 'bg-gradient-prism w-8'
-                    : index < currentStep
-                    ? 'bg-prism-b/60 w-6'
-                    : 'bg-muted w-4'
-                }`}
-              />
-            ))}
+        <section className="mb-8">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              {step.icon}
+            </div>
+            <div className="flex-1 space-y-4">
+              <p className="text-foreground leading-relaxed text-base">{step.content}</p>
+            </div>
           </div>
         </section>
 
-        <footer className="flex justify-between items-center">
+        <footer className="flex justify-between items-center gap-4">
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0}
-            className="flex items-center gap-2 pill"
+            className="flex items-center gap-2 pill min-w-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </Button>
           
-          <span className="text-sm text-muted-foreground meta">
-            {currentStep + 1} of {tutorialSteps.length}
-          </span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="hidden sm:inline">Step</span>
+            <span className="font-medium">{currentStep + 1}</span>
+            <span>of</span>
+            <span className="font-medium">{tutorialSteps.length}</span>
+          </div>
           
           <Button
             onClick={nextStep}
-            className="flex items-center gap-2 pill pill--hot"
+            className="flex items-center gap-2 pill pill--hot min-w-0"
           >
-            {currentStep === tutorialSteps.length - 1 ? 'Start Playing!' : 'Next'}
+            <span className="hidden sm:inline">
+              {currentStep === tutorialSteps.length - 1 ? 'Start Playing!' : 'Next'}
+            </span>
+            <span className="sm:hidden">
+              {currentStep === tutorialSteps.length - 1 ? 'Start!' : 'Next'}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </Button>
         </footer>
