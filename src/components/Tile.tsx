@@ -92,7 +92,7 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
       {/* VISIBLE PIPE CONNECTIONS */}
       {tile.type === TileType.PATH && (
         <svg className="absolute inset-2 pointer-events-none z-20" viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
-          <g stroke={isConnected && isValidPath ? "#0ea5e9" : "#1f2937"} 
+          <g stroke="white" 
              strokeWidth="16" strokeLinecap="round" fill="none">
             {tile.connections.north && (
               <line x1="50" y1="50" x2="50" y2="0" />
