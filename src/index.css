@@ -482,16 +482,21 @@ All colors MUST be HSL.
 }
 
 /* BOLD PATH TUBES */
+.tile--path {
+  position: relative;
+}
 .tile--path::after {
-  content:""; position:absolute; inset: 4px;
-  border-radius: calc(var(--radius) - 4px);
+  content:""; 
+  position:absolute; 
+  inset: 6px;
+  border-radius: calc(var(--radius) - 6px);
   background: hsl(var(--card));
   box-shadow:
     0 0 20px hsl(189 94% 55% / 0.4),
     0 0 40px hsl(189 94% 55% / 0.2),
     inset 0 1px 0 hsl(0 0% 100% / 0.1);
   opacity: 1;
-  z-index: 0; /* behind SVG pipes */
+  z-index: 1;
   pointer-events: none;
 }
 
