@@ -92,12 +92,12 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
       {/* VISIBLE PIPE CONNECTIONS */}
       {tile.type === TileType.PATH && (
         <svg 
-          className="absolute inset-2 pointer-events-none" 
+          className="absolute inset-1 pointer-events-none" 
           viewBox="0 0 100 100" 
           preserveAspectRatio="none" 
           width="100%" 
           height="100%"
-          style={{ zIndex: 999, position: 'absolute' }}
+          style={{ zIndex: 10, position: 'absolute' }}
         >
           <g 
             stroke="#ffffff" 
