@@ -496,13 +496,7 @@ All colors MUST be HSL.
   pointer-events: none;
 }
 
-/* Ensure SVG pipes stay on top */
-.tile > svg {
-  position: absolute;
-  z-index: 2;
-  inset: 0.5rem;
-  pointer-events: none;
-}
+/* SVG pipes positioned by React component inline styles */
 
 /* ELECTRIC ENERGY FLOW */
 .tile--energized::after {
