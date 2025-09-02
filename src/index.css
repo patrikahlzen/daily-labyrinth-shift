@@ -440,6 +440,9 @@ All colors MUST be HSL.
 /* BOLD TILES */
 .tile {
   position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
   background: var(--gradient-card);
   border-radius: var(--radius);
   border: var(--glass-bd);
@@ -453,11 +456,17 @@ All colors MUST be HSL.
   box-shadow: var(--shadow-glow), var(--shadow-tile);
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness - enforce square tiles */
 @media (max-width: 640px) {
   .tile {
     min-height: 48px; /* iOS minimum touch target */
     min-width: 48px;
+    aspect-ratio: 1 !important;
+  }
+  
+  .tile::before,
+  .tile::after {
+    aspect-ratio: 1;
   }
   
   .gamebar {
