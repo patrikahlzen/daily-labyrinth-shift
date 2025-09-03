@@ -123,6 +123,7 @@ const handleDragEnd = () => {
                     isStart={isStart}
                     isConnected={isConnected}
                     isValidPath={validConnection}
+                    isEnergized={isConnected && validConnection}
                   />
                   {/* Connected path highlight */}
                   {isConnected && validConnection && (

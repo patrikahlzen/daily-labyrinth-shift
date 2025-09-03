@@ -8,9 +8,10 @@ interface TileProps {
   isStart?: boolean;
   isConnected?: boolean;
   isValidPath?: boolean;
+  isEnergized?: boolean;  // New prop for electric flow
 }
 
-export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, isValidPath }) => {
+export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, isValidPath, isEnergized }) => {
   // Generate unique mask ID using position and random number for Safari compatibility
   const maskId = React.useMemo(() => `tile-mask-${tile.id}-${Math.random().toString(36).substr(2, 9)}`, [tile.id]);
 
@@ -76,6 +77,11 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
       baseClass += "tile--energized ";
     }
 
+    // Electric flow effect (new)
+    if (isEnergized) {
+      baseClass += "is-energized ";
+    }
+
     // Start/Goal specific styling
     if (isStart) {
       baseClass += "tile--start ";
@@ -89,37 +95,39 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
 
   return (
     <div className={getTileClassName()}>
-      {/* VISIBLE PIPE CONNECTIONS */}
+      {/* PIPE CLIPPING WRAPPER */}
       {tile.type === TileType.PATH && (
-        <svg 
-          className="absolute inset-0 pointer-events-none" 
-          viewBox="0 0 100 100" 
-          preserveAspectRatio="none" 
-          width="100%" 
-          height="100%"
-          style={{ zIndex: 100 }}
-        >
-          <g 
-            stroke="white" 
-            strokeWidth="25" 
-            strokeLinecap="round" 
-            fill="none"
-            opacity="1"
+        <div className="pipe-clip">
+          <svg 
+            className="absolute inset-0 pointer-events-none" 
+            viewBox="0 0 100 100" 
+            preserveAspectRatio="none" 
+            width="100%" 
+            height="100%"
+            style={{ zIndex: 100 }}
           >
-            {tile.connections.north && (
-              <line x1="50" y1="50" x2="50" y2="0" />
-            )}
-            {tile.connections.south && (
-              <line x1="50" y1="50" x2="50" y2="100" />
-            )}
-            {tile.connections.east && (
-              <line x1="50" y1="50" x2="100" y2="50" />
-            )}
-            {tile.connections.west && (
-              <line x1="50" y1="50" x2="0" y2="50" />
-            )}
-          </g>
-        </svg>
+            <g 
+              stroke="white" 
+              strokeWidth="25" 
+              strokeLinecap="round" 
+              fill="none"
+              opacity="1"
+            >
+              {tile.connections.north && (
+                <line x1="50" y1="50" x2="50" y2="0" />
+              )}
+              {tile.connections.south && (
+                <line x1="50" y1="50" x2="50" y2="100" />
+              )}
+              {tile.connections.east && (
+                <line x1="50" y1="50" x2="100" y2="50" />
+              )}
+              {tile.connections.west && (
+                <line x1="50" y1="50" x2="0" y2="50" />
+              )}
+            </g>
+          </svg>
+        </div>
       )}
 
       {/* Special items */}
@@ -129,19 +137,17 @@ export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, 
         </div>
       )}
 
-      {/* Goal marker: flag icon */}
+      {/* Goal marker: M for Mål */}
       {isGoal && (
-        <div className="absolute -top-1 -right-1 z-20">
-          <Flag className="w-4 h-4 text-prism-a drop-shadow-sm" 
-                style={{ filter: 'drop-shadow(0 0 8px hsl(var(--prism-a) / 0.8))' }} />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <span className="mark" data-symbol="M" />
         </div>
       )}
 
-      {/* Start marker: energy icon */}
+      {/* Start marker: S for Start */}
       {isStart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <Zap className="w-4 h-4 text-prism-b drop-shadow-sm" 
-               style={{ filter: 'drop-shadow(0 0 8px hsl(var(--prism-b) / 0.8))' }} />
+          <span className="mark" data-symbol="S" />
         </div>
       )}
     </div>

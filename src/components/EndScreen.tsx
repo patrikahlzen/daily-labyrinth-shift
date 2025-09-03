@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { StarRating } from './StarRating';
 import { calculateStarRating, getStarDescription, getNextStarRequirement } from '../utils/scoring';
 import { GameTile } from '../types/game';
+import { t } from '../utils/i18n';
 
 interface EndScreenProps {
   timer: number;
@@ -51,15 +52,18 @@ export const EndScreen: React.FC<EndScreenProps> = ({
     confetti(confettiConfig);
   }, [stars]);
 
-  const shareText = `Daily Labyrinth #${String(puzzleNumber).padStart(2,'0')} — ${stars}⭐ Time ${formatTime(timer)} • Moves ${moves}`;
+  const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2,'0')} — ${stars}⭐ ${t('game.time')} ${formatTime(timer)} • ${t('game.moves')} ${moves}`;
 
   const handleShare = async () => {
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Daily Labyrinth', text: shareText });
+        await navigator.share({ title: t('game.title'), text: shareText });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareText);
-        toast({ title: 'Copied!', description: 'Your result has been copied to the clipboard.' });
+        toast({ 
+          title: t('game.copied'), 
+          description: t('game.copiedDescription')
+        });
       }
     } catch (e) {
       // no-op
@@ -68,15 +72,17 @@ export const EndScreen: React.FC<EndScreenProps> = ({
 
   return (
     <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="gamebar w-full max-w-sm mx-4">
+      <article className="finish-overlay gamebar w-full max-w-sm mx-4">
         <header className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-prism flex items-center justify-center">
               <Trophy className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>Puzzle Solved!</h2>
+            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>
+              {t('game.puzzleSolved')}
+            </h2>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Close" onClick={onClose} className="pill">
+          <Button variant="ghost" size="icon" aria-label={t('game.close')} onClick={onClose} className="pill">
             <X className="w-4 h-4" />
           </Button>
         </header>
@@ -95,27 +101,27 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
               <Clock className="w-4 h-4 text-prism-b" />
-              <span className="meta">Time</span>
+              <span className="meta">{t('game.time')}</span>
             </div>
             <span className="counter">{formatTime(timer)}</span>
           </div>
           <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
               <Move className="w-4 h-4 text-prism-a" />
-              <span className="meta">Moves</span>
+              <span className="meta">{t('game.moves')}</span>
             </div>
             <span className="counter">{moves}</span>
           </div>
         </section>
 
-        <footer className="mt-6 space-y-2">
+        <footer className="finish-actions mt-6 space-y-2">
           <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center pill pill--hot">
-            <Share2 className="w-4 h-4" /> Share
+            <Share2 className="w-4 h-4" /> {t('game.share')}
           </Button>
           <div className="grid grid-cols-2 gap-2">
             {attempts > 1 && (
               <Button variant="outline" onClick={onTryAgain} className="justify-center pill">
-                Try Again
+                {t('game.tryAgain')}
               </Button>
             )}
             <Button 
@@ -123,7 +129,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({
               onClick={onClose} 
               className={`justify-center pill ${attempts > 1 ? '' : 'col-span-2'}`}
             >
-              Close
+              {t('game.close')}
             </Button>
           </div>
         </footer>
