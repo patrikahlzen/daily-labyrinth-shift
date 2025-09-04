@@ -707,6 +707,7 @@ body {
   .finish-overlay {
     grid-template-columns: 1fr auto; /* text/stats + button row */
     align-items: center;
+  }
 }
 
 .finish-actions {
@@ -753,64 +754,11 @@ body {
   max-width: 48ch;                        /* behaglig radrad */
 }
 
-/* Footer knappar stannar i kortet och bryter snyggt på små skärmar */
-.tutorial-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  justify-content: space-between;
-
-  /* hindra knappar från att tänja layouten */
-.tutorial-actions > * { min-width: 0; }
-.tutorial-actions .btn-cta,
-.tutorial-actions .btn-ghost { white-space: nowrap; }
-}
-/* =========================================
-   HOTFIX: Tutorial + Finish overlay + Blur
-   (Append at the end of index.css)
-   ========================================= */
-
-/* 0) Blur-variabeln: gör konsekvent numerisk (Safari) */
-:root.theme-prism { --glass-blur: 12px; }
-
-/* Valfritt: lägg -webkit-backdrop-filter på glasytor */
-.gamebar, .board, .pill, .finish-overlay {
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-/* 1) TUTORIAL — gör .gamebar till ett kort i kolumn
-      (träffar bara tutorialen eftersom den ligger i role="dialog") */
-[role="dialog"] .gamebar {
-  display: grid;                          /* slår ut den horisontella bar-layouten */
-  grid-template-rows: auto 1fr auto;      /* header, body, footer */
-  align-items: start;
-  gap: 1.25rem;
-  overflow: hidden;                        /* knappar/text hålls innanför */
-  max-width: min(32rem, 100%);
-}
-
-/* Behaglig radlängd för brödtexten i tutorialen */
-[role="dialog"] .gamebar section {
-  max-width: 48ch;
-}
-
-/* Footer: knapprad som bryter snyggt */
-[role="dialog"] .gamebar footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  justify-content: space-between;
-}
-[role="dialog"] .gamebar footer > * { min-width: 0; }
-[role="dialog"] .gamebar .btn-cta,
-[role="dialog"] .gamebar .btn-ghost { white-space: nowrap; }
-
-/* 2) FINISH OVERLAY — riktig grid-layout så knappar stannar i panelen */
-.finish-overlay {
+.finish-overlay{
   position: relative;
   z-index: 40;
-  display: grid;                          /* ← viktigt */
-  grid-template-columns: 1fr;             /* mobil: allt i en kolumn */
+  display: grid;                    /* ← viktigt */
+  grid-template-columns: 1fr;       /* mobil */
   gap: 1rem;
   background: var(--gradient-card);
   border: var(--glass-bd);
@@ -823,22 +771,14 @@ body {
   max-width: 24rem;
   width: 100%;
 }
-@media (min-width: 640px) {
-  .finish-overlay {
-    grid-template-columns: 1fr auto;      /* text/stats + knapprad */
+@media (min-width: 640px){
+  .finish-overlay{
+    grid-template-columns: 1fr auto; /* text/stats + knappar */
     align-items: center;
     text-align: left;
   }
 }
-.finish-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
+.finish-actions{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
 .finish-overlay .pill,
 .finish-overlay .btn-ghost,
-.finish-overlay .btn-cta {
-  position: relative;
-  z-index: 41;                             /* konfetti kan ligga ovanpå visuellt men inte ta klick */
-}
+.finish-overlay .btn-cta{ position:relative; z-index:41; }
