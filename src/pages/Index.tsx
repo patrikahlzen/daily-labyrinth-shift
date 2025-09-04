@@ -105,9 +105,6 @@ const Index = () => {
                   <div className="pill">
                     <span className="meta">{t('game.puzzle')} #{String(puzzleNumber).padStart(2,'0')}</span>
                   </div>
-                  <div className="pill">
-                    <span className="meta">{t('game.today')}</span>
-                  </div>
                 </div>
                 
                 <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full"></div>
@@ -133,7 +130,7 @@ const Index = () => {
                   onClick={startGame}
                   className="btn-cta w-full h-12 sm:h-14 text-base sm:text-lg"
                 >
-                  🎮 {t('game.startDaily')}
+                  {t('game.startDaily')}
                 </Button>
                 
                 {/* Secondary buttons */}
@@ -142,22 +139,15 @@ const Index = () => {
                     onClick={generateNewPuzzle}
                     className="btn-ghost h-10 sm:h-12 text-sm sm:text-base"
                   >
-                    🏃 {t('game.practiceMode')}
+                    {t('game.practiceMode')}
                   </Button>
                   <Button
                     onClick={() => setShowTutorial(true)}
                     className="btn-ghost h-10 sm:h-12 text-sm sm:text-base"
                   >
-                    📚 {t('game.howToPlay')}
+                    {t('game.howToPlay')}
                   </Button>
                 </div>
-              </div>
-              
-              {/* Subtle decoration */}
-              <div className="flex justify-center space-x-2 opacity-40">
-                <div className="w-1.5 h-1.5 bg-prism-a rounded-full animate-pulse"></div>
-                <div className="w-1.5 h-1.5 bg-prism-b rounded-full animate-pulse delay-75"></div>
-                <div className="w-1.5 h-1.5 bg-prism-c rounded-full animate-pulse delay-150"></div>
               </div>
             </div>
           </div>

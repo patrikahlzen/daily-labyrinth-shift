@@ -9,26 +9,26 @@ interface TutorialProps {
 
 const tutorialSteps = [
   {
-    title: "Welcome to Daily Labyrinth!",
-    content: "Ett nytt pussel varje dag! Koppla ihop den blå startrutan med den gyllene målrutan genom att skapa den mest effektiva vägen möjligt.",
+    title: "Welcome to Pathfinder!",
+    content: "A new puzzle every day! Connect the blue start tile with the golden goal tile by creating the most efficient path possible.",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "goal"
   },
   {
-    title: "Hur man spelar",
-    content: "Byt plats på rutor genom att trycka på två rutor. Bygg sammanhängande rörförbindelser för att skapa en komplett väg från start till mål.",
+    title: "How to Play",
+    content: "Swap tiles by clicking on two tiles. Build continuous pipe connections to create a complete path from start to goal.",
     icon: <Hand className="w-8 h-8 text-primary" />,
     highlight: "swap"
   },
   {
-    title: "Samla ädelstenar & var effektiv",
-    content: "Samla ädelstenar längs din väg för bonuspoäng. Ju färre drag du använder, desto bättre blir din poäng!",
+    title: "Collect Gems & Be Efficient",
+    content: "Collect gems along your path for bonus points. The fewer moves you use, the better your score!",
     icon: <MousePointer className="w-8 h-8 text-primary" />,
     highlight: "gems"
   },
   {
-    title: "Tjäna stjärnor!",
-    content: "Slutför pussel för att tjäna 1-3 stjärnor baserat på din prestation. Du har 3 undo-drag per dag att använda strategiskt!",
+    title: "Earn Stars!",
+    content: "Complete puzzles to earn 1-3 stars based on your performance. You have 3 undo moves per day to use strategically!",
     icon: <Zap className="w-8 h-8 text-primary" />,
     highlight: "rating"
   }

@@ -1,33 +1,33 @@
-// Swedish translations for Daily Labyrinth
+// English translations for Pathfinder
 export const translations = {
   // Start screen
-  'game.title': 'Daily Labyrinth',
-  'game.puzzle': 'Pussel',
-  'game.today': 'Idag',
-  'game.description': 'Bygg en sammanhängande stig från Start till Mål genom att byta tiles.',
-  'game.newPuzzleIn': 'Nytt pussel om',
-  'game.startDaily': 'Starta daglig utmaning',
-  'game.practiceMode': 'Träningsläge', 
-  'game.howToPlay': 'Hur man spelar',
+  'game.title': 'Pathfinder',
+  'game.puzzle': 'Puzzle',
+  'game.today': 'Today',
+  'game.description': 'Build a continuous path from Start to Goal by swapping tiles.',
+  'game.newPuzzleIn': 'New puzzle in',
+  'game.startDaily': 'Start Daily Challenge',
+  'game.practiceMode': 'Practice Mode', 
+  'game.howToPlay': 'How to Play',
 
   // Game UI
-  'game.time': 'Tid',
-  'game.moves': 'Drag',
-  'game.undo': 'Ångra',
+  'game.time': 'Time',
+  'game.moves': 'Moves',
+  'game.undo': 'Undo',
 
   // End screen
-  'game.puzzleSolved': 'Pussel löst!',
-  'game.share': 'Dela',
-  'game.tryAgain': 'Försök igen',
-  'game.close': 'Stäng',
-  'game.copied': 'Kopierat!',
-  'game.copiedDescription': 'Ditt resultat har kopierats till urklipp.',
+  'game.puzzleSolved': 'Puzzle Solved!',
+  'game.share': 'Share',
+  'game.tryAgain': 'Try Again',
+  'game.close': 'Close',
+  'game.copied': 'Copied!',
+  'game.copiedDescription': 'Your result has been copied to clipboard.',
 
   // Star ratings
-  'stars.perfect': 'Perfekt! Minsta antal drag.',
-  'stars.good': 'Bra jobbat!',
-  'stars.completed': 'Pussel slutfört!',
-  'stars.nextTarget': 'Nästa mål: {requirement}',
+  'stars.perfect': 'Perfect! Minimum moves achieved.',
+  'stars.good': 'Well done!',
+  'stars.completed': 'Puzzle completed!',
+  'stars.nextTarget': 'Next target: {requirement}',
 } as const;
 
 export type TranslationKey = keyof typeof translations;

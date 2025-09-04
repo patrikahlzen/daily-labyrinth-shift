@@ -289,6 +289,24 @@ body {
   background-clip: text;
 }
 
+/* Star rating gold effect */
+.star-gold {
+  color: #FFD700 !important;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
+  animation: golden-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes golden-glow {
+  from { 
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9)); 
+    transform: scale(1);
+  }
+  to { 
+    filter: drop-shadow(0 0 16px rgba(255, 215, 0, 1)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.6)); 
+    transform: scale(1.05);
+  }
+}
+
 .header-text {
   font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
   font-weight: 700;
