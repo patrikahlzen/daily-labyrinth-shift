@@ -26,13 +26,13 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const EndScreen: React.FC<EndScreenProps> = ({ 
-  timer, 
-  moves, 
-  puzzleNumber, 
-  stars, 
-  board, 
-  gemsCollected, 
+export const EndScreen: React.FC<EndScreenProps> = ({
+  timer,
+  moves,
+  puzzleNumber,
+  stars,
+  board,
+  gemsCollected,
   attempts,
   onClose,
   onTryAgain
@@ -44,15 +44,17 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   const nextRequirement = getNextStarRequirement(stars, moves, rating.thresholds);
 
   useEffect(() => {
-    // Golden celebration if earned
-    const confettiConfig = stars >= 1 
-      ? { particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FFCF40'] }
-      : { particleCount: 120, spread: 70, origin: { y: 0.6 } };
-    
+    // Guldig konfetti när man vunnit
+    const confettiConfig =
+      stars >= 1
+        ? { particleCount: 220, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFCF40', '#E6B800'] }
+        : { particleCount: 140, spread: 70, origin: { y: 0.6 } };
     confetti(confettiConfig);
   }, [stars]);
 
-  const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2,'0')} — ${stars}⭐ ${t('game.time')} ${formatTime(timer)} • ${t('game.moves')} ${moves}`;
+  const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2, '0')} — ${stars}⭐ ${t(
+    'game.time'
+  )} ${formatTime(timer)} • ${t('game.moves')} ${moves}`;
 
   const handleShare = async () => {
     try {
@@ -60,49 +62,55 @@ export const EndScreen: React.FC<EndScreenProps> = ({
         await navigator.share({ title: t('game.title'), text: shareText });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareText);
-        toast({ 
-          title: t('game.copied'), 
-          description: t('game.copiedDescription')
-        });
+        toast({ title: t('game.copied'), description: t('game.copiedDescription') });
       }
-    } catch (e) {
+    } catch {
       // no-op
     }
   };
 
   return (
-    <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="finish-overlay">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          aria-label={t('game.close')} 
-          onClick={onClose} 
+    <div
+      className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="win-title"
+    >
+      {/* Lägg 'win' för att aktivera guldtema i panelen */}
+      <article className="finish-overlay win">
+        {/* Stäng-knapp */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('game.close')}
+          onClick={onClose}
           className="absolute top-4 right-4 z-50 opacity-70 hover:opacity-100"
         >
           <X className="w-5 h-5" />
         </Button>
 
+        {/* Trophy + rubrik + stjärnrad / meddelande */}
         <div className="finish-celebration">
           <div className="finish-trophy">
             <Trophy />
           </div>
-          
-          <h2 className="display-lg">
+
+          <h2 id="win-title" className="finish-title">
             {t('game.puzzleSolved')}
           </h2>
-          
+          <p className="finish-sub">{t('game.congrats') ?? ''}</p>
+
           <div className="finish-message">
-            <div className="flex justify-center mb-3">
-              <StarRating stars={stars} size="lg" maxStars={1} />
+            <div className="star-row mb-3">
+              {/* Visa upp till 3 stjärnor – StarRating hanterar fyllda/tomma */}
+              <StarRating stars={stars} size="lg" maxStars={3} />
             </div>
             <p className="font-medium mb-1">{starDescription}</p>
-            {stars < 1 && (
-              <p className="text-sm opacity-80">{nextRequirement}</p>
-            )}
+            {stars < 1 && <p className="text-sm opacity-80">{nextRequirement}</p>}
           </div>
         </div>
 
+        {/* Stats */}
         <section className="space-y-3">
           <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
@@ -120,20 +128,22 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           </div>
         </section>
 
+        {/* Actions */}
         <div className="finish-actions space-y-3">
-          <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center pill pill--hot">
+          {/* Primär: guld-CTA (harmoniserar med övriga CTA-stilen) */}
+          <Button onClick={handleShare} className="btn-cta--gold w-full flex items-center gap-2 justify-center">
             <Share2 className="w-4 h-4" /> {t('game.share')}
           </Button>
+
           <div className="grid grid-cols-2 gap-3">
             {attempts > 1 && (
               <Button variant="outline" onClick={onTryAgain} className="justify-center pill">
                 {t('game.tryAgain')}
               </Button>
             )}
-            <Button 
-              variant="secondary" 
-              onClick={onClose} 
-              className={`justify-center pill ${attempts > 1 ? '' : 'col-span-2'}`}
+            <Button
+              onClick={onClose}
+              className={`btn-ghost win-ghost justify-center ${attempts > 1 ? '' : 'col-span-2'}`}
             >
               {t('game.close')}
             </Button>
