@@ -703,10 +703,40 @@ body {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
+/* FINISH OVERLAY – stabil grid-layout */
+.finish-overlay {
+  position: relative;
+  z-index: 40;
+  display: grid;                 /* <-- viktigt */
+  grid-template-columns: 1fr;    /* mobil: allt i en kolumn */
+  gap: 1rem;
+  background: var(--gradient-card);
+  border: var(--glass-bd);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-shadow), 0 0 20px hsl(var(--prism-0) / 0.1);
+  backdrop-filter: blur(var(--glass-blur));
+  padding: 2rem;
+  text-align: center;
+  max-width: 24rem;
+  width: 100%;
+}
 @media (min-width: 640px) {
   .finish-overlay {
-    grid-template-columns: 1fr auto; /* text/stats + button row */
+    grid-template-columns: 1fr auto; /* text/stats + knapprad */
     align-items: center;
+    text-align: left;
+  }
+}
+.finish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.finish-overlay .pill,
+.finish-overlay .btn-ghost,
+.finish-overlay .btn-cta { position: relative; z-index: 41; }
+
   }
 }
 
