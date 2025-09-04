@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Button } from './ui/button';
-import { Share2, X, Clock, Move, Trophy } from 'lucide-react';
+import { Share2, X, Clock, Move, Trophy, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { StarRating } from './StarRating';
 import { calculateStarRating, getStarDescription, getNextStarRequirement } from '../utils/scoring';
 import { GameTile } from '../types/game';
 import { t } from '../utils/i18n';
@@ -12,7 +11,7 @@ interface EndScreenProps {
   timer: number;
   moves: number;
   puzzleNumber: number;
-  stars: number;
+  stars: number;               // 0 eller 1
   board: GameTile[][];
   gemsCollected: number;
   attempts: number;
@@ -44,12 +43,12 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   const nextRequirement = getNextStarRequirement(stars, moves, rating.thresholds);
 
   useEffect(() => {
-    // Guldig konfetti när man vunnit
-    const confettiConfig =
+    // Guldig konfetti vid vinst
+    const cfg =
       stars >= 1
         ? { particleCount: 220, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFCF40', '#E6B800'] }
         : { particleCount: 140, spread: 70, origin: { y: 0.6 } };
-    confetti(confettiConfig);
+    confetti(cfg);
   }, [stars]);
 
   const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2, '0')} — ${stars}⭐ ${t(
@@ -69,6 +68,10 @@ export const EndScreen: React.FC<EndScreenProps> = ({
     }
   };
 
+  // Visa subtext endast om översättning finns (undvik att visa "game.congrats")
+  const congrats = t('game.congrats');
+  const showCongrats = congrats && !String(congrats).startsWith('game.');
+
   return (
     <div
       className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
@@ -76,9 +79,9 @@ export const EndScreen: React.FC<EndScreenProps> = ({
       aria-modal="true"
       aria-labelledby="win-title"
     >
-      {/* Lägg 'win' för att aktivera guldtema i panelen */}
+      {/* 'win' aktiverar den harmoniserade guldstilen (CSS nedan) */}
       <article className="finish-overlay win">
-        {/* Stäng-knapp */}
+        {/* Stäng */}
         <Button
           variant="ghost"
           size="icon"
@@ -89,7 +92,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           <X className="w-5 h-5" />
         </Button>
 
-        {/* Trophy + rubrik + stjärnrad / meddelande */}
+        {/* Trophy + rubrik + stjärna */}
         <div className="finish-celebration">
           <div className="finish-trophy">
             <Trophy />
@@ -98,12 +101,15 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           <h2 id="win-title" className="finish-title">
             {t('game.puzzleSolved')}
           </h2>
-          <p className="finish-sub">{t('game.congrats') ?? ''}</p>
+          {showCongrats ? <p className="finish-sub">{String(congrats)}</p> : null}
 
           <div className="finish-message">
-            <div className="star-row mb-3">
-              {/* Visa upp till 3 stjärnor – StarRating hanterar fyllda/tomma */}
-              <StarRating stars={stars} size="lg" maxStars={3} />
+            <div className="flex justify-center mb-3">
+              {stars >= 1 ? (
+                <Star className="w-6 h-6 star-gold" fill="currentColor" />
+              ) : (
+                <Star className="w-6 h-6 text-muted-foreground" />
+              )}
             </div>
             <p className="font-medium mb-1">{starDescription}</p>
             {stars < 1 && <p className="text-sm opacity-80">{nextRequirement}</p>}
@@ -130,7 +136,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({
 
         {/* Actions */}
         <div className="finish-actions space-y-3">
-          {/* Primär: guld-CTA (harmoniserar med övriga CTA-stilen) */}
+          {/* Primär: guld-CTA */}
           <Button onClick={handleShare} className="btn-cta--gold w-full flex items-center gap-2 justify-center">
             <Share2 className="w-4 h-4" /> {t('game.share')}
           </Button>
