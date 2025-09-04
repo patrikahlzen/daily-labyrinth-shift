@@ -1054,3 +1054,29 @@ body {
   pointer-events:none;
   z-index:0;
 }
+
+/* =========================
+   KILL WINSHINE (no bling)
+   ========================= */
+
+/* 1) Stoppa shine-svepet på trofén */
+.finish-overlay.win .finish-trophy::after {
+  content: none !important;
+  animation: none !important;
+}
+
+/* 2) Ingen aurora bakom panelen i win-läget (om du hade den) */
+.finish-overlay.win::before,
+.finish-overlay.win.is-compact::before {
+  content: none !important;
+}
+
+/* 3) Om din star-gold råkar pulsera någonstans – stäng av */
+.star-gold { animation: none !important; }
+
+/* 4) Gör trofé-glöden lite mer sober (valfritt, men bra balansering) */
+.finish-overlay.win .finish-trophy {
+  box-shadow:
+    0 6px 16px hsl(var(--gold-glow) / .16),
+    inset 0 1px 0 hsl(0 0% 100% / .14);
+}
