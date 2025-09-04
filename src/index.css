@@ -754,11 +754,73 @@ body {
   max-width: 48ch;                        /* behaglig radrad */
 }
 
+/* Footer knappar stannar i kortet och bryter snyggt på små skärmar */
+.tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: space-between;
+}
+/* =========================================
+   DIALOG SANITY PACK — Tutorial + Finish
+   (Append last in index.css)
+   ========================================= */
+
+/* 0) Safari: gör blur-variabeln konsekvent numerisk */
+:root.theme-prism { --glass-blur: 12px; }
+
+/* Lägg även -webkit-backdrop-filter på glasytor */
+.gamebar, .board, .pill, .finish-overlay {
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* ---------------------------
+   TUTORIAL (role="dialog")
+   --------------------------- */
+
+/* Gör artikel-kortet i dialogen till kolumn/grid (slår ut .gamebar:flex-row) */
+[role="dialog"] article.gamebar {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-rows: auto 1fr auto;   /* header, body, footer */
+  align-items: start;
+  gap: 1.25rem;
+  overflow: hidden;                     /* inget läcker utanför kortet */
+  max-width: min(36rem, 100%);
+  width: 100%;
+}
+
+/* Läsbar brödtext, inte inklämd mot kant */
+[role="dialog"] article.gamebar > section {
+  max-width: 48ch;
+}
+
+/* Footer: knapprad som håller sig inne och bryter snyggt */
+[role="dialog"] article.gamebar > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: space-between;
+}
+[role="dialog"] article.gamebar > footer > * { min-width: 0; }
+[role="dialog"] article.gamebar .btn-cta,
+[role="dialog"] article.gamebar .btn-ghost { white-space: nowrap; }
+
+/* Kompakt rubrik inne i dialog så den inte dominerar */
+[role="dialog"] article.gamebar .display-xl {
+  font-size: clamp(22px, 4vw, 28px);
+  line-height: 1.15;
+}
+
+/* ---------------------------
+   FINISH OVERLAY (panel)
+   --------------------------- */
+
 .finish-overlay{
   position: relative;
   z-index: 40;
-  display: grid;                    /* ← viktigt */
-  grid-template-columns: 1fr;       /* mobil */
+  display: grid;                        /* VIKTIGT: riktig grid-layout */
+  grid-template-columns: 1fr;           /* mobil: staplat */
   gap: 1rem;
   background: var(--gradient-card);
   border: var(--glass-bd);
@@ -766,19 +828,32 @@ body {
   box-shadow: var(--glass-shadow), 0 0 20px hsl(var(--prism-0) / 0.1);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
-  max-width: 24rem;
+  max-width: 26rem;                     /* lite bredare så text/knappar får plats */
   width: 100%;
 }
 @media (min-width: 640px){
   .finish-overlay{
-    grid-template-columns: 1fr auto; /* text/stats + knappar */
+    grid-template-columns: 1fr auto;    /* text/stats | knappar */
     align-items: center;
     text-align: left;
   }
 }
-.finish-actions{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+
+/* Actions-raden: fånga flera möjliga containers så markup inte måste ändras */
+.finish-actions,
+.finish-overlay footer,
+.finish-overlay .actions,
+.finish-overlay .buttons{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
 .finish-overlay .pill,
 .finish-overlay .btn-ghost,
-.finish-overlay .btn-cta{ position:relative; z-index:41; }
+.finish-overlay .btn-cta{
+  position: relative;
+  z-index: 41;                          /* konfetti ovanpå visuellt men inte i vägen */
+}
