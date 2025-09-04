@@ -277,6 +277,30 @@ body {
   font-weight: 400;
 }
 
+/* Apple-inspired typography hierarchy */
+.title-hero {
+  font-family: system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.title-secondary {
+  font-family: system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 1rem;
+}
+
 .display-xl {
   font-family: 'Helvetica Neue', 'Helvetica', sans-serif;
   font-weight: 800;

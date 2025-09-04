@@ -96,15 +96,13 @@ const Index = () => {
               
               {/* Hero title with gradient text */}
               <div className="space-y-4 text-center">
-                <h1 className="display-xl">
+                <h1 className="title-hero">
                   {t('game.title')}
                 </h1>
                 
-                {/* Metadata chips */}
-                <div className="flex items-center justify-center gap-3">
-                  <div className="pill">
-                    <span className="meta">{t('game.puzzle')} #{String(puzzleNumber).padStart(2,'0')}</span>
-                  </div>
+                {/* Puzzle number in large secondary text */}
+                <div className="title-secondary">
+                  {t('game.puzzle')} #{String(puzzleNumber).padStart(2,'0')}
                 </div>
                 
                 <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent w-full"></div>
