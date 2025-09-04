@@ -14,9 +14,10 @@ export interface TileConnections {
 
 export interface GameTile {
   type: TileType;
-  connections: TileConnections;
-  special?: 'key' | 'time' | 'block' | 'gem' | null;
+  connections: TileConnections;           // { north, south, east, west }
+  special: 'gem' | 'key' | 'time' | null;
   id: string;
+  locked?: boolean;                       // ← NYTT: låsning för start/goal-liknande tiles (t.ex. gem)
 }
 
 export interface GameState {
@@ -44,6 +45,11 @@ export interface GameState {
   gemsCollected: number;
   stars: number;
   attempts: number;
+}
+
+export interface GameTile {
+  // ...
+  locked?: boolean; // låst tile (ex. fastlåst gem)
 }
 
 export interface GameResult {

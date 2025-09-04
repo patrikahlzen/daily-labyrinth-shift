@@ -1,5 +1,5 @@
 import { GameTile, TileType, TileConnections } from '../types/game';
-import { getDifficultyForDay, getTemplateForSeed, validatePuzzleQuality } from './difficultySystem';
+import { getDifficultyForDay, getTemplateForSeed, validatePuzzleQuality } from './difficultySystems';
 
 // Simple seeded PRNG (xmur3 + mulberry32)
 const xmur3 = (str: string) => {
@@ -35,7 +35,7 @@ const TILE_PATTERNS: TileConnections[] = [
   // Straight lines
   { north: true, south: true, east: false, west: false }, // Vertical
   { north: false, south: false, east: true, west: true }, // Horizontal
-  
+
   // L-shapes (clean bends only)
   { north: true, south: false, east: true, west: false }, // NE corner
   { north: true, south: false, east: false, west: true }, // NW corner
@@ -46,7 +46,7 @@ const TILE_PATTERNS: TileConnections[] = [
 export const generateRandomTile = (): GameTile => {
   const pattern = TILE_PATTERNS[Math.floor(Math.random() * TILE_PATTERNS.length)];
   const hasSpecial = Math.random() < 0.15; // 15% chance for special items
-  
+
   let special: GameTile['special'] = null;
   if (hasSpecial) {
     const specials = ['key', 'time', 'gem'] as const;
@@ -74,25 +74,25 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   const newId = () => `t-${(++idCounter).toString(36)}`;
 
   // Use difficulty system for curated puzzle generation
-  const daysSinceEpoch = seed ? 
-    Math.floor(parseInt(seed.slice(-8), 16) / 86400000) : 
+  const daysSinceEpoch = seed ?
+    Math.floor(parseInt(seed.slice(-8), 16) / 86400000) :
     Math.floor(Date.now() / 86400000);
-  
+
   const difficulty = getDifficultyForDay(daysSinceEpoch);
   const template = getTemplateForSeed(seed || Date.now().toString(), difficulty);
   const { rows, cols } = template.boardSize;
-  
+
   // Smart start/goal placement for optimal challenge
-  const getRandomPosition = (excludePositions: {x: number, y: number}[] = []) => {
+  const getRandomPosition = (excludePositions: { x: number, y: number }[] = []) => {
     const boardArea = rows * cols;
     const minDistance = Math.max(3, Math.floor(Math.sqrt(boardArea))); // Scale with board size
-    
+
     let attempts = 0;
     while (attempts < 50) {
       // Prefer positions away from edges but not exclusively
       const edgeWeight = 0.3; // 30% chance to be near edge
       let x, y;
-      
+
       if (rng() < edgeWeight) {
         // Edge placement for variety
         const side = Math.floor(rng() * 4);
@@ -108,17 +108,17 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
         x = Math.floor(rng() * cols);
         y = Math.floor(rng() * rows);
       }
-      
+
       // Check distance from excluded positions
       const isValid = excludePositions.every(pos => {
         const distance = Math.abs(pos.x - x) + Math.abs(pos.y - y);
         return distance >= minDistance;
       });
-      
+
       if (isValid) return { x, y };
       attempts++;
     }
-    
+
     // Guaranteed fallback positions
     const fallbacks = [
       { x: 1, y: 1 },
@@ -126,10 +126,10 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       { x: 1, y: rows - 2 },
       { x: cols - 2, y: 1 },
     ].filter(pos => pos.x >= 0 && pos.x < cols && pos.y >= 0 && pos.y < rows);
-    
+
     return fallbacks[excludePositions.length % fallbacks.length] || { x: 0, y: 0 };
   };
-  
+
   const start = getRandomPosition();
   const goal = getRandomPosition([start]);
 
@@ -148,28 +148,28 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   const boardSize = rows * cols;
   const targetPathLength = Math.floor(boardSize * (0.4 + rng() * 0.3)); // 40-70% of board
   const minTurns = Math.max(3, Math.floor(targetPathLength / 6)); // At least 3 turns
-  
+
   const visited: boolean[][] = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => false)
   );
   const path: { x: number; y: number }[] = [];
-  
+
   const dirs = [
-    { dx: 0, dy: -1, name: 'north' }, 
-    { dx: 0, dy: 1, name: 'south' },  
-    { dx: 1, dy: 0, name: 'east' },  
-    { dx: -1, dy: 0, name: 'west' }  
+    { dx: 0, dy: -1, name: 'north' },
+    { dx: 0, dy: 1, name: 'south' },
+    { dx: 1, dy: 0, name: 'east' },
+    { dx: -1, dy: 0, name: 'west' }
   ];
 
   const inBounds = (x: number, y: number) => x >= 0 && x < cols && y >= 0 && y < rows;
-  
+
   // Smart pathfinding that encourages turns
   const generatePathWithTurns = (x: number, y: number, lastDir?: string, turnCount = 0): boolean => {
     path.push({ x, y });
     if (x === goal.x && y === goal.y) {
       return path.length >= Math.floor(targetPathLength * 0.7) && turnCount >= minTurns;
     }
-    
+
     if (path.length > targetPathLength * 1.5) return false; // Prevent overly long paths
     visited[y][x] = true;
 
@@ -179,7 +179,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       const r = Math.floor(rng() * (i + 1));
       [order[i], order[r]] = [order[r], order[i]];
     }
-    
+
     // Prefer directions that create turns if we need more
     if (turnCount < minTurns && lastDir) {
       order.sort((a, b) => {
@@ -193,7 +193,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       const nx = x + dx;
       const ny = y + dy;
       if (!inBounds(nx, ny) || visited[ny][nx]) continue;
-      
+
       const newTurnCount = (lastDir && name !== lastDir) ? turnCount + 1 : turnCount;
       if (generatePathWithTurns(nx, ny, name, newTurnCount)) return true;
     }
@@ -210,18 +210,18 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     visited.forEach(row => row.fill(false));
     pathAttempts++;
   }
-  
+
   // Fallback: create a simpler but valid path
   if (path.length === 0 || path[path.length - 1].x !== goal.x || path[path.length - 1].y !== goal.y) {
     path.length = 0;
     let x = start.x;
     let y = start.y;
     path.push({ x, y });
-    
+
     // Create L-shaped path with guaranteed turns
     const midX = Math.floor((start.x + goal.x) / 2);
     const midY = Math.floor((start.y + goal.y) / 2);
-    
+
     // Move to intermediate point first
     while (x !== midX) {
       x += x < midX ? 1 : -1;
@@ -273,25 +273,25 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   // Strategic gem placement using template guidance
   const gemPositions: { x: number; y: number }[] = [];
   const turnPoints: number[] = [];
-  
+
   // Find turn points in the path
   for (let i = 1; i < path.length - 1; i++) {
     const prev = path[i - 1];
     const curr = path[i];
     const next = path[i + 1];
-    
+
     const prevDir = { x: curr.x - prev.x, y: curr.y - prev.y };
     const nextDir = { x: next.x - curr.x, y: next.y - curr.y };
-    
+
     // This is a turn if direction changes
     if (prevDir.x !== nextDir.x || prevDir.y !== nextDir.y) {
       turnPoints.push(i);
     }
   }
-  
+
   // Place gems using template requirements instead of hardcoded logic
   const targetGems = Math.min(template.gemCount, Math.max(1, Math.floor(path.length / 4)));
-  
+
   // Always place gems at turns first (most strategic spots)
   for (let i = 0; i < Math.min(turnPoints.length, targetGems); i++) {
     const pos = path[turnPoints[i]];
@@ -301,7 +301,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       special: 'gem'
     };
   }
-  
+
   // Add evenly spaced gems if we need more
   if (gemPositions.length < targetGems) {
     const interval = Math.max(2, Math.floor(path.length / (targetGems - gemPositions.length + 1)));
@@ -317,45 +317,73 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
+  // === LOCK ONE GEM LIKE START/GOAL (run ONCE, not inside loops) ===
+  // Choose an existing gem that's not start/goal; fallback to a non-edge path cell.
+  let lockTarget: { x: number; y: number } | null =
+    gemPositions.find(p => !(p.x === start.x && p.y === start.y) && !(p.x === goal.x && p.y === goal.y)) || null;
+
+  if (!lockTarget && path.length > 0) {
+    // pick a middle path cell not equal to start/goal
+    const midIndex = Math.floor(path.length / 2);
+    const candidates = [midIndex, midIndex - 1, midIndex + 1].filter(i => i >= 0 && i < path.length);
+    for (const i of candidates) {
+      const p = path[i];
+      if (!(p.x === start.x && p.y === start.y) && !(p.x === goal.x && p.y === goal.y)) {
+        lockTarget = p;
+        // ensure it has a gem if it didn't already
+        board[p.y][p.x] = { ...board[p.y][p.x], special: 'gem' };
+        gemPositions.push(p);
+        break;
+      }
+    }
+  }
+
+  if (lockTarget) {
+    const { x, y } = lockTarget;
+    board[y][x] = {
+      ...board[y][x],
+      special: 'gem',
+      locked: true,        // ← NEW FLAG
+      id: 'gem-fixed-1',   // ← stable id for UI/debug
+    };
+  }
+  // =================================================================
+
   // Keep explicit IDs to mark start/goal for the UI
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
 
   // Create sophisticated decoy paths for visual trickery
   const isOnPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
-  
+
   // First pass: create decoy tiles that almost connect to main path
   const decoyDensity = 0.4 + rng() * 0.2; // 40-60% coverage
-  
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       if (isOnPath(x, y)) continue;
-      
+
       if (rng() < decoyDensity) {
         const pattern = { ...TILE_PATTERNS[Math.floor(rng() * TILE_PATTERNS.length)] };
-        
+
         // Smart decoy placement: create almost-connections for visual traps
         const nIsPath = y - 1 >= 0 && isOnPath(x, y - 1);
         const sIsPath = y + 1 < rows && isOnPath(x, y + 1);
         const eIsPath = x + 1 < cols && isOnPath(x + 1, y);
         const wIsPath = x - 1 >= 0 && isOnPath(x - 1, y);
-        
+
         const pathAdjacent = nIsPath || sIsPath || eIsPath || wIsPath;
-        
+
         if (pathAdjacent) {
           // Create "almost connection" - looks like it should connect but doesn't
           if (rng() < 0.7) { // 70% chance to be a red herring
-            // Block the connection that would lead to main path
             if (nIsPath) pattern.north = false;
             if (sIsPath) pattern.south = false;
             if (eIsPath) pattern.east = false;
             if (wIsPath) pattern.west = false;
-          } else {
-            // 30% chance to create a real connection (makes puzzle more complex)
-            // Keep the pattern as is for potential shortcuts
           }
         }
-        
+
         board[y][x] = {
           type: TileType.PATH,
           connections: pattern,
@@ -365,45 +393,45 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       }
     }
   }
-  
+
   // Second pass: create mini decoy paths that form coherent but disconnected segments
   const createDecoySegment = (startX: number, startY: number, length: number) => {
     let x = startX, y = startY;
     let segmentLength = 0;
     let lastDir = '';
-    
+
     while (segmentLength < length && inBounds(x, y) && board[y][x].type === TileType.EMPTY) {
       if (isOnPath(x, y)) break; // Don't interfere with main path
-      
+
       const availableDirs = dirs.filter(d => {
         const nx = x + d.dx, ny = y + d.dy;
         return inBounds(nx, ny) && !isOnPath(nx, ny) && d.name !== lastDir;
       });
-      
+
       if (availableDirs.length === 0) break;
-      
+
       const dir = availableDirs[Math.floor(rng() * availableDirs.length)];
       const nextX = x + dir.dx;
       const nextY = y + dir.dy;
-      
+
       // Create connection
       const connections = { north: false, south: false, east: false, west: false };
       connections[dir.name as keyof typeof connections] = true;
-      
+
       board[y][x] = {
         type: TileType.PATH,
         connections,
         special: null,
         id: newId()
       };
-      
+
       x = nextX;
       y = nextY;
       lastDir = dir.name;
       segmentLength++;
     }
   };
-  
+
   // Add a few coherent decoy segments
   const numDecoySegments = Math.floor(rng() * 3) + 1;
   for (let i = 0; i < numDecoySegments; i++) {
@@ -413,7 +441,6 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   }
 
   // SIMPLIFIED SCRAMBLING: Generate controlled difficulty with guaranteed solvability
-  // Create a pristine copy BEFORE scrambling so we can retry safely
   const cloneBoard = (b: GameTile[][]) => b.map(row => row.map(tile => ({
     ...tile,
     connections: { ...tile.connections },
@@ -425,8 +452,13 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     const coords: { x: number; y: number }[] = [];
     for (let yy = 0; yy < rows; yy++) {
       for (let xx = 0; xx < cols; xx++) {
-        const t = b[yy][xx];
-        if (t.type === TileType.PATH && t.id !== 'start-tile' && t.id !== 'goal-tile') {
+        const t = b[yy][xx] as GameTile & { locked?: boolean };
+        if (
+          t.type === TileType.PATH &&
+          t.id !== 'start-tile' &&
+          t.id !== 'goal-tile' &&
+          !t.locked // ← exclude locked gem
+        ) {
           coords.push({ x: xx, y: yy });
         }
       }
@@ -434,28 +466,25 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     return coords;
   };
 
-  // Improved scrambling algorithm - create significantly more challenging puzzles
+  // Improved scrambling algorithm
   const movableCount = getMovable(baseSolvedBoard).length;
-  
-  // Much more aggressive scrambling based on board size and movable tiles
   const boardComplexity = rows * cols;
-  const baseScrambleIntensity = Math.max(20, Math.floor(movableCount * 1.5)); // At least 150% of movable tiles
+  const baseScrambleIntensity = Math.max(20, Math.floor(movableCount * 1.5));
   const difficultyMultiplier = template.difficulty === 'hard' ? 3.5 : template.difficulty === 'medium' ? 2.8 : 2.2;
   const targetSwaps = Math.floor(baseScrambleIntensity * difficultyMultiplier);
   const minRequiredSwaps = template.difficulty === 'hard' ? 5 : template.difficulty === 'medium' ? 5 : 4;
   let acceptedSwaps = -1;
 
-  // Multi-phase scrambling for better randomization
   let scrambled: GameTile[][] | null = null;
   const maxAttempts = 50;
-  
+
   for (let attempt = 0; attempt < maxAttempts && !scrambled; attempt++) {
     const candidate = cloneBoard(baseSolvedBoard);
-    
-    // Phase 1: Much heavier initial scrambling
+
+    // Phase 1: heavier scramble
     const movable = getMovable(candidate);
     const phase1Swaps = Math.max(targetSwaps * 3, Math.floor(movable.length * 2.5));
-    
+
     for (let i = 0; i < phase1Swaps && movable.length >= 2; i++) {
       const idx1 = Math.floor(rng() * movable.length);
       let idx2 = Math.floor(rng() * movable.length);
@@ -467,8 +496,8 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       candidate[a.y][a.x] = candidate[b.y][b.x];
       candidate[b.y][b.x] = temp;
     }
-    
-    // Phase 2: Evaluate solvability by swaps and enforce minimum required depth
+
+    // Phase 2: check depth
     const swapsNeeded = findMinimumSwapsToSolve(candidate, start, goal);
     if (swapsNeeded >= minRequiredSwaps) {
       scrambled = candidate;
@@ -476,26 +505,24 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
-  // If we failed to find a solvable scramble, fall back to the solved base
+  // If failed to find a solvable scramble, fall back
   let finalBoard = scrambled ?? baseSolvedBoard;
 
-  // Calculate and store optimal swap estimates based on actual solver depth
+  // Optimal estimates
   const totalGems = finalBoard.flat().filter(tile => tile.special === 'gem').length;
-  const boardArea = rows * cols;
-  const baseEstimate = Math.max(5, Math.min(12, Math.round(boardArea / 6)));
+  const baseEstimate = Math.max(5, Math.min(12, Math.round((rows * cols) / 6)));
   const computedMin = acceptedSwaps > 0 ? acceptedSwaps : findMinimumSwapsToSolve(finalBoard, start, goal);
   const optimalToGoal = Math.max(baseEstimate, computedMin);
   const optimalAllGems = totalGems > 0 ? optimalToGoal + Math.min(2, totalGems) : optimalToGoal;
 
-  // Store values on the board for stable star rating
   (finalBoard as any).__optimalToGoal = optimalToGoal;
   (finalBoard as any).__optimalAllGems = optimalAllGems;
   (finalBoard as any).__totalGems = totalGems;
 
-  // Safety: ensure start/goal tiles are path tiles with at least one connection and IDs are correct
+  // Safety: ensure start/goal tiles are valid PATH and IDs correct
   const hasConn = (t: GameTile) => t && t.type === TileType.PATH && Object.values(t.connections || {}).some(Boolean);
 
-  // Remove stray start/goal IDs off their coordinates
+  // Remove stray start/goal IDs
   for (let yy = 0; yy < rows; yy++) {
     for (let xx = 0; xx < cols; xx++) {
       if ((xx !== start.x || yy !== start.y) && finalBoard[yy][xx].id === 'start-tile') {
@@ -507,11 +534,11 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
-  // Re-stamp IDs on correct cells
+  // Re-stamp IDs
   finalBoard[start.y][start.x].id = 'start-tile';
   finalBoard[goal.y][goal.x].id = 'goal-tile';
 
-  // Ensure both are PATH with visible shape; fallback to the pristine solved board's tiles if needed
+  // Ensure both are PATH with connections; fallback if needed
   if (!hasConn(finalBoard[start.y][start.x])) {
     const backup = baseSolvedBoard[start.y][start.x];
     finalBoard[start.y][start.x] = { ...backup, id: 'start-tile' };
@@ -521,7 +548,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     finalBoard[goal.y][goal.x] = { ...backup, id: 'goal-tile' };
   }
 
-  // Ensure the puzzle meets the minimum required swap depth
+  // Ensure minimum required swap depth
   let minSwapsToSolve = findMinimumSwapsToSolve(finalBoard, start, goal);
   if (minSwapsToSolve < minRequiredSwaps) {
     const movableNow = getMovable(finalBoard);
@@ -535,7 +562,6 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       const tmp = finalBoard[a.y][a.x];
       finalBoard[a.y][a.x] = finalBoard[b.y][b.x];
       finalBoard[b.y][b.x] = tmp;
-      // Re-stamp IDs to be safe
       finalBoard[start.y][start.x].id = 'start-tile';
       finalBoard[goal.y][goal.x].id = 'goal-tile';
       minSwapsToSolve = findMinimumSwapsToSolve(finalBoard, start, goal);
@@ -545,6 +571,9 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   return finalBoard;
 };
 
+// -------------------------------------------------------------------
+// Movement & solvers
+// -------------------------------------------------------------------
 export const canMoveTo = (
   board: GameTile[][],
   fromX: number,
@@ -556,19 +585,19 @@ export const canMoveTo = (
   const rows = board.length;
   const cols = board[0]?.length || 0;
   if (toX < 0 || toX >= cols || toY < 0 || toY >= rows) return false;
-  
+
   const fromTile = board[fromY][fromX];
   const toTile = board[toY][toX];
-  
+
   // Can't move to empty tiles
   if (toTile.type === TileType.EMPTY) return false;
-  
+
   // Check if tiles are connected
   const dx = toX - fromX;
   const dy = toY - fromY;
-  
+
   if (Math.abs(dx) + Math.abs(dy) !== 1) return false; // Must be adjacent
-  
+
   if (dx === 1) { // Moving east
     return fromTile.connections.east && toTile.connections.west;
   } else if (dx === -1) { // Moving west
@@ -578,7 +607,7 @@ export const canMoveTo = (
   } else if (dy === -1) { // Moving north
     return fromTile.connections.north && toTile.connections.south;
   }
-  
+
   return false;
 };
 
@@ -592,18 +621,18 @@ export const findPath = (
   // Simple BFS pathfinding
   const queue = [{ x: startX, y: startY, path: [{ x: startX, y: startY }] }];
   const visited = new Set<string>();
-  
+
   while (queue.length > 0) {
     const { x, y, path } = queue.shift()!;
     const key = `${x},${y}`;
-    
+
     if (visited.has(key)) continue;
     visited.add(key);
-    
+
     if (x === endX && y === endY) {
       return path;
     }
-    
+
     // Check all adjacent cells
     const directions = [
       { dx: 0, dy: -1 }, // North
@@ -611,11 +640,11 @@ export const findPath = (
       { dx: 1, dy: 0 },  // East
       { dx: -1, dy: 0 }  // West
     ];
-    
+
     for (const { dx, dy } of directions) {
       const newX = x + dx;
       const newY = y + dy;
-      
+
       if (canMoveTo(board, x, y, newX, newY)) {
         queue.push({
           x: newX,
@@ -625,7 +654,7 @@ export const findPath = (
       }
     }
   }
-  
+
   return null; // No path found
 };
 
@@ -639,63 +668,67 @@ export const findMinimumSwapsToSolve = (
   if (findPath(board, start.x, start.y, goal.x, goal.y)) {
     return 0;
   }
-  
-  // Get all movable tiles (exclude start/goal)
+
+  // Get all movable tiles (exclude start/goal and locked)
   const movableTiles: { x: number; y: number }[] = [];
   for (let y = 0; y < board.length; y++) {
     for (let x = 0; x < (board[0]?.length || 0); x++) {
-      if (board[y][x].type === TileType.PATH && 
-          board[y][x].id !== 'start-tile' && 
-          board[y][x].id !== 'goal-tile') {
+      const t = board[y][x] as GameTile & { locked?: boolean };
+      if (
+        t.type === TileType.PATH &&
+        t.id !== 'start-tile' &&
+        t.id !== 'goal-tile' &&
+        !t.locked // ← exclude locked gem
+      ) {
         movableTiles.push({ x, y });
       }
     }
   }
-  
+
   // Try BFS approach: try all possible single swaps, then double swaps, etc.
   const queue: { board: GameTile[][]; swaps: number }[] = [];
   const visited = new Set<string>();
-  
+
   // Helper to serialize board state for duplicate detection
   const serializeBoard = (b: GameTile[][]) => {
     return b.map(row => row.map(tile => tile.id).join(',')).join('|');
   };
-  
+
   queue.push({ board: board.map(row => row.map(tile => ({ ...tile }))), swaps: 0 });
   visited.add(serializeBoard(board));
-  
-  while (queue.length > 0 && queue.length < 1000) { // Limit search to prevent infinite loops
+
+  while (queue.length > 0 && queue.length < 1000) { // Limit search
     const { board: currentBoard, swaps } = queue.shift()!;
-    
+
     // Try all possible swaps
     for (let i = 0; i < movableTiles.length; i++) {
       for (let j = i + 1; j < movableTiles.length; j++) {
         const newBoard = currentBoard.map(row => row.map(tile => ({ ...tile })));
         const pos1 = movableTiles[i];
         const pos2 = movableTiles[j];
-        
+
         // Perform swap
         const temp = newBoard[pos1.y][pos1.x];
         newBoard[pos1.y][pos1.x] = newBoard[pos2.y][pos2.x];
         newBoard[pos2.y][pos2.x] = temp;
-        
+
         // Check if solved
         if (findPath(newBoard, start.x, start.y, goal.x, goal.y)) {
           return swaps + 1;
         }
-        
-        // Add to queue if not visited and we haven't searched too deep
+
+        // Add to queue if not visited and depth ok
         const serialized = serializeBoard(newBoard);
-        if (!visited.has(serialized) && swaps < 8) { // Limit depth to 8 swaps
+        if (!visited.has(serialized) && swaps < 8) {
           visited.add(serialized);
           queue.push({ board: newBoard, swaps: swaps + 1 });
         }
       }
     }
   }
-  
-  // If we can't find a solution within reasonable bounds, return template optimal
-  return 5; // Default fallback raised to 5
+
+  // Default fallback
+  return 5;
 };
 
 export const findMinimumSwapsToCollectAllGems = (
@@ -723,7 +756,7 @@ export const findMinimumSwapsToCollectAllGems = (
   const visited = new Set<string>();
 
   const serializeBoard = (b: GameTile[][]) => {
-    return b.map(row => 
+    return b.map(row =>
       row.map(tile => `${tile.type}-${tile.connections.north}-${tile.connections.south}-${tile.connections.east}-${tile.connections.west}-${tile.special || ''}`).join('|')
     ).join('||');
   };
@@ -742,17 +775,17 @@ export const findMinimumSwapsToCollectAllGems = (
       continue;
     }
 
-    // Get movable tiles for this board
+    // Get movable tiles for this board (exclude locked)
     const movable: { x: number; y: number }[] = [];
     for (let y = 0; y < currentBoard.length; y++) {
       for (let x = 0; x < currentBoard[0].length; x++) {
-        const t = currentBoard[y][x];
-        if (t.type === TileType.PATH && t.id !== 'start-tile' && t.id !== 'goal-tile') {
+        const t = currentBoard[y][x] as GameTile & { locked?: boolean };
+        if (t.type === TileType.PATH && t.id !== 'start-tile' && t.id !== 'goal-tile' && !t.locked) {
           movable.push({ x, y });
         }
       }
     }
-    
+
     for (let i = 0; i < movable.length; i++) {
       for (let j = i + 1; j < movable.length; j++) {
         const newBoard = currentBoard.map(row => row.map(tile => ({
@@ -761,7 +794,7 @@ export const findMinimumSwapsToCollectAllGems = (
         })));
         const pos1 = movable[i];
         const pos2 = movable[j];
-        
+
         const temp = newBoard[pos1.y][pos1.x];
         newBoard[pos1.y][pos1.x] = newBoard[pos2.y][pos2.x];
         newBoard[pos2.y][pos2.x] = temp;
@@ -787,7 +820,7 @@ const canReachGoalViaAllGems = (
   // Use DFS to check if there's a path from start to goal that visits all gems
   const visited = new Set<string>();
   const gemsToVisit = new Set(gems.map(g => `${g.x},${g.y}`));
-  
+
   const dfs = (x: number, y: number, visitedGems: Set<string>): boolean => {
     const key = `${x},${y}`;
     if (visited.has(key)) return false;
@@ -815,7 +848,7 @@ const canReachGoalViaAllGems = (
     for (const dir of directions) {
       const newX = x + dir.dx;
       const newY = y + dir.dy;
-      
+
       if (canMoveTo(board, x, y, newX, newY)) {
         if (dfs(newX, newY, newVisitedGems)) {
           return true;
