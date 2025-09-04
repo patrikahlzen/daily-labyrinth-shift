@@ -857,3 +857,125 @@ body {
   position: relative;
   z-index: 41;                          /* konfetti ovanpå visuellt men inte i vägen */
 }
+
+/* =========================================
+   WINSCREEN — harmoniserad guldlook
+   ========================================= */
+
+/* 1) Guld som spelar fint med prism-axeln (magenta→cyan→lime) */
+:root,
+:root.theme-prism {
+  --gold-30: 38 70% 38%;   /* skugga */
+  --gold-40: 42 78% 46%;
+  --gold-50: 46 88% 56%;   /* bas */
+  --gold-60: 48 96% 64%;   /* highlight */
+  --gold-70: 52 98% 72%;   /* specular */
+  --gold-glow: 46 100% 50%;
+}
+
+/* 2) Panel – samma material som övriga UI men med subtil guld-aura */
+.finish-overlay.win{
+  background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--card)/.96));
+  border: 1px solid hsl(var(--card-border));
+  box-shadow:
+    0 12px 30px -12px hsl(var(--gold-glow) /.18),
+    var(--glass-shadow);
+  text-align: center;
+  gap: 1.25rem;
+}
+
+/* 3) Trofé/medaljong – metallisk guld utan techno-neon */
+.win .finish-trophy{
+  width: 4.25rem; height: 4.25rem; border-radius: 9999px;
+  position: relative; isolation: isolate;
+  background:
+    radial-gradient(110% 110% at 28% 22%, hsl(var(--gold-70)) 0%, transparent 55%),
+    radial-gradient(130% 130% at 72% 78%, hsl(var(--gold-40)) 0%, transparent 60%),
+    conic-gradient(from 210deg,
+      hsl(var(--gold-30)) 0deg,  hsl(var(--gold-50)) 70deg,
+      hsl(var(--gold-60)) 140deg, hsl(var(--gold-50)) 210deg,
+      hsl(var(--gold-30)) 300deg, hsl(var(--gold-60)) 360deg);
+  border: 1px solid hsl(var(--gold-60) /.7);
+  box-shadow:
+    0 10px 24px hsl(var(--gold-glow)/.22),
+    inset 0 1px 0 hsl(0 0% 100% /.18);
+}
+.win .finish-trophy::after{ /* mjuk glans-svep */
+  content:""; position:absolute; inset:-22% -32% auto -32%; height:56%;
+  background: linear-gradient(to bottom, hsl(0 0% 100% /.55), transparent 60%);
+  filter: blur(8px); transform: rotate(8deg);
+  mix-blend-mode: screen; opacity:.0; animation: win-shine 3.2s ease-in-out infinite;
+}
+@keyframes win-shine{
+  0%{ transform: translateX(-30%) rotate(8deg); opacity:.0; }
+  18%{ opacity:.9; }
+  60%{ transform: translateX(130%) rotate(8deg); opacity:.0; }
+  100%{ opacity:.0; }
+}
+@media (prefers-reduced-motion: reduce){
+  .win .finish-trophy::after{ animation:none; opacity:.35; }
+}
+
+/* 4) Rubriker/copy – premium men lågmält */
+.win .finish-title{
+  font-weight: 900; letter-spacing:-.02em;
+  background: linear-gradient(90deg, hsl(var(--gold-60)), hsl(var(--gold-50)));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.win .finish-sub{ color:hsl(var(--muted-foreground)); }
+
+/* 5) Stjärnor – äkta guld */
+.star-row{ display:flex; gap:6px; justify-content:center; }
+.star-gold{
+  color: hsl(var(--gold-60));
+  filter: drop-shadow(0 2px 6px hsl(var(--gold-glow)/.28));
+}
+.star-muted{ color:hsl(var(--muted-foreground)); }
+
+/* 6) Stats-chips – samma glas/materia som övriga UI */
+.win .pill{
+  background: linear-gradient(180deg, hsl(var(--card)/.96), hsl(var(--card)));
+  border: 1px solid hsl(var(--card-border));
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% /.07);
+}
+.win .pill .num{ font-variant-numeric: tabular-nums; }
+
+/* 7) Meddelande (om ej guldstjärna): neutral, inte olivgrönt */
+.win .finish-message{
+  background: hsl(var(--muted)/.35);
+  border: 1px solid hsl(var(--card-border));
+  color: hsl(var(--foreground));
+}
+
+/* 8) Knappar – variant som följer din CTA-stil men i guld */
+.btn-cta--gold{
+  position: relative; border-radius: var(--radius);
+  padding: .75rem 1.25rem; font-weight: 800; color:hsl(var(--foreground));
+  background: var(--gradient-card);
+  border: 2px solid transparent; transition: var(--transition-smooth);
+}
+.btn-cta--gold::before{
+  content:""; position:absolute; inset:-2px; padding:2px; border-radius:inherit;
+  background: linear-gradient(135deg, hsl(var(--gold-60)), hsl(var(--gold-50)));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+}
+.btn-cta--gold:hover{
+  background: linear-gradient(135deg, hsl(var(--gold-60)), hsl(var(--gold-50)));
+  color: hsl(0 0% 10%);
+}
+.btn-cta--gold:focus-visible{ outline:2px solid hsl(var(--gold-60)); outline-offset:2px; }
+
+/* 9) Sekundär knapp – ghost med liten guldhint vid hover */
+.btn-ghost.win-ghost:hover{
+  border-color: hsl(var(--gold-60)/.7);
+  box-shadow: 0 4px 12px -4px hsl(var(--gold-glow)/.22);
+}
+
+/* 10) Små layout-justeringar */
+.finish-overlay.win{ padding: 1.75rem 1.5rem; }
+.finish-overlay.win .finish-celebration{ gap: 1rem; margin-bottom: 1rem; }
+.finish-overlay.win .finish-actions{ justify-content: center; }
+@media (min-width: 640px){
+  .finish-overlay.win .finish-actions{ justify-content: flex-end; }
+}
