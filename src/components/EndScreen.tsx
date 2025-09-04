@@ -72,30 +72,36 @@ export const EndScreen: React.FC<EndScreenProps> = ({
 
   return (
     <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="finish-overlay gamebar w-full max-w-sm mx-4">
-        <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-prism flex items-center justify-center">
-              <Trophy className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <h2 className="display-xl" style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>
-              {t('game.puzzleSolved')}
-            </h2>
-          </div>
-          <Button variant="ghost" size="icon" aria-label={t('game.close')} onClick={onClose} className="pill">
-            <X className="w-4 h-4" />
-          </Button>
-        </header>
+      <article className="finish-overlay">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          aria-label={t('game.close')} 
+          onClick={onClose} 
+          className="absolute top-4 right-4 z-50 opacity-70 hover:opacity-100"
+        >
+          <X className="w-5 h-5" />
+        </Button>
 
-        <section className="text-center mb-6 p-4 rounded-xl" style={{ background: 'var(--gradient-prism)', opacity: 0.1 }}>
-          <div className="flex justify-center mb-3">
-            <StarRating stars={stars} size="lg" maxStars={1} />
+        <div className="finish-celebration">
+          <div className="finish-trophy">
+            <Trophy />
           </div>
-          <p className="text-foreground font-medium mb-2 meta">{starDescription}</p>
-          {stars < 1 && (
-            <p className="text-sm text-muted-foreground meta">{nextRequirement}</p>
-          )}
-        </section>
+          
+          <h2 className="display-lg">
+            {t('game.puzzleSolved')}
+          </h2>
+          
+          <div className="finish-message">
+            <div className="flex justify-center mb-3">
+              <StarRating stars={stars} size="lg" maxStars={1} />
+            </div>
+            <p className="font-medium mb-1">{starDescription}</p>
+            {stars < 1 && (
+              <p className="text-sm opacity-80">{nextRequirement}</p>
+            )}
+          </div>
+        </div>
 
         <section className="space-y-3">
           <div className="pill flex items-center justify-between">
@@ -114,11 +120,11 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           </div>
         </section>
 
-        <footer className="finish-actions mt-6 space-y-2">
+        <div className="finish-actions space-y-3">
           <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center pill pill--hot">
             <Share2 className="w-4 h-4" /> {t('game.share')}
           </Button>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {attempts > 1 && (
               <Button variant="outline" onClick={onTryAgain} className="justify-center pill">
                 {t('game.tryAgain')}
@@ -132,7 +138,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({
               {t('game.close')}
             </Button>
           </div>
-        </footer>
+        </div>
       </article>
     </div>
   );
