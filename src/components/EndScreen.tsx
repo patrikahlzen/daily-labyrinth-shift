@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Button } from './ui/button';
-import { Share2, X, Clock, Move, Trophy } from 'lucide-react';
+import { Share2, X, Clock, Move, Trophy, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { StarRating } from './StarRating';
 import { calculateStarRating, getStarDescription, getNextStarRequirement } from '../utils/scoring';
 import { GameTile } from '../types/game';
 import { t } from '../utils/i18n';
@@ -12,7 +11,7 @@ interface EndScreenProps {
   timer: number;
   moves: number;
   puzzleNumber: number;
-  stars: number;
+  stars: number;              // 0 eller 1
   board: GameTile[][];
   gemsCollected: number;
   attempts: number;
@@ -26,16 +25,16 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const EndScreen: React.FC<EndScreenProps> = ({ 
-  timer, 
-  moves, 
-  puzzleNumber, 
-  stars, 
-  board, 
-  gemsCollected, 
+export const EndScreen: React.FC<EndScreenProps> = ({
+  timer,
+  moves,
+  puzzleNumber,
+  stars,
+  board,
+  gemsCollected,
   attempts,
   onClose,
-  onTryAgain
+  onTryAgain,
 }) => {
   const { toast } = useToast();
 
@@ -44,15 +43,14 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   const nextRequirement = getNextStarRequirement(stars, moves, rating.thresholds);
 
   useEffect(() => {
-    // Golden celebration if earned
-    const confettiConfig = stars >= 1 
-      ? { particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFA500', '#FFCF40'] }
-      : { particleCount: 120, spread: 70, origin: { y: 0.6 } };
-    
-    confetti(confettiConfig);
+    const cfg =
+      stars >= 1
+        ? { particleCount: 220, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFCF40', '#E6B800'] }
+        : { particleCount: 140, spread: 70, origin: { y: 0.6 } };
+    confetti(cfg);
   }, [stars]);
 
-  const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2,'0')} — ${stars}⭐ ${t('game.time')} ${formatTime(timer)} • ${t('game.moves')} ${moves}`;
+  const shareText = `${t('game.title')} #${String(puzzleNumber).padStart(2, '0')} — ${stars}⭐ ${t('game.time')} ${formatTime(timer)} • ${t('game.moves')} ${moves}`;
 
   const handleShare = async () => {
     try {
@@ -60,50 +58,45 @@ export const EndScreen: React.FC<EndScreenProps> = ({
         await navigator.share({ title: t('game.title'), text: shareText });
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(shareText);
-        toast({ 
-          title: t('game.copied'), 
-          description: t('game.copiedDescription')
-        });
+        toast({ title: t('game.copied'), description: t('game.copiedDescription') });
       }
-    } catch (e) {
-      // no-op
-    }
+    } catch {/* no-op */}
   };
 
+  const congrats = t('game.congrats');
+  const showCongrats = congrats && !String(congrats).startsWith('game.');
+
   return (
-    <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center" role="dialog" aria-modal="true">
-      <article className="finish-overlay">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          aria-label={t('game.close')} 
-          onClick={onClose} 
+    <div
+      className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="win-title"
+    >
+      {/* is-compact aktiverar den centrerade, staplade layouten */}
+      <article className="finish-overlay win is-compact">
+        {/* Stäng uppe till höger */}
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('game.close')}
+          onClick={onClose}
           className="absolute top-4 right-4 z-50 opacity-70 hover:opacity-100"
         >
           <X className="w-5 h-5" />
         </Button>
 
-        <div className="finish-celebration">
+        {/* HERO */}
+        <div className="finish-hero finish-celebration">
           <div className="finish-trophy">
             <Trophy />
           </div>
-          
-          <h2 className="display-lg">
-            {t('game.puzzleSolved')}
-          </h2>
-          
-          <div className="finish-message">
-            <div className="flex justify-center mb-3">
-              <StarRating stars={stars} size="lg" maxStars={1} />
-            </div>
-            <p className="font-medium mb-1">{starDescription}</p>
-            {stars < 1 && (
-              <p className="text-sm opacity-80">{nextRequirement}</p>
-            )}
-          </div>
+          <h2 id="win-title" className="finish-title">{t('game.puzzleSolved')}</h2>
+          {showCongrats ? <p className="finish-sub">{String(congrats)}</p> : null}
         </div>
 
-        <section className="finish-stats space-y-3">
+        {/* STATS */}
+        <section className="finish-stats space-y-2">
           <div className="pill flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground">
               <Clock className="w-4 h-4 text-prism-b" />
@@ -120,23 +113,28 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           </div>
         </section>
 
-        <div className="finish-actions space-y-3">
-          <Button onClick={handleShare} className="w-full flex items-center gap-2 justify-center pill pill--hot">
+        {/* ACTIONS */}
+        <div className="finish-actions">
+          <Button onClick={handleShare} className="btn-cta--gold flex items-center gap-2 justify-center">
             <Share2 className="w-4 h-4" /> {t('game.share')}
           </Button>
-          <div className="grid grid-cols-2 gap-3">
-            {attempts > 1 && (
-              <Button variant="outline" onClick={onTryAgain} className="justify-center pill">
-                {t('game.tryAgain')}
-              </Button>
-            )}
-            <Button 
-              variant="secondary" 
-              onClick={onClose} 
-              className={`justify-center pill ${attempts > 1 ? '' : 'col-span-2'}`}
-            >
-              {t('game.close')}
-            </Button>
+          <Button onClick={onClose} className="btn-ghost win-ghost">
+            {t('game.close')}
+          </Button>
+        </div>
+
+        {/* CALLOUT */}
+        <div className="finish-callout">
+          <div className="finish-message">
+            <div className="flex justify-center mb-3">
+              {stars >= 1 ? (
+                <Star className="w-6 h-6 star-gold" fill="currentColor" />
+              ) : (
+                <Star className="w-6 h-6 text-muted-foreground" />
+              )}
+            </div>
+            <p className="font-medium mb-1">{starDescription}</p>
+            {stars < 1 && <p className="text-sm opacity-80">{nextRequirement}</p>}
           </div>
         </div>
       </article>

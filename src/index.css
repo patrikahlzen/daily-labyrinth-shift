@@ -980,48 +980,76 @@ body {
   .finish-overlay.win .finish-actions{ justify-content: flex-end; }
 }
 
-/* ===========================
-   Finish overlay: 2-col balance
-   =========================== */
+/* =========================================
+   Compact Winscreen (single-column, centered)
+   ========================================= */
 
-.finish-overlay.win{
-  position: relative;
-  isolation: isolate;
-  /* Två områden överst, actions över hela nederst */
+.finish-overlay.win.is-compact{
+  /* en kolumn, centrerad */
   display: grid;
   grid-template-areas:
-    "left right"
-    "footer footer";
-  grid-template-columns: minmax(240px, 1fr) max-content; /* höger = content-bredd */
-  column-gap: 1.25rem;
-  row-gap: 1rem;
+    "hero"
+    "stats"
+    "cta"
+    "callout";
+  grid-template-columns: minmax(260px, 28rem);
+  justify-content: center;
+  justify-items: center;
+  text-align: center;
+  row-gap: 0.9rem;
+  padding-top: 2.25rem;
 }
 
-/* Tilldela grid-areas */
-.finish-celebration{ grid-area: left; }
-.finish-stats{ grid-area: right; }           /* <section> får denna klass i TSX */
-.finish-actions{ grid-area: footer; }
+/* sektionerna till grid-areas */
+.finish-hero{ grid-area: hero; }
+.finish-stats{ grid-area: stats; width: 100%; }
+.finish-actions{ grid-area: cta; width: 100%; }
+.finish-callout{ grid-area: callout; width: 100%; }
 
-/* Få stats att se 'samlat' ut */
-.finish-stats{ align-self: start; }
+/* medaljong som “topper” – liten överlapp på stats */
+.finish-hero .finish-trophy{
+  margin-top: -1.25rem;
+  box-shadow:
+    0 10px 24px hsl(var(--gold-glow)/.22),
+    inset 0 1px 0 hsl(0 0% 100% /.18);
+}
 
-/* Actions över hela bredden ger tyngd i botten */
+/* stats: två chips i rad, tajtare */
+.finish-stats .pill{
+  margin-inline: auto;
+  max-width: 18rem;
+}
+.finish-stats .pill + .pill{ margin-top: .5rem; }
+
+/* actions: CTA + Close i en tydlig rad */
 .finish-actions{
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: .75rem;
 }
-@media (min-width: 640px){
-  .finish-actions{ flex-direction: row; justify-content: flex-end; }
+@media (min-width: 420px){
+  .finish-actions{ grid-template-columns: 1fr minmax(120px, .6fr); }
 }
+.btn-cta--gold{ width: 100%; }
+.btn-ghost.win-ghost{ width: 100%; justify-content: center; }
 
-/* Subtil guld-aurora bakom högerkolumnen (smakfull, låg opacitet) */
-.finish-overlay.win::before{
+/* callout ren och harmoniserad */
+.finish-callout .finish-message{
+  background: hsl(var(--muted) / .35);
+  border: 1px solid hsl(var(--card-border));
+  color: hsl(var(--foreground));
+  border-radius: calc(var(--radius) - 4px);
+  padding: 1rem 1rem 1.1rem;
+}
+.finish-callout .finish-message .star-gold{ vertical-align: -1px; }
+
+/* diskret aurora bakom medaljongen för fyllnad utan “techno” */
+.finish-overlay.win.is-compact::before{
   content:"";
-  position:absolute; inset:-6% -6% -6% 58%;
+  position:absolute; inset: -8% 0 auto 0; height: 38%;
   background:
-    radial-gradient(46% 46% at 80% 20%, hsl(var(--gold-60)/.14), transparent 60%),
-    radial-gradient(36% 36% at 100% 80%, hsl(var(--prism-b)/.09), transparent 60%);
+    radial-gradient(32% 32% at 50% 10%, hsl(var(--gold-60)/.14), transparent 60%),
+    radial-gradient(28% 28% at 60% 30%, hsl(var(--prism-b)/.08), transparent 60%);
   filter: blur(22px);
   pointer-events:none;
   z-index:0;
