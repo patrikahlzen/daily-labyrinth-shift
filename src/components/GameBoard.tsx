@@ -101,4 +101,122 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const sourceLocked =
         !srcTile ||
         srcTile.type === TileType.EMPTY ||
-       
+        cellIsLocked(src.row, src.col, srcTile);
+
+      if (sourceLocked) {
+        setShakeCell(src);
+        setTimeout(() => setShakeCell(null), 400);
+      } else {
+        onSwapTiles?.(src.row, src.col, row, col);
+      }
+    } else if (src) {
+      // Dropped onto itself
+      setShakeCell(src);
+      setTimeout(() => setShakeCell(null), 400);
+    }
+
+    setDragFrom(null);
+    setDragOver(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragFrom(null);
+    setDragOver(null);
+  };
+
+  return (
+    <div className="w-full overscroll-none select-none">
+      {/* Optimized Game Board */}
+      <div
+        className="board grid gap-1 sm:gap-2 w-full max-w-sm sm:max-w-lg mx-auto"
+        style={{
+          WebkitOverflowScrolling: 'touch',
+          gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))`,
+        }}
+      >
+        {board.map((row, rowIndex) =>
+          row.map((tile, colIndex) => {
+            const isGoal = cellIsGoal(rowIndex, colIndex);
+            const isStart = cellIsStart(rowIndex, colIndex);
+            const isLocked = cellIsLocked(rowIndex, colIndex, tile);
+            const isConnected =
+              connectedPath?.some(p => p.x === colIndex && p.y === rowIndex) || false;
+
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                data-row={rowIndex}
+                data-col={colIndex}
+                className={`relative aspect-square ${
+                  tile.type === TileType.EMPTY || isLocked
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'cursor-pointer touch-manipulation'
+                } ${
+                  shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex
+                    ? 'animate-shake'
+                    : ''
+                }`}
+                draggable={!(tile.type === TileType.EMPTY || isLocked)}
+                onDragStart={e => handleDragStart(e, rowIndex, colIndex, tile)}
+                onDragOver={e => handleDragOver(e, rowIndex, colIndex, tile)}
+                onDrop={e => handleDrop(e, rowIndex, colIndex, tile)}
+                onDragEnd={handleDragEnd}
+                onClick={() => handleTileClick(rowIndex, colIndex, tile)}
+              >
+                <div className="absolute inset-0">
+                  <Tile
+                    tile={tile}
+                    isGoal={isGoal}
+                    isStart={isStart}
+                    isConnected={isConnected}
+                    isValidPath={validConnection}
+                    isEnergized={isConnected && !!validConnection}
+                  />
+
+                  {/* Connected path highlight */}
+                  {isConnected && validConnection && (
+                    <div
+                      className="absolute inset-0 ring-2 rounded-lg pointer-events-none animate-pulse"
+                      style={{
+                        borderColor: 'hsl(var(--prism-b))',
+                        boxShadow:
+                          '0 0 20px hsl(var(--prism-b)/.6), inset 0 0 20px hsl(var(--prism-b)/.3)',
+                      }}
+                    />
+                  )}
+
+                  {/* Selected tile highlight */}
+                  {selectedTile &&
+                    selectedTile.row === rowIndex &&
+                    selectedTile.col === colIndex && (
+                      <div
+                        className="absolute inset-0 ring-2 rounded-lg pointer-events-none"
+                        style={{
+                          borderColor: 'hsl(var(--prism-a))',
+                          boxShadow: '0 0 15px hsl(var(--prism-a)/.5)',
+                        }}
+                      />
+                    )}
+
+                  {/* Drag over highlight (not on locked) */}
+                  {dragOver &&
+                    dragOver.row === rowIndex &&
+                    dragOver.col === colIndex &&
+                    !isLocked && (
+                      <div
+                        className="absolute inset-0 ring-2 rounded-lg pointer-events-none"
+                        style={{
+                          borderColor: 'hsl(var(--prism-c))',
+                          boxShadow: '0 0 15px hsl(var(--prism-c)/.5)',
+                        }}
+                      />
+                    )}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+};
