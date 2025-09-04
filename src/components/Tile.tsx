@@ -1,153 +1,141 @@
+// src/components/Tile.tsx
 import React from 'react';
 import { GameTile, TileType } from '../types/game';
-import { Clock, Square, Gem, Zap, Flag } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
-interface TileProps {
+type Props = {
   tile: GameTile;
-  isGoal?: boolean;
   isStart?: boolean;
+  isGoal?: boolean;
   isConnected?: boolean;
   isValidPath?: boolean;
-  isEnergized?: boolean;  // New prop for electric flow
-}
+  isEnergized?: boolean;
+};
 
-export const Tile: React.FC<TileProps> = ({ tile, isGoal, isStart, isConnected, isValidPath, isEnergized }) => {
-  // Generate unique mask ID using position and random number for Safari compatibility
-  const maskId = React.useMemo(() => `tile-mask-${tile.id}-${Math.random().toString(36).substr(2, 9)}`, [tile.id]);
+export const Tile: React.FC<Props> = ({
+  tile,
+  isStart = false,
+  isGoal = false,
+  isConnected = false,
+  isValidPath = false,
+  isEnergized = false,
+}) => {
+  const classes = [
+    'tile',
+    tile.type === TileType.PATH ? 'tile--path' : '',
+    isStart ? 'tile--start' : '',
+    isGoal ? 'tile--goal' : '',
+    isEnergized ? 'is-energized' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
-  const renderPathMask = () => {
-    if (tile.type !== TileType.PATH) return null;
+  // simple pipe renderer: draw lines from center to each connected side
+  const size = 100; // arbitrary viewBox size for easy math
+  const c = size / 2;
+  const inset = 14; // inner padding to match your CSS inset ~6px visually
+  const end = size - inset;
 
-    const thickness = 30; // ~30% of tile size
-    const half = 50;
+  const segments: Array<[number, number, number, number]> = [];
+  if (tile.connections.north) segments.push([c, inset, c, c]);
+  if (tile.connections.south) segments.push([c, c, c, end]);
+  if (tile.connections.west) segments.push([inset, c, c, c]);
+  if (tile.connections.east) segments.push([c, c, end, c]);
 
-    return (
-      <defs>
-        <mask id={maskId} maskUnits="userSpaceOnUse">
-          <rect x="0" y="0" width="100" height="100" fill="black" />
-          <g stroke="white" strokeWidth={thickness} strokeLinecap="round" fill="none">
-            {tile.connections.north && (
-              <line x1={half} y1={half} x2={half} y2={0} />
-            )}
-            {tile.connections.south && (
-              <line x1={half} y1={half} x2={half} y2={100} />
-            )}
-            {tile.connections.east && (
-              <line x1={half} y1={half} x2={100} y2={half} />
-            )}
-            {tile.connections.west && (
-              <line x1={half} y1={half} x2={0} y2={half} />
-            )}
-          </g>
-        </mask>
-      </defs>
-    );
-  };
-
-  const getSpecialIcon = () => {
-    switch (tile.special) {
-      case 'key':
-        return null; // Hide key tile visuals for now
-      case 'time':
-        return null; // Hide time icon per request
-      case 'block':
-        return <Square className="w-4 h-4 text-muted-foreground" />;
-      case 'gem':
-        return (
-          <div className="relative">
-            <Gem className="w-5 h-5 text-accent drop-shadow-sm" 
-                 style={{ filter: 'drop-shadow(0 0 8px hsl(var(--accent) / 0.6))' }} />
-            <div className="absolute inset-0 w-5 h-5 rounded-full bg-accent/20 animate-ping" />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getTileClassName = () => {
-    let baseClass = "tile ";
-    
-    if (tile.type === TileType.PATH) {
-      baseClass += "tile--path ";
-    }
-
-    // Connected path effect
-    if (isConnected && isValidPath) {
-      baseClass += "tile--energized ";
-    }
-
-    // Electric flow effect (new)
-    if (isEnergized) {
-      baseClass += "is-energized ";
-    }
-
-    // Start/Goal specific styling
-    if (isStart) {
-      baseClass += "tile--start ";
-    }
-    if (isGoal) {
-      baseClass += "tile--goal ";
-    }
-
-    return baseClass;
-  };
+  const showGem = tile.special === 'gem';
+  const showKey = tile.special === 'key';
+  const showTime = tile.special === 'time';
 
   return (
-    <div className={getTileClassName()}>
-      {/* PIPE CLIPPING WRAPPER */}
-      {tile.type === TileType.PATH && (
-        <div className="pipe-clip">
-          <svg 
-            className="absolute inset-0 pointer-events-none" 
-            viewBox="0 0 100 100" 
-            preserveAspectRatio="none" 
-            width="100%" 
-            height="100%"
-            style={{ zIndex: 100 }}
-          >
-            <g 
-              stroke="white" 
-              strokeWidth="25" 
-              strokeLinecap="round" 
-              fill="none"
-              opacity="1"
-            >
-              {tile.connections.north && (
-                <line x1="50" y1="50" x2="50" y2="0" />
-              )}
-              {tile.connections.south && (
-                <line x1="50" y1="50" x2="50" y2="100" />
-              )}
-              {tile.connections.east && (
-                <line x1="50" y1="50" x2="100" y2="50" />
-              )}
-              {tile.connections.west && (
-                <line x1="50" y1="50" x2="0" y2="50" />
-              )}
-            </g>
+    <div className={classes}>
+      {/* pipes */}
+      <div className="pipe-clip">
+        <svg viewBox={`0 0 ${size} ${size}`} preserveAspectRatio="none">
+          {/* main circle hub */}
+          <circle cx={c} cy={c} r={10} fill="currentColor" opacity="0.9" />
+          {/* spokes */}
+          {segments.map(([x1, y1, x2, y2], i) => (
+            <line
+              key={i}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke="currentColor"
+              strokeWidth={12}
+              strokeLinecap="round"
+            />
+          ))}
+        </svg>
+      </div>
+
+      {/* start/goal marks */}
+      {isStart && <div className="mark" data-symbol="S" />}
+      {isGoal && <div className="mark" data-symbol="M" />}
+
+      {/* specials */}
+      {showGem && (
+        <div
+          className="absolute"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 5,
+          }}
+          aria-label="Gem"
+          title="Gem"
+        >
+          {/* diamond gem */}
+          <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 3l4.5 4.5L12 21 7.5 7.5 12 3z"
+              fill="hsl(var(--prism-c))"
+              opacity="0.95"
+            />
+          </svg>
+        </div>
+      )}
+      {showKey && (
+        <div
+          className="absolute"
+          style={{ left: 8, bottom: 8, zIndex: 5 }}
+          aria-label="Key"
+          title="Key"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M7 14a5 5 0 119.9-1H22v3h-2v2h-3v-2h-2.1A5 5 0 017 14z"
+              fill="hsl(var(--prism-a))"
+            />
+          </svg>
+        </div>
+      )}
+      {showTime && (
+        <div
+          className="absolute"
+          style={{ right: 8, bottom: 8, zIndex: 5 }}
+          aria-label="Time"
+          title="Time"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="hsl(var(--prism-b))" opacity="0.25" />
+            <path d="M12 7v6l4 2" stroke="hsl(var(--prism-b))" strokeWidth="2" fill="none" />
           </svg>
         </div>
       )}
 
-      {/* Special items */}
-      {tile.special && (
-        <div className="absolute top-1 right-1 z-20">
-          {getSpecialIcon()}
-        </div>
-      )}
-
-      {/* Goal marker: M for Mål */}
-      {isGoal && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <span className="mark" data-symbol="M" />
-        </div>
-      )}
-
-      {/* Start marker: S for Start */}
-      {isStart && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <span className="mark" data-symbol="S" />
+      {/* locked badge (covers all types, including gem) */}
+      {tile.locked && (
+        <div
+          className="absolute"
+          style={{ right: 6, top: 6, zIndex: 6 }}
+          title="Låst"
+          aria-label="Låst"
+        >
+          <span className="pill" style={{ padding: '2px 6px' }}>
+            <Lock className="w-3 h-3" />
+          </span>
         </div>
       )}
     </div>
