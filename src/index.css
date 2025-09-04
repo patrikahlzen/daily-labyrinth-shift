@@ -979,3 +979,50 @@ body {
 @media (min-width: 640px){
   .finish-overlay.win .finish-actions{ justify-content: flex-end; }
 }
+
+/* ===========================
+   Finish overlay: 2-col balance
+   =========================== */
+
+.finish-overlay.win{
+  position: relative;
+  isolation: isolate;
+  /* Två områden överst, actions över hela nederst */
+  display: grid;
+  grid-template-areas:
+    "left right"
+    "footer footer";
+  grid-template-columns: minmax(240px, 1fr) max-content; /* höger = content-bredd */
+  column-gap: 1.25rem;
+  row-gap: 1rem;
+}
+
+/* Tilldela grid-areas */
+.finish-celebration{ grid-area: left; }
+.finish-stats{ grid-area: right; }           /* <section> får denna klass i TSX */
+.finish-actions{ grid-area: footer; }
+
+/* Få stats att se 'samlat' ut */
+.finish-stats{ align-self: start; }
+
+/* Actions över hela bredden ger tyngd i botten */
+.finish-actions{
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+@media (min-width: 640px){
+  .finish-actions{ flex-direction: row; justify-content: flex-end; }
+}
+
+/* Subtil guld-aurora bakom högerkolumnen (smakfull, låg opacitet) */
+.finish-overlay.win::before{
+  content:"";
+  position:absolute; inset:-6% -6% -6% 58%;
+  background:
+    radial-gradient(46% 46% at 80% 20%, hsl(var(--gold-60)/.14), transparent 60%),
+    radial-gradient(36% 36% at 100% 80%, hsl(var(--prism-b)/.09), transparent 60%);
+  filter: blur(22px);
+  pointer-events:none;
+  z-index:0;
+}
