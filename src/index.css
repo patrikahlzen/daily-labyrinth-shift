@@ -739,3 +739,25 @@ body {
   .hover-scale { @apply transition-transform duration-200 hover:scale-105; }
   .animate-shake { animation: shake 0.35s ease-in-out; }
 }
+
+/* Tutorial layout: tvinga .gamebar att bete sig som ett kort i kolumn */
+.gamebar.tutorial-card {
+  display: grid;                         /* slår ut flex */
+  grid-template-rows: auto 1fr auto;     /* header, body, footer */
+  align-items: start;                     /* ingen vertical-center på allt */
+  gap: 1.25rem;                           /* vertikal rytm */
+  overflow: hidden;                       /* knappar/text hålls innanför */
+}
+
+/* Håll texten läsbar och borta från kanter */
+.tutorial-body {
+  max-width: 48ch;                        /* behaglig radrad */
+}
+
+/* Footer knappar stannar i kortet och bryter snyggt på små skärmar */
+.tutorial-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: space-between;
+}
