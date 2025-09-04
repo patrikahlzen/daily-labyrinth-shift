@@ -63,9 +63,6 @@ export const EndScreen: React.FC<EndScreenProps> = ({
     } catch {/* no-op */}
   };
 
-  const congrats = t('game.congrats');
-  const showCongrats = congrats && !String(congrats).startsWith('game.');
-
   return (
     <div
       className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
@@ -73,9 +70,9 @@ export const EndScreen: React.FC<EndScreenProps> = ({
       aria-modal="true"
       aria-labelledby="win-title"
     >
-      {/* is-compact aktiverar den centrerade, staplade layouten */}
+      {/* is-compact aktiverar centrerad, staplad layout; win = guldstil */}
       <article className="finish-overlay win is-compact">
-        {/* Stäng uppe till höger */}
+        {/* Stäng */}
         <Button
           variant="ghost"
           size="icon"
@@ -91,8 +88,10 @@ export const EndScreen: React.FC<EndScreenProps> = ({
           <div className="finish-trophy">
             <Trophy />
           </div>
-          <h2 id="win-title" className="finish-title">{t('game.puzzleSolved')}</h2>
-          {showCongrats ? <p className="finish-sub">{String(congrats)}</p> : null}
+          <h2 id="win-title" className="finish-title">
+            {t('game.puzzleSolved')}
+          </h2>
+          {/* Ingen t('game.congrats') här → inga TS-problem */}
         </div>
 
         {/* STATS */}
