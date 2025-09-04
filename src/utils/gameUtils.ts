@@ -1,5 +1,5 @@
 import { GameTile, TileType, TileConnections } from '../types/game';
-import { getDifficultyForDay, getTemplateForSeed } from './difficultySystems';
+import { getDifficultyForDay, getTemplateForSeed } from './difficultySystem';
 
 // ------------------------------------------------------
 // RNG
