@@ -320,8 +320,6 @@ body {
   border-radius: 16px;
   z-index: -1;
 }
-  margin-bottom: 0.5rem;
-}
 
 .title-secondary {
   font-family: system-ui, -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
