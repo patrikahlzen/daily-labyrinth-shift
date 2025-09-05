@@ -565,6 +565,11 @@ body {
   position: relative;
 }
 
+/* Fix z-index layers so pipes render above background */
+.tile--path::after { z-index: 0; }   /* inner surface at bottom */
+.pipe-clip { z-index: 2; }           /* SVG pipes above background */
+.mark { z-index: 3; }                /* S/M markers on top */
+
 .tile--path::after {
   content: ""; 
   position: absolute; 

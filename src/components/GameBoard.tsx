@@ -166,8 +166,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 <div className="absolute inset-0">
                   <Tile
                     tile={tile}
-                    isGoal={isGoal}
-                    isStart={isStart}
                     isConnected={isConnected}
                     isValidPath={validConnection}
                     isEnergized={isConnected && !!validConnection}
