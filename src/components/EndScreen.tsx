@@ -3,7 +3,8 @@ import confetti from 'canvas-confetti';
 import { Button } from './ui/button';
 import { Share2, X, Clock, Move, Trophy, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { calculateStarRating, getStarDescription, getNextStarRequirement } from '../utils/scoring';
+import { calculateStarRating } from '../utils/scoring';
+import { getGameFeedback, GamePerformance } from '../utils/gameMessages';
 import { GameTile } from '../types/game';
 import { t } from '../utils/i18n';
 
@@ -39,8 +40,17 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   const { toast } = useToast();
 
   const rating = calculateStarRating(true, moves, board, gemsCollected);
-  const starDescription = getStarDescription(stars);
-  const nextRequirement = getNextStarRequirement(stars, moves, rating.thresholds);
+  
+  const performance: GamePerformance = {
+    completed: true,
+    gemsCollected,
+    totalGems: rating.thresholds.totalGems,
+    moves,
+    optimal: rating.thresholds.maxMovesForGold,
+    hasGoldStar: stars >= 1
+  };
+  
+  const feedback = getGameFeedback(performance);
 
   useEffect(() => {
     const cfg =
@@ -132,8 +142,11 @@ export const EndScreen: React.FC<EndScreenProps> = ({
                 <Star className="w-6 h-6 text-muted-foreground" />
               )}
             </div>
-            <p className="font-medium mb-1">{starDescription}</p>
-            {stars < 1 && <p className="text-sm opacity-80">{nextRequirement}</p>}
+            <p className="font-medium mb-1">{feedback.title}</p>
+            <p className="text-sm opacity-80 mb-2">{feedback.description}</p>
+            {feedback.encouragement && (
+              <p className="text-xs opacity-70">{feedback.encouragement}</p>
+            )}
           </div>
         </div>
       </article>

@@ -40,9 +40,9 @@ export const calculateStarRating = (
     optimalAllGems = totalGems > 0 ? estimate + Math.min(2, totalGems) : estimate;
   }
   
-  // Ensure minimum values
+  // Ensure minimum values - enforce STRICT minimum difficulty
   optimalToGoal = Math.max(5, optimalToGoal ?? 5);
-  optimalAllGems = Math.max(5, optimalAllGems ?? 5);
+  optimalAllGems = Math.max(6, optimalAllGems ?? 6);
   
   // Golden star threshold: optimal all-gems (or goal if no gems) + 1 move
   const maxMovesForGold = (totalGems > 0 ? optimalAllGems : optimalToGoal) + 1;
@@ -50,7 +50,7 @@ export const calculateStarRating = (
   const requirements = {
     completed: gameCompleted,
     gemsCollected: gameCompleted && (totalGems === 0 || gemsCollected >= totalGems),
-    goldAchieved: gameCompleted && moves <= maxMovesForGold && (totalGems === 0 || gemsCollected >= totalGems)
+    goldAchieved: gameCompleted && moves <= maxMovesForGold
   };
   
   const stars = requirements.goldAchieved ? 1 : 0;
@@ -65,22 +65,5 @@ export const calculateStarRating = (
   };
 };
 
-export const getStarDescription = (stars: number): string => {
-  return stars >= 1
-    ? "Perfect! Golden star achieved!"
-    : "Keep trying!";
-};
-
-export const getNextStarRequirement = (
-  currentStars: number,
-  moves: number,
-  thresholds: StarRating['thresholds']
-): string => {
-  if (currentStars >= 1) {
-    return "Perfect! Maximum reward achieved!";
-  }
-  if (thresholds.totalGems > 0) {
-    return `Complete in ${thresholds.maxMovesForGold} moves and collect all ${thresholds.totalGems} gems for the gold star!`;
-  }
-  return `Complete in ${thresholds.maxMovesForGold} moves for the gold star!`;
-};
+// Re-export from gameMessages for backward compatibility
+export { getStarDescription, getNextStarRequirement } from './gameMessages';

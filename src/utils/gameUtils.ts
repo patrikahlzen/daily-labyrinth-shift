@@ -225,41 +225,102 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     board[y][x] = { type: TileType.PATH, connections, special: null, id: newId() };
   }
 
-  // --- strategisk gem-placering
+  // --- strategisk gem-placering: skapa valfria sidogrenar
   const gemPositions: { x: number; y: number }[] = [];
-  const turnIdx: number[] = [];
-  for (let i = 1; i < path.length - 1; i++) {
-    const a = path[i - 1], b = path[i], c = path[i + 1];
-    const ab = { x: b.x - a.x, y: b.y - a.y };
-    const bc = { x: c.x - b.x, y: c.y - b.y };
-    if (ab.x !== bc.x || ab.y !== bc.y) turnIdx.push(i);
-  }
+  const gemBranches: { x: number; y: number }[] = [];
   const targetGems = Math.min(template.gemCount, Math.max(1, Math.floor(path.length / 4)));
-  for (let i = 0; i < Math.min(turnIdx.length, targetGems); i++) {
-    const p = path[turnIdx[i]];
-    gemPositions.push(p);
-    board[p.y][p.x] = { ...board[p.y][p.x], special: 'gem' };
+
+  // Identifiera möjliga anslutningspunkter längs huvudvägen
+  const connectionPoints: number[] = [];
+  for (let i = Math.floor(path.length * 0.2); i < Math.floor(path.length * 0.8); i++) {
+    const { x, y } = path[i];
+    // Kolla om vi kan bygga en sidogren från denna punkt
+    const possibleBranches = dirs.filter(dir => {
+      const branchX = x + dir.dx;
+      const branchY = y + dir.dy;
+      return inBounds(branchX, branchY) && 
+             board[branchY][branchX].type === TileType.EMPTY &&
+             !path.some(p => p.x === branchX && p.y === branchY);
+    });
+    if (possibleBranches.length > 0) {
+      connectionPoints.push(i);
+    }
   }
+
+  // Skapa gem-grenar från utvalda anslutningspunkter
+  const maxBranches = Math.min(targetGems, connectionPoints.length);
+  for (let gemIdx = 0; gemIdx < maxBranches; gemIdx++) {
+    if (connectionPoints.length === 0) break;
+    
+    const connectionIdx = connectionPoints[Math.floor(rng() * connectionPoints.length)];
+    connectionPoints.splice(connectionPoints.indexOf(connectionIdx), 1);
+    
+    const mainPoint = path[connectionIdx];
+    
+    // Hitta en riktning för grenen
+    const availableDirs = dirs.filter(dir => {
+      const branchX = mainPoint.x + dir.dx;
+      const branchY = mainPoint.y + dir.dy;
+      return inBounds(branchX, branchY) && 
+             board[branchY][branchX].type === TileType.EMPTY &&
+             !path.some(p => p.x === branchX && p.y === branchY) &&
+             !gemBranches.some(g => g.x === branchX && g.y === branchY);
+    });
+    
+    if (availableDirs.length > 0) {
+      const dir = availableDirs[Math.floor(rng() * availableDirs.length)];
+      const gemX = mainPoint.x + dir.dx;
+      const gemY = mainPoint.y + dir.dy;
+      
+      // Skapa gren-tile med koppling tillbaka till huvudvägen
+      const branchConnections = { north: false, south: false, east: false, west: false };
+      const backConnection = dirs.find(d => d.dx === -dir.dx && d.dy === -dir.dy);
+      if (backConnection) {
+        branchConnections[backConnection.name] = true;
+      }
+      
+      board[gemY][gemX] = {
+        type: TileType.PATH,
+        connections: branchConnections,
+        special: 'gem',
+        locked: true,
+        id: `gem-branch-${gemIdx + 1}`,
+      };
+      
+      // Uppdatera huvudvägens tile för att koppla till grenen
+      const mainTile = board[mainPoint.y][mainPoint.x];
+      mainTile.connections[dir.name] = true;
+      
+      gemPositions.push({ x: gemX, y: gemY });
+      gemBranches.push({ x: gemX, y: gemY });
+    }
+  }
+
+  // Fallback: placera gems på huvudvägen om vi inte kunde skapa tillräckligt många grenar
   if (gemPositions.length < targetGems) {
-    const interval = Math.max(2, Math.floor(path.length / (targetGems - gemPositions.length + 1)));
-    for (let i = interval; i < path.length - 1 && gemPositions.length < targetGems; i += interval) {
-      const p = path[i];
+    const turnIdx: number[] = [];
+    for (let i = 1; i < path.length - 1; i++) {
+      const a = path[i - 1], b = path[i], c = path[i + 1];
+      const ab = { x: b.x - a.x, y: b.y - a.y };
+      const bc = { x: c.x - b.x, y: c.y - b.y };
+      if (ab.x !== bc.x || ab.y !== bc.y) turnIdx.push(i);
+    }
+    
+    const remaining = targetGems - gemPositions.length;
+    for (let i = 0; i < Math.min(turnIdx.length, remaining); i++) {
+      const p = path[turnIdx[i]];
       if (!gemPositions.some(g => g.x === p.x && g.y === p.y)) {
-        board[p.y][p.x] = { ...board[p.y][p.x], special: 'gem' };
+        board[p.y][p.x] = { 
+          ...board[p.y][p.x], 
+          special: 'gem',
+          locked: true,
+          id: `gem-main-${gemPositions.length + 1}`
+        };
         gemPositions.push(p);
       }
     }
   }
 
-  // 🔒 Lås ALLA gems (som start/mål)
-  gemPositions.forEach((p, idx) => {
-    board[p.y][p.x] = {
-      ...board[p.y][p.x],
-      special: 'gem',
-      locked: true,
-      id: `gem-fixed-${idx + 1}`,
-    };
-  });
 
   // Markera start/mål
   board[start.y][start.x].id = 'start-tile';
@@ -360,7 +421,7 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   const multiplier =
     template.difficulty === 'hard' ? 2.6 : template.difficulty === 'medium' ? 2.2 : 1.8;
   const targetSwaps = Math.floor(baseScrambleIntensity * multiplier);
-  const minRequiredSwaps = template.difficulty === 'hard' ? 5 : template.difficulty === 'medium' ? 5 : 4;
+  const minRequiredSwaps = template.difficulty === 'hard' ? 6 : 5;
 
   let scrambled: GameTile[][] | null = null;
   let acceptedSwaps = -1;
@@ -395,8 +456,8 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   const computedMin = acceptedSwaps > 0
     ? acceptedSwaps
     : findMinimumSwapsToSolve(finalBoard, start, goal, SOLVER_LIMITS);
-  const optimalToGoal = Math.max(baseEstimate, computedMin);
-  const optimalAllGems = totalGems > 0 ? optimalToGoal + Math.min(2, totalGems) : optimalToGoal;
+  const optimalToGoal = Math.max(5, Math.max(baseEstimate, computedMin));
+  const optimalAllGems = totalGems > 0 ? Math.max(6, optimalToGoal + Math.min(2, totalGems)) : optimalToGoal;
   (finalBoard as any).__optimalToGoal = optimalToGoal;
   (finalBoard as any).__optimalAllGems = optimalAllGems;
   (finalBoard as any).__totalGems = totalGems;

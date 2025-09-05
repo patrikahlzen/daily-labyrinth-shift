@@ -23,7 +23,7 @@ export const PUZZLE_TEMPLATES: Record<Difficulty, PuzzleTemplate[]> = {
       pathComplexity: 2,
       gemCount: 1,
       decoyDensity: 0.4,
-      optimalMoves: 4,
+      optimalMoves: 5,
       difficulty: Difficulty.EASY
     },
     {
