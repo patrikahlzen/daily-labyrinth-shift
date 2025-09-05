@@ -265,28 +265,74 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
 
-  // --- decoy tiles (visuell distraktion)
+  // --- decoy tiles (visuell distraktion) - create coherent segments
   const isOnPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
-  const decoyDensity = 0.4 + rng() * 0.2;
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      if (isOnPath(x, y)) continue;
-      if (rng() < decoyDensity) {
-        const pattern = { ...TILE_PATTERNS[Math.floor(rng() * TILE_PATTERNS.length)] };
-        const nPath = y - 1 >= 0 && isOnPath(x, y - 1);
-        const sPath = y + 1 < rows && isOnPath(x, y + 1);
-        const ePath = x + 1 < cols && isOnPath(x + 1, y);
-        const wPath = x - 1 >= 0 && isOnPath(x - 1, y);
-        if (nPath || sPath || ePath || wPath) {
-          if (rng() < 0.7) {
-            if (nPath) pattern.north = false;
-            if (sPath) pattern.south = false;
-            if (ePath) pattern.east  = false;
-            if (wPath) pattern.west  = false;
-          }
-        }
-        board[y][x] = { type: TileType.PATH, connections: pattern, special: null, id: newId() };
-      }
+  
+  // Helper for opposite direction
+  const opposite = { north: 'south', south: 'north', east: 'west', west: 'east' } as const;
+
+  // Second pass: create mini decoy paths that form coherent but disconnected segments
+  const createDecoySegment = (startX: number, startY: number, length: number) => {
+    let x = startX, y = startY;
+    let segmentLength = 0;
+    // which direction we CAME into current tile from (for back-connection)
+    let inbound: 'north' | 'south' | 'east' | 'west' | null = null;
+
+    while (
+      segmentLength < length &&
+      inBounds(x, y) &&
+      board[y][x].type === TileType.EMPTY &&
+      !isOnPath(x, y)
+    ) {
+      // choose a direction that's not the same as inbound (makes nicer zig-zag)
+      const available = dirs.filter(d => {
+        const nx = x + d.dx, ny = y + d.dy;
+        return inBounds(nx, ny) && !isOnPath(nx, ny) && board[ny][nx].type === TileType.EMPTY && d.name !== inbound;
+      });
+      if (available.length === 0) break;
+
+      const dir = available[Math.floor(rng() * available.length)];
+      const nx = x + dir.dx, ny = y + dir.dy;
+
+      // Set connections for current tile
+      const con = { north: false, south: false, east: false, west: false };
+      con[dir.name] = true;                    // outgoing
+      if (inbound) con[inbound] = true;        // incoming (back-connection)
+
+      board[y][x] = {
+        type: TileType.PATH,
+        connections: con,
+        special: null,
+        id: newId(),
+      };
+
+      // Move forward. Next tile should back-connect to opposite direction.
+      inbound = opposite[dir.name];
+      x = nx; y = ny;
+      segmentLength++;
+    }
+
+    // Finish last "hanging" end if loop broke after 1+ steps
+    if (segmentLength > 0 && inBounds(x, y) && board[y][x].type === TileType.EMPTY && !isOnPath(x, y)) {
+      const con = { north: false, south: false, east: false, west: false };
+      if (inbound) con[inbound] = true;
+      board[y][x] = {
+        type: TileType.PATH,
+        connections: con,
+        special: null,
+        id: newId(),
+      };
+    }
+  };
+
+  // Create several decoy segments
+  const decoyCount = Math.floor((rows * cols) * 0.15);
+  for (let i = 0; i < decoyCount; i++) {
+    const startX = Math.floor(rng() * cols);
+    const startY = Math.floor(rng() * rows);
+    if (!isOnPath(startX, startY) && board[startY][startX].type === TileType.EMPTY) {
+      const segmentLength = 2 + Math.floor(rng() * 3); // 2-4 tiles per segment
+      createDecoySegment(startX, startY, segmentLength);
     }
   }
 

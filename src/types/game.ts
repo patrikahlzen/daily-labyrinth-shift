@@ -1,24 +1,26 @@
-export enum TileType {
-  EMPTY = 'empty',
-  PATH = 'path'
-}
-
-export type Direction = 'north' | 'south' | 'east' | 'west' | 'up' | 'down' | 'left' | 'right';
+export type Special = 'key' | 'time' | 'gem' | null;
 
 export interface TileConnections {
-  north: boolean;
-  south: boolean;
-  east: boolean;
+  north: boolean; 
+  south: boolean; 
+  east: boolean; 
   west: boolean;
 }
 
-export interface GameTile {
-  type: TileType;
-  connections: TileConnections;           // { north, south, east, west }
-  special: 'gem' | 'key' | 'time' | null;
-  id: string;
-  locked?: boolean;                       // ← NYTT: låsning för start/goal-liknande tiles (t.ex. gem)
+export enum TileType {
+  EMPTY = 'EMPTY',
+  PATH = 'PATH',
 }
+
+export interface GameTile {
+  id: string;
+  type: TileType;
+  connections: TileConnections;
+  special: Special;
+  locked?: boolean;   // required for locked gems
+}
+
+export type Direction = 'north' | 'south' | 'east' | 'west' | 'up' | 'down' | 'left' | 'right';
 
 export interface GameState {
   board: GameTile[][];
@@ -47,10 +49,6 @@ export interface GameState {
   attempts: number;
 }
 
-export interface GameTile {
-  // ...
-  locked?: boolean; // låst tile (ex. fastlåst gem)
-}
 
 export interface GameResult {
   moves: number;
