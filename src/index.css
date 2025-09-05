@@ -565,10 +565,10 @@ body {
   position: relative;
 }
 
-/* Fix z-index layers so pipes render above background */
-.tile--path::after { z-index: 0; }   /* inner surface at bottom */
-.pipe-clip { z-index: 2; }           /* SVG pipes above background */
-.mark { z-index: 3; }                /* S/M markers on top */
+/* Se till att rören inte täcks av inner-ytan */
+.tile--path::after { z-index: 0; }   /* inner surface längst ner */
+.pipe-clip       { z-index: 2; }     /* rören över */
+.mark            { z-index: 3; }     /* S/M-ring överst */
 
 .tile--path::after {
   content: ""; 
