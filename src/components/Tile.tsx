@@ -14,67 +14,89 @@ export const Tile: React.FC<Props> = ({
   isValidPath,
 }) => {
   const isPath = tile.type === TileType.PATH;
+  const c = tile.connections || { north:false, south:false, east:false, west:false };
 
-  // Läs markörer direkt från tile.id så de alltid syns
+  // Färger
+  const ENERGY = 'hsl(var(--energy))';        // cyan
+  const CORE   = '#ffffff';                   // vit kärna
+  const HILITE = '#E6FBFF';                   // kall highlight
+
+  // Tjocklekar (justera vid behov)
+  const GLOW_W = 22;   // underglow
+  const CORE_W = 14;   // vit kärna
+  const HI_W   = 6;    // smal highlight
+
+  // Hjälpare för att rita ett “segment” i tre lager (glow + core + highlight)
+  const Segment: React.FC<{ x1:number; y1:number; x2:number; y2:number }> = ({ x1,y1,x2,y2 }) => (
+    <>
+      {/* Glow under – cyan + blur */}
+      <g filter="url(#softGlow)">
+        <line x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={ENERGY} strokeOpacity="0.35"
+              strokeWidth={GLOW_W} strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+
+      {/* Vit kärna */}
+      <line x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke={CORE}
+            strokeWidth={CORE_W} strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Highlight */}
+      <line x1={x1} y1={y1} x2={x2} y2={y2}
+            stroke={HILITE} strokeOpacity="0.9"
+            strokeWidth={HI_W} strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  );
+
+  // Energi-overlay på aktiv väg
+  const Energy: React.FC<{ x1:number; y1:number; x2:number; y2:number }> = ({ x1,y1,x2,y2 }) => (
+    <line x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke="url(#energyGrad)" strokeWidth={8}
+          strokeLinecap="round" strokeLinejoin="round"
+          strokeDasharray="12 10" style={{ animation: 'dashShift 1.6s linear infinite' }} />
+  );
+
+  // Start/Mål – visas alltid baserat på id
   const isStart = tile.id === 'start-tile';
   const isGoal  = tile.id === 'goal-tile';
 
-  const c = tile.connections || { north:false, south:false, east:false, west:false };
-
-  // Ljusa rör + cyan energi
-  const PIPE = 'hsl(var(--foreground))'; // off-white
-  const ENERGY = 'hsl(var(--energy))';
-
   return (
     <div className={`tile ${isPath ? 'tile--path' : ''} ${tile.locked ? 'is-locked' : ''}`}>
-      {/* RÖR */}
       {isPath && (
         <div className="pipe-clip" style={{ zIndex: 2, pointerEvents: 'none' }}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* huvud-rör (vita) */}
-            {c.north && (
-              <line x1="50" y1="0" x2="50" y2="50"
-                stroke={PIPE} strokeWidth="14" strokeLinecap="round" />
-            )}
-            {c.south && (
-              <line x1="50" y1="50" x2="50" y2="100"
-                stroke={PIPE} strokeWidth="14" strokeLinecap="round" />
-            )}
-            {c.east && (
-              <line x1="50" y1="50" x2="100" y2="50"
-                stroke={PIPE} strokeWidth="14" strokeLinecap="round" />
-            )}
-            {c.west && (
-              <line x1="0" y1="50" x2="50" y2="50"
-                stroke={PIPE} strokeWidth="14" strokeLinecap="round" />
-            )}
+            <defs>
+              {/* Mjuk glow */}
+              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+              </filter>
+              {/* Cyan → vit energi */}
+              <linearGradient id="energyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stopColor="hsl(var(--energy))" />
+                <stop offset="100%" stopColor="#ffffff" />
+              </linearGradient>
+            </defs>
 
-            {/* energi-overlay på aktiv väg */}
+            {/* RITNING – varje riktning blir tre lager */}
+            {c.north && <Segment x1={50} y1={0}   x2={50} y2={50} />}
+            {c.south && <Segment x1={50} y1={50}  x2={50} y2={100} />}
+            {c.east  && <Segment x1={50} y1={50}  x2={100} y2={50} />}
+            {c.west  && <Segment x1={0}  y1={50}  x2={50}  y2={50} />}
+
+            {/* Energi-överlägg på aktiv väg */}
             {isConnected && isValidPath && (
               <>
-                {c.north && (
-                  <line x1="50" y1="0" x2="50" y2="50"
-                    stroke={ENERGY} strokeWidth="6" strokeLinecap="round" opacity="0.9" />
-                )}
-                {c.south && (
-                  <line x1="50" y1="50" x2="50" y2="100"
-                    stroke={ENERGY} strokeWidth="6" strokeLinecap="round" opacity="0.9" />
-                )}
-                {c.east && (
-                  <line x1="50" y1="50" x2="100" y2="50"
-                    stroke={ENERGY} strokeWidth="6" strokeLinecap="round" opacity="0.9" />
-                )}
-                {c.west && (
-                  <line x1="0" y1="50" x2="50" y2="50"
-                    stroke={ENERGY} strokeWidth="6" strokeLinecap="round" opacity="0.9" />
-                )}
+                {c.north && <Energy x1={50} y1={0}   x2={50} y2={50} />}
+                {c.south && <Energy x1={50} y1={50}  x2={50} y2={100} />}
+                {c.east  && <Energy x1={50} y1={50}  x2={100} y2={50} />}
+                {c.west  && <Energy x1={0}  y1={50}  x2={50}  y2={50} />}
               </>
             )}
           </svg>
         </div>
       )}
 
-      {/* START / MÅL – egen stil (ingen CSS-beroende klass) */}
+      {/* Start/Mål-ring */}
       {(isStart || isGoal) && (
         <div
           className="mark"
@@ -92,17 +114,22 @@ export const Tile: React.FC<Props> = ({
         />
       )}
 
-      {/* GEM + ev lås – alltid synligt */}
+      {/* Guld–gem (låst visar 🔒) */}
       {tile.special === 'gem' && (
         <div className="absolute top-1 right-1 flex items-center gap-1" style={{ zIndex: 4 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"
-               style={{ filter: 'drop-shadow(0 0 6px rgba(255,215,0,.6))' }}>
+               style={{ filter: 'drop-shadow(0 0 6px rgba(255,215,0,.65))' }}>
             <path fill="#FFD700"
                   d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.77 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
           </svg>
           {tile.locked && <span title="Locked" style={{ fontSize: 12 }}>🔒</span>}
         </div>
       )}
+
+      {/* Liten CSS-nyckelframes för dashen (scoped via style) */}
+      <style>{`
+        @keyframes dashShift { to { stroke-dashoffset: -22; } }
+      `}</style>
     </div>
   );
 };
