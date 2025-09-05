@@ -499,6 +499,38 @@ body {
   box-shadow: var(--shadow-tile);
 }
 
+/* EMPTY TILES - Glass effect for clarity */
+.tile--empty {
+  background: transparent;
+  border: 1px solid hsl(var(--border) / 0.3);
+  box-shadow: 
+    inset 0 1px 0 hsl(var(--foreground) / 0.02),
+    0 1px 3px hsl(var(--background) / 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.tile--empty:hover {
+  border-color: hsl(var(--border) / 0.5);
+  background: hsl(var(--card) / 0.05);
+  transform: none; /* No lift effect for empty tiles */
+}
+
+/* LOCKED TILES - Frozen glass effect */
+.tile.is-locked {
+  background: hsl(var(--card) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.6);
+  cursor: not-allowed;
+  opacity: 0.7;
+  backdrop-filter: blur(8px) brightness(0.95);
+  -webkit-backdrop-filter: blur(8px) brightness(0.95);
+}
+
+.tile.is-locked:hover {
+  transform: none;
+  box-shadow: var(--shadow-tile);
+}
+
 .tile:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-tile), 

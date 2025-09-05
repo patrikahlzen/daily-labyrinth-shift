@@ -148,8 +148,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 data-row={rowIndex}
                 data-col={colIndex}
                 className={`relative aspect-square ${
-                  tile.type === TileType.EMPTY || isLocked
-                    ? 'opacity-60 cursor-not-allowed'
+                  isLocked
+                    ? 'cursor-not-allowed'
+                    : tile.type === TileType.EMPTY
+                    ? 'cursor-help'
                     : 'cursor-pointer touch-manipulation'
                 } ${
                   shakeCell && shakeCell.row === rowIndex && shakeCell.col === colIndex

@@ -14,6 +14,7 @@ export const Tile: React.FC<Props> = ({
   isValidPath,
 }) => {
   const isPath = tile.type === TileType.PATH;
+  const isEmpty = tile.type === TileType.EMPTY;
   const c = tile.connections || { north:false, south:false, east:false, west:false };
 
   // Färger
@@ -61,7 +62,7 @@ export const Tile: React.FC<Props> = ({
   const isGoal  = tile.id === 'goal-tile';
 
   return (
-    <div className={`tile ${isPath ? 'tile--path' : ''} ${tile.locked ? 'is-locked' : ''}`}>
+    <div className={`tile ${isPath ? 'tile--path' : ''} ${isEmpty ? 'tile--empty' : ''} ${tile.locked ? 'is-locked' : ''}`}>
       {isPath && (
         <div className="pipe-clip" style={{ zIndex: 2, pointerEvents: 'none' }}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none">
