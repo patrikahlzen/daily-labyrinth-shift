@@ -128,7 +128,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     <div className="w-full overscroll-none select-none">
       {/* Optimized Game Board */}
       <div
-        className="board grid gap-1 sm:gap-2 w-full max-w-sm sm:max-w-lg mx-auto"
+        className="board grid gap-1 sm:gap-1.5 w-full max-w-xs sm:max-w-md mx-auto"
         style={{
           WebkitOverflowScrolling: 'touch',
           gridTemplateColumns: `repeat(${board[0]?.length || 0}, minmax(0, 1fr))`,

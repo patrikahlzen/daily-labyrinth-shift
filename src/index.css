@@ -575,8 +575,8 @@ body {
 /* Mobile responsiveness - enforce square tiles */
 @media (max-width: 640px) {
   .tile {
-    min-height: 48px; /* iOS minimum touch target */
-    min-width: 48px;
+    min-height: 36px; /* 25% mindre än 48px */
+    min-width: 36px;
     aspect-ratio: 1 !important;
   }
   
