@@ -514,16 +514,13 @@ body {
 .tile {
   position: relative;
   width: 100%;
-  height: 100%;
-  aspect-ratio: 1;
+  height: 0;
+  padding-bottom: 100%; /* Safari-kompatibel kvadratisk form */
   background: var(--gradient-card);
   border-radius: var(--radius);
   border: 1px solid hsl(var(--card-border));
   backdrop-filter: blur(var(--glass-blur));
   transition: var(--transition-smooth);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   overflow: hidden;
   box-shadow: var(--shadow-tile);
@@ -577,7 +574,8 @@ body {
   .tile {
     min-height: 36px; /* 25% mindre än 48px */
     min-width: 36px;
-    aspect-ratio: 1 !important;
+    height: 36px; /* Fast höjd för Safari */
+    padding-bottom: 0; /* Ta bort padding-trick på mobil */
   }
   
   .tile::before,

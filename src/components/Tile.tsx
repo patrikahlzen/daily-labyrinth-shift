@@ -64,7 +64,7 @@ export const Tile: React.FC<Props> = ({
   return (
     <div className={`tile ${isPath ? 'tile--path' : ''} ${isEmpty ? 'tile--empty' : ''} ${tile.locked ? 'is-locked' : ''}`}>
       {isPath && (
-        <div className="pipe-clip" style={{ zIndex: 2, pointerEvents: 'none' }}>
+        <div className="pipe-clip" style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
               {/* Mjuk glow */}
