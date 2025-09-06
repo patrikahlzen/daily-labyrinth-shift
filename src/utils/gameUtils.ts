@@ -264,9 +264,26 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   }
 
 
-  // Markera start/mål
+  // Markera start/mål och säkerställ att de har rätt anslutningar
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
+  
+  // Säkerställ att målet har rätt anslutning till föregående tile i path
+  if (path.length >= 2) {
+    const goalTile = board[goal.y][goal.x];
+    const secondLast = path[path.length - 2];
+    
+    // Lägg till anslutning från mål tillbaka till föregående tile
+    if (secondLast.x === goal.x && secondLast.y === goal.y - 1) {
+      goalTile.connections.north = true;
+    } else if (secondLast.x === goal.x && secondLast.y === goal.y + 1) {
+      goalTile.connections.south = true;
+    } else if (secondLast.y === goal.y && secondLast.x === goal.x - 1) {
+      goalTile.connections.west = true;
+    } else if (secondLast.y === goal.y && secondLast.x === goal.x + 1) {
+      goalTile.connections.east = true;
+    }
+  }
 
   // --- decoy tiles (visuell distraktion) - create coherent segments
   const isOnPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
