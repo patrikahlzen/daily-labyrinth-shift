@@ -90,7 +90,7 @@ export const useGameLogic = () => {
   }, []);
 
   const [gameState, setGameState] = useState<GameState>(() => {
-    const dailySeed = `SEED_${getDailyKeySE()}`;
+    const dailySeed = `SEED_v2_${getDailyKeySE()}`;
     const board = createInitialBoard(dailySeed);
 
     const findPos = (id: string): { x: number; y: number } => {
@@ -125,7 +125,7 @@ export const useGameLogic = () => {
   });
 
   // Persistence and timer effects
-  const STORAGE_KEY = `dlab_state_${getDailyKeySE()}`;
+  const STORAGE_KEY = `dlab_state_v2_${getDailyKeySE()}`;
 
   useEffect(() => {
     if (!STORAGE_KEY) return;
@@ -156,7 +156,7 @@ export const useGameLogic = () => {
 
           if (!startOk || !goalOk) {
             // Discard broken save and regenerate a fresh, validated board for today
-            const dailySeed = `SEED_${getDailyKeySE()}`;
+            const dailySeed = `SEED_v2_${getDailyKeySE()}`;
             const fresh = createInitialBoard(dailySeed);
             const newStart = findPosOn(fresh, 'start-tile');
             const newGoal = findPosOn(fresh, 'goal-tile');
@@ -401,7 +401,7 @@ export const useGameLogic = () => {
   }, [STORAGE_KEY]);
 
   const resetGame = useCallback(() => {
-    const dailySeed = `SEED_${getDailyKeySE()}`;
+    const dailySeed = `SEED_v2_${getDailyKeySE()}`;
     const board = createInitialBoard(dailySeed);
 
     const findPos = (id: string): { x: number; y: number } => {
