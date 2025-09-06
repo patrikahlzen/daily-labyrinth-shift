@@ -133,28 +133,33 @@ export const useGameLogic = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        // Validate saved board's goal tile so we don't resurrect broken states
-        const board: GameTile[][] | undefined = saved?.board;
-        if (Array.isArray(board) && board.length > 0 && Array.isArray(board[0])) {
-          // Recompute start/goal from IDs to be safe
-          const findPos = (id: string): { x: number; y: number } => {
-            for (let y = 0; y < board.length; y++) {
-              for (let x = 0; x < (board[0]?.length ?? 0); x++) {
-                if (board[y][x]?.id === id) return { x, y };
+        // Validate saved board to avoid resurrecting broken states (both start and goal must be valid PATH tiles with connections)
+        const savedBoard: GameTile[][] | undefined = saved?.board;
+        if (Array.isArray(savedBoard) && savedBoard.length > 0 && Array.isArray(savedBoard[0])) {
+          // Helper to find positions on a given board
+          const findPosOn = (b: GameTile[][], id: string): { x: number; y: number } => {
+            for (let y = 0; y < b.length; y++) {
+              for (let x = 0; x < (b[0]?.length ?? 0); x++) {
+                if (b[y][x]?.id === id) return { x, y };
               }
             }
             return { x: 0, y: 0 };
           };
-          const start = findPos('start-tile');
-          const goal = findPos('goal-tile');
-          const goalTile = board?.[goal.y]?.[goal.x];
-          const hasConnection = !!goalTile && goalTile.type === TileType.PATH && Object.values(goalTile.connections || {}).some(Boolean);
-          if (!hasConnection) {
+
+          const start = findPosOn(savedBoard, 'start-tile');
+          const goal = findPosOn(savedBoard, 'goal-tile');
+          const hasConn = (t?: GameTile) => !!t && t.type === TileType.PATH && Object.values(t.connections || {}).some(Boolean);
+          const startTile = savedBoard?.[start.y]?.[start.x];
+          const goalTile = savedBoard?.[goal.y]?.[goal.x];
+          const startOk = hasConn(startTile);
+          const goalOk = hasConn(goalTile);
+
+          if (!startOk || !goalOk) {
             // Discard broken save and regenerate a fresh, validated board for today
             const dailySeed = `SEED_${getDailyKeySE()}`;
             const fresh = createInitialBoard(dailySeed);
-            const newStart = findPos('start-tile');
-            const newGoal = findPos('goal-tile');
+            const newStart = findPosOn(fresh, 'start-tile');
+            const newGoal = findPosOn(fresh, 'goal-tile');
             setGameState(prev => ({
               ...prev,
               board: fresh,

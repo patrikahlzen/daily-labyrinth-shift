@@ -268,9 +268,12 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
   board[start.y][start.x].id = 'start-tile';
   board[goal.y][goal.x].id = 'goal-tile';
   
-  // Säkerställ att start har rätt anslutning till nästa tile i path
+  // Säkerställ att start har rätt typ/anslutning till nästa tile i path
   if (path.length >= 2) {
     const startTile = board[start.y][start.x];
+    // Start måste alltid vara en PATH-tile
+    startTile.type = TileType.PATH;
+    startTile.connections ||= { north: false, south: false, east: false, west: false };
     const second = path[1];
     if (second.x === start.x && second.y === start.y - 1) {
       startTile.connections.north = true;
@@ -287,9 +290,12 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
-  // Säkerställ att målet har rätt anslutning till föregående tile i path
+  // Säkerställ att målet har rätt typ/anslutning till föregående tile i path
   if (path.length >= 2) {
     const goalTile = board[goal.y][goal.x];
+    // Mål måste alltid vara en PATH-tile
+    goalTile.type = TileType.PATH;
+    goalTile.connections ||= { north: false, south: false, east: false, west: false };
     const secondLast = path[path.length - 2];
     
     // Lägg till anslutning från mål tillbaka till föregående tile
