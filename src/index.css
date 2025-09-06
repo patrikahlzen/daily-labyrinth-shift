@@ -572,10 +572,8 @@ body {
 /* Mobile responsiveness - enforce square tiles */
 @media (max-width: 640px) {
   .tile {
-    min-height: 36px; /* 25% mindre än 48px */
-    min-width: 36px;
-    height: 36px; /* Fast höjd för Safari */
-    padding-bottom: 0; /* Ta bort padding-trick på mobil */
+    /* Behåll kvadratisk form på Safari via padding-tricket */
+    padding-bottom: 100%;
   }
   
   .tile::before,
