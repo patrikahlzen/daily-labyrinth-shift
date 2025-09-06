@@ -23,9 +23,9 @@ export const Tile: React.FC<Props> = ({
   const HILITE = '#E6FBFF';                   // kall highlight
 
   // Tjocklekar (25% tunnare, rundare)
-  const GLOW_W = 36;   // underglow - 25% tunnare
-  const CORE_W = 27;   // vit kärna - 25% tunnare
-  const HI_W   = 12;   // smal highlight - 25% tunnare
+  const GLOW_W = 27;   // underglow - 50% tunnare totalt
+  const CORE_W = 20.25;   // vit kärna - 50% tunnare totalt
+  const HI_W   = 9;   // smal highlight - 50% tunnare totalt
 
   // Hjälpare för att rita ett “segment” i tre lager (glow + core + highlight)
   const Segment: React.FC<{ x1:number; y1:number; x2:number; y2:number }> = ({ x1,y1,x2,y2 }) => (
