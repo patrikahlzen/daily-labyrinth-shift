@@ -23,20 +23,28 @@ export const placeAvoidableGems = (context: PlacementContext): { x: number; y: n
   const gemBranches: { x: number; y: number }[] = [];
   const targetGems = Math.min(template.gemCount, Math.max(1, Math.floor(path.length / 4)));
 
-  // Find possible connection points along main path (avoid start/end areas)
+  // Find good connection points along main path - closer to start/goal for better accessibility
   const connectionPoints: number[] = [];
-  for (let i = Math.floor(path.length * 0.2); i < Math.floor(path.length * 0.8); i++) {
+  for (let i = 1; i < path.length - 1; i++) {
     const { x, y } = path[i];
-    // Check if we can build a side branch from this point
-    const possibleBranches = dirs.filter(dir => {
-      const branchX = x + dir.dx;
-      const branchY = y + dir.dy;
-      return inBounds(branchX, branchY) && 
-             board[branchY][branchX].type === TileType.EMPTY &&
-             !path.some(p => p.x === branchX && p.y === branchY);
-    });
-    if (possibleBranches.length > 0) {
-      connectionPoints.push(i);
+    
+    // Prefer points closer to start or goal (within 30% of path length from either end)
+    const distFromStart = i / path.length;
+    const distFromEnd = (path.length - i) / path.length;
+    const isGoodPosition = distFromStart <= 0.3 || distFromEnd <= 0.3;
+    
+    if (isGoodPosition) {
+      // Check if we can build a side branch from this point
+      const possibleBranches = dirs.filter(dir => {
+        const branchX = x + dir.dx;
+        const branchY = y + dir.dy;
+        return inBounds(branchX, branchY) && 
+               board[branchY][branchX].type === TileType.EMPTY &&
+               !path.some(p => p.x === branchX && p.y === branchY);
+      });
+      if (possibleBranches.length > 0) {
+        connectionPoints.push(i);
+      }
     }
   }
 
@@ -77,7 +85,7 @@ export const placeAvoidableGems = (context: PlacementContext): { x: number; y: n
         connections: branchConnections,
         special: 'gem',
         locked: true,
-        id: `gem-branch-${gemIdx + 1}`,
+        id: newId(),
       };
       
       // Update main path tile to connect to branch
