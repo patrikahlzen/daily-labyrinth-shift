@@ -36,7 +36,7 @@ const Index = () => {
       <script dangerouslySetInnerHTML={{__html: `document.body.classList.add('theme-prism')`}} />
       
       {/* Streamlined layout without extra header */}
-      <div className="flex-1 flex flex-col p-4 sm:p-6 max-w-4xl mx-auto w-full">
+      <div className="flex-1 flex flex-col p-4 sm:p-6 max-w-5xl mx-auto w-full">
         {/* Game HUD */}
         <GameHUD 
           timer={gameState.timer} 

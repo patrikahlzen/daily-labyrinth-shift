@@ -487,14 +487,20 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow-game);
   backdrop-filter: blur(var(--glass-blur));
-  padding: 0.75rem;
+  padding: 1rem;
   position: relative;
   isolation: isolate;
 }
 
 @media (min-width: 640px) {
   .board {
-    padding: 0.75rem;
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .board {
+    padding: 1.5rem;
   }
 }
 
