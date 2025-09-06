@@ -64,38 +64,42 @@ export const Tile: React.FC<Props> = ({
   return (
     <div className={`tile ${isPath ? 'tile--path' : ''} ${isEmpty ? 'tile--empty' : ''} ${tile.locked ? 'is-locked' : ''}`}>
       {isPath && (
-        <div className="pipe-clip" style={{ position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none' }}>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
-            <defs>
-              {/* Mjuk glow */}
-              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="4" result="blur"/>
-              </filter>
-              {/* Cyan → vit energi */}
-              <linearGradient id="energyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%"   stopColor="hsl(var(--energy))" />
-                <stop offset="100%" stopColor="#ffffff" />
-              </linearGradient>
-            </defs>
+        <>
+          <div className="tile-surface" />
+          <div className="pipe-clip" style={{ position: 'absolute', inset: '6px', zIndex: 2, pointerEvents: 'none' }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">
+              <defs>
+                {/* Mjuk glow */}
+                <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                </filter>
+                {/* Cyan → vit energi */}
+                <linearGradient id="energyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stopColor="hsl(var(--energy))" />
+                  <stop offset="100%" stopColor="#ffffff" />
+                </linearGradient>
+              </defs>
 
-            {/* RITNING – varje riktning blir tre lager */}
-            {c.north && <Segment x1={50} y1={0}   x2={50} y2={50} />}
-            {c.south && <Segment x1={50} y1={50}  x2={50} y2={100} />}
-            {c.east  && <Segment x1={50} y1={50}  x2={100} y2={50} />}
-            {c.west  && <Segment x1={0}  y1={50}  x2={50}  y2={50} />}
+              {/* RITNING – varje riktning blir tre lager */}
+              {c.north && <Segment x1={50} y1={0}   x2={50} y2={50} />}
+              {c.south && <Segment x1={50} y1={50}  x2={50} y2={100} />}
+              {c.east  && <Segment x1={50} y1={50}  x2={100} y2={50} />}
+              {c.west  && <Segment x1={0}  y1={50}  x2={50}  y2={50} />}
 
-            {/* Energi-överlägg på aktiv väg */}
-            {isConnected && isValidPath && (
-              <>
-                {c.north && <Energy x1={50} y1={0}   x2={50} y2={50} />}
-                {c.south && <Energy x1={50} y1={50}  x2={50} y2={100} />}
-                {c.east  && <Energy x1={50} y1={50}  x2={100} y2={50} />}
-                {c.west  && <Energy x1={0}  y1={50}  x2={50}  y2={50} />}
-              </>
-            )}
-          </svg>
-        </div>
+              {/* Energi-överlägg på aktiv väg */}
+              {isConnected && isValidPath && (
+                <>
+                  {c.north && <Energy x1={50} y1={0}   x2={50} y2={50} />}
+                  {c.south && <Energy x1={50} y1={50}  x2={50} y2={100} />}
+                  {c.east  && <Energy x1={50} y1={50}  x2={100} y2={50} />}
+                  {c.west  && <Energy x1={0}  y1={50}  x2={50}  y2={50} />}
+                </>
+              )}
+            </svg>
+          </div>
+        </>
       )}
+
 
       {/* Start/Mål-ring */}
       {(isStart || isGoal) && (

@@ -339,9 +339,11 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
     }
   }
 
-  // Rensa bort half pipes (tiles med exakt 1 anslutning)
+  // Rensa bort half pipes (tiles med exakt 1 anslutning) men rör ALDRIG huvudvägen
   const connCount = (con: {north:boolean; south:boolean; east:boolean; west:boolean}) =>
     (con.north?1:0) + (con.south?1:0) + (con.east?1:0) + (con.west?1:0);
+
+  const isOnMainPath = (x: number, y: number) => path.some(p => p.x === x && p.y === y);
 
   while (true) {
     let removedAny = false;
@@ -349,20 +351,26 @@ export const createInitialBoard = (seed?: string): GameTile[][] => {
       for (let xx = 0; xx < cols; xx++) {
         const t = board[yy][xx];
         if (t.type !== TileType.PATH) continue;
-        if (t.id === 'start-tile' || t.id === 'goal-tile') continue;
+        // Skydda start/mål och alla rutor på huvudvägen
+        if (t.id === 'start-tile' || t.id === 'goal-tile' || isOnMainPath(xx, yy)) continue;
         const count = connCount(t.connections);
         if (count === 1) {
+          // Ta inte bort om grannen ligger på huvudvägen
           const dirName = (t.connections.north ? 'north'
             : t.connections.south ? 'south'
             : t.connections.east ? 'east'
             : 'west') as 'north'|'south'|'east'|'west';
           const d = dirs.find(d => d.name === dirName)!;
           const nx = xx + d.dx, ny = yy + d.dy;
-          if (inBounds(nx, ny)) {
-            const n = board[ny][nx];
-            if (n.type === TileType.PATH) {
-              n.connections[opposite[dirName]] = false;
-            }
+          if (!inBounds(nx, ny)) { board[yy][xx] = emptyTile(); removedAny = true; continue; }
+          const n = board[ny][nx];
+          // Om grannen är start/mål eller del av huvudvägen – rör inte denna half pipe
+          if (n.type === TileType.PATH && (n.id === 'start-tile' || n.id === 'goal-tile' || isOnMainPath(nx, ny))) {
+            continue;
+          }
+          // Annars koppla bort återanslutningen och ta bort denna
+          if (n.type === TileType.PATH) {
+            n.connections[opposite[dirName]] = false;
           }
           board[yy][xx] = emptyTile();
           removedAny = true;
